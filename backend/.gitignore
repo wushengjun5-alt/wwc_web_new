@@ -32,9 +32,11 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Static files
+# Static files (collected)
 staticfiles/
-static/
+# Keep static directory but ignore contents except .gitkeep
+static/*
+!static/.gitkeep
 
 # Media files
 media/
