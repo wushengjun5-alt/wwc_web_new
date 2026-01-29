@@ -173,13 +173,19 @@ else:
 CORS_ALLOW_CREDENTIALS = True
 
 # Stripe Configuration
+# Get your test keys from https://dashboard.stripe.com/test/apikeys
+# For testing, use keys starting with pk_test_ and sk_test_
 STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
 STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
 
 # Site URL (for redirects after payment)
-SITE_URL = config('SITE_URL', default='https://wallahwecan.org')
-API_URL = config('API_URL', default='https://api.wallahwecan.org')
+if DEBUG:
+    SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
+    API_URL = config('API_URL', default='http://127.0.0.1:8000/api/v1')
+else:
+    SITE_URL = config('SITE_URL', default='https://wallahwecan.org')
+    API_URL = config('API_URL', default='https://api.wallahwecan.org')
 
 # Currency Exchange Rates (update periodically or use API)
 EXCHANGE_RATES = {
