@@ -734,35 +734,60 @@
 
         // Load categories
         async function loadCategories() {
+            const container = document.getElementById('categories');
             try {
-                const response = await fetch(`${API_URL}/categories/?menu=true&parent_only=true`);
+                const url = `${API_URL}/categories/?menu=true&parent_only=true`;
+                console.log('Fetching categories from:', url);
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
+                console.log('Categories Response:', data);
+
                 const categories = data.results || data;
 
-                const container = document.getElementById('categories');
-                container.innerHTML = categories.map(cat => `
-                    <a href="#" class="category-link" onclick="filterByCategory('${cat.slug}')">${cat.icon || ''} ${cat.name.toUpperCase()}</a>
-                `).join('');
+                if (!categories || categories.length === 0) {
+                    container.innerHTML = '<p>Aucune catégorie trouvée</p>';
+                    return;
+                }
+
+                // Add "Tous" option first
+                container.innerHTML = `
+                    <a href="#" class="category-link active" onclick="filterByCategory('')">🛍️ TOUS</a>
+                    ${categories.map(cat => `
+                        <a href="#" class="category-link" onclick="filterByCategory('${cat.slug}')">${cat.icon || ''} ${cat.name.toUpperCase()}</a>
+                    `).join('')}
+                `;
             } catch (error) {
                 console.error('Error loading categories:', error);
-                document.getElementById('categories').innerHTML = '<p>Erreur de chargement</p>';
+                container.innerHTML = '<p style="color: #c00;">Erreur de connexion à l\'API</p>';
             }
         }
 
         // Load products
         async function loadProducts(category = '') {
+            const container = document.getElementById('products');
             try {
                 let url = `${API_URL}/products/`;
                 if (category) url += `?category=${category}`;
 
+                console.log('Fetching products from:', url);
                 const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
+                console.log('API Response:', data);
+
                 const products = data.results || data;
 
-                const container = document.getElementById('products');
-
-                if (products.length === 0) {
-                    container.innerHTML = '<p>Aucun produit trouvé</p>';
+                if (!products || products.length === 0) {
+                    container.innerHTML = '<p>Aucun produit trouvé. <br><small>Vérifiez la console pour les erreurs (F12).</small></p>';
                     return;
                 }
 
@@ -793,7 +818,19 @@
                 `).join('');
             } catch (error) {
                 console.error('Error loading products:', error);
-                document.getElementById('products').innerHTML = '<p>Erreur de chargement des produits. Vérifiez que le serveur Django est en cours d\'exécution.</p>';
+                container.innerHTML = `
+                    <div style="padding: 20px; background: #fee; border-radius: 8px; color: #c00;">
+                        <p><strong>Erreur de chargement des produits</strong></p>
+                        <p>${error.message}</p>
+                        <p style="font-size: 12px; margin-top: 10px;">
+                            Si vous voyez "Failed to fetch" ou une erreur CORS:<br>
+                            1. Assurez-vous que le serveur Django est lancé (python manage.py runserver)<br>
+                            2. Servez ce fichier via un serveur HTTP au lieu de l'ouvrir directement:<br>
+                            <code style="background: #eee; padding: 2px 5px;">cd frontend && python -m http.server 3000</code><br>
+                            Puis visitez <a href="http://localhost:3000">http://localhost:3000</a>
+                        </p>
+                    </div>
+                `;
             }
         }
 

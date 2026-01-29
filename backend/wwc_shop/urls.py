@@ -6,15 +6,27 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
+from django.http import FileResponse
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+import os
+
+
+def serve_frontend(request):
+    """Serve the standalone frontend HTML file"""
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'index.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
 
 urlpatterns = [
-    # Root redirect to API
-    path('', RedirectView.as_view(url='/api/v1/', permanent=False), name='root'),
+    # Root redirect to shop frontend
+    path('', RedirectView.as_view(url='/shop/', permanent=False), name='root'),
+
+    # Shop frontend (served by Django to avoid CORS issues)
+    path('shop/', serve_frontend, name='shop'),
 
     # Admin
     path('admin/', admin.site.urls),
