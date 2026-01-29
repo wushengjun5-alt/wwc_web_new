@@ -73,7 +73,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductListSerializer
     lookup_field = 'slug'
-    filterset_fields = ['category', 'producer', 'unit_type', 'is_featured']
+    # Note: 'category' removed from filterset_fields - we handle it manually by slug in get_queryset
+    filterset_fields = ['producer', 'unit_type', 'is_featured']
     search_fields = ['name', 'description', 'sku']
     ordering_fields = ['price_tnd', 'created_at', 'average_rating', 'name']
 

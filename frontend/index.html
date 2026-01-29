@@ -672,7 +672,7 @@
                 </div>
             </div>
             <div class="cart-actions">
-                <button class="btn-checkout">Passer la commande</button>
+                <button class="btn-checkout" onclick="proceedToCheckout()">Passer la commande</button>
             </div>
         </div>
     </div>
@@ -969,6 +969,44 @@
             el.textContent = message;
             el.className = `notification ${type} show`;
             setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // Proceed to checkout
+        function proceedToCheckout() {
+            if (!cart.items || cart.items.length === 0) {
+                showNotification('Votre panier est vide', 'error');
+                return;
+            }
+
+            // For demo: show checkout summary
+            const itemCount = cart.item_count || cart.items.length;
+            const total = cart.total || '0';
+
+            // Build impact summary
+            let impactText = '';
+            if (cart.total_impact && Object.keys(cart.total_impact).length > 0) {
+                impactText = '\n\n💝 Votre impact social:\n' +
+                    Object.entries(cart.total_impact).map(([item, qty]) => `• ${qty} ${item}`).join('\n');
+            }
+
+            const confirmed = confirm(
+                `📦 Résumé de votre commande:\n\n` +
+                `• ${itemCount} article(s)\n` +
+                `• Total: ${total} DT\n` +
+                impactText +
+                `\n\n✅ Cliquez OK pour confirmer la commande\n` +
+                `(En production, ceci redirigerait vers Stripe)`
+            );
+
+            if (confirmed) {
+                // In production, this would redirect to Stripe checkout
+                showNotification('🎉 Commande confirmée! Merci pour votre achat solidaire.', 'success');
+
+                // Clear the cart display (in production, API would clear it)
+                cart = { items: [], total: '0', total_impact: {} };
+                updateCartDisplay();
+                toggleCart();
+            }
         }
     </script>
 </body>
