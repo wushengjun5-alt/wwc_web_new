@@ -159,11 +159,16 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,https://wallahwecan.org,https://www.wallahwecan.org',
-    cast=Csv()
-)
+# In development (DEBUG=True), allow all origins for testing
+# In production, restrict to specific origins
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = config(
+        'CORS_ALLOWED_ORIGINS',
+        default='https://wallahwecan.org,https://www.wallahwecan.org',
+        cast=Csv()
+    )
 
 CORS_ALLOW_CREDENTIALS = True
 
