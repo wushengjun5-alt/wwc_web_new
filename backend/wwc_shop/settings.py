@@ -184,6 +184,11 @@ if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
 
+# Admin API Configuration
+# This key is used by the WordPress plugin to authenticate admin API calls
+# Generate a secure random key and configure it in both Django and WordPress
+ADMIN_API_KEY = config('ADMIN_API_KEY', default='wwc-admin-dev-key-change-in-production')
+
 # Stripe Configuration
 # Get your test keys from https://dashboard.stripe.com/test/apikeys
 # For testing, use keys starting with pk_test_ and sk_test_

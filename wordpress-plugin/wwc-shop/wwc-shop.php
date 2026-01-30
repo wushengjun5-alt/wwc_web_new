@@ -71,6 +71,11 @@ final class WWC_Shop {
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-checkout.php';
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-impact.php';
 
+        // Admin classes (only in admin)
+        if (is_admin()) {
+            require_once WWC_SHOP_PLUGIN_DIR . 'admin/class-products-admin.php';
+        }
+
         // Initialize API client
         $this->api = new WWC_API_Client();
         $this->cart = new WWC_Cart($this->api);
@@ -391,6 +396,7 @@ final class WWC_Shop {
     public function register_settings() {
         register_setting('wwc_shop_settings', 'wwc_api_url');
         register_setting('wwc_shop_settings', 'wwc_api_key');
+        register_setting('wwc_shop_settings', 'wwc_admin_api_key');
         register_setting('wwc_shop_settings', 'wwc_default_currency');
         register_setting('wwc_shop_settings', 'wwc_stripe_public_key');
         register_setting('wwc_shop_settings', 'wwc_stripe_secret_key');
@@ -409,6 +415,18 @@ final class WWC_Shop {
             'wwc-shop-settings',
             'wwc_api_settings',
             ['field' => 'wwc_api_url', 'default' => 'https://api.wallahwecan.org']
+        );
+
+        add_settings_field(
+            'wwc_admin_api_key',
+            __('Admin API Key', 'wwc-shop'),
+            [$this, 'render_password_field'],
+            'wwc-shop-settings',
+            'wwc_api_settings',
+            [
+                'field' => 'wwc_admin_api_key',
+                'description' => __('Secret key for admin product management. Must match ADMIN_API_KEY in Django settings.', 'wwc-shop')
+            ]
         );
 
         add_settings_field(
@@ -434,6 +452,24 @@ final class WWC_Shop {
             esc_attr($args['field']),
             esc_attr($value)
         );
+        if (!empty($args['description'])) {
+            printf('<p class="description">%s</p>', esc_html($args['description']));
+        }
+    }
+
+    /**
+     * Render password field
+     */
+    public function render_password_field($args) {
+        $value = get_option($args['field'], '');
+        printf(
+            '<input type="password" name="%s" value="%s" class="regular-text" autocomplete="new-password">',
+            esc_attr($args['field']),
+            esc_attr($value)
+        );
+        if (!empty($args['description'])) {
+            printf('<p class="description">%s</p>', esc_html($args['description']));
+        }
     }
 
     /**

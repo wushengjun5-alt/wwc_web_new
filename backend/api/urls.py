@@ -6,8 +6,9 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
 from . import payments
+from . import admin_views
 
-# Create router
+# Create router for public API
 router = DefaultRouter()
 
 # Product routes
@@ -29,9 +30,19 @@ router.register(r'wishlist', views.WishlistViewSet, basename='wishlist')
 # Impact routes
 router.register(r'impact-events', views.ImpactEventViewSet, basename='impact-event')
 
+# Create router for admin API
+admin_router = DefaultRouter()
+admin_router.register(r'products', admin_views.AdminProductViewSet, basename='admin-product')
+
 urlpatterns = [
-    # Router URLs
+    # Router URLs (public API)
     path('', include(router.urls)),
+
+    # Admin API routes (protected by API key)
+    path('admin/', include(admin_router.urls)),
+    path('admin/categories/', admin_views.AdminCategoryListView.as_view(), name='admin-categories'),
+    path('admin/producers/', admin_views.AdminProducerListView.as_view(), name='admin-producers'),
+    path('admin/stats/', admin_views.AdminStatsView.as_view(), name='admin-stats'),
 
     # Checkout
     path('checkout/', views.CheckoutView.as_view(), name='checkout'),
