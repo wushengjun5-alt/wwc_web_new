@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWC Admin - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">W</span>
+                <span class="logo-text">WWC Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item active">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="nav-icon">📦</span>
+                <span>Produits</span>
+            </a>
+            <a href="categories.html" class="nav-item">
+                <span class="nav-icon">📁</span>
+                <span>Catégories</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="nav-icon">🛒</span>
+                <span>Commandes</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="../index.html" class="nav-item">
+                <span class="nav-icon">🏪</span>
+                <span>Voir la boutique</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connexion...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1>Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <div class="api-key-input">
+                    <label for="apiKey">Clé API:</label>
+                    <input type="password" id="apiKey" placeholder="Entrez votre clé API admin">
+                    <button class="btn btn-sm" id="saveApiKey">Sauvegarder</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="content-wrapper">
+            <!-- Stats Cards -->
+            <section class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statTotalProducts">-</span>
+                        <span class="stat-label">Total Produits</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statPublished">-</span>
+                        <span class="stat-label">Publiés</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statDraft">-</span>
+                        <span class="stat-label">Brouillons</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-danger">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statLowStock">-</span>
+                        <span class="stat-label">Stock Faible</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🇬🇧</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statMissingEn">-</span>
+                        <span class="stat-label">Sans Anglais</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🇸🇦</div>
+                    <div class="stat-content">
+                        <span class="stat-value" id="statMissingAr">-</span>
+                        <span class="stat-label">Sans Arabe</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="section">
+                <h2 class="section-title">Actions Rapides</h2>
+                <div class="quick-actions">
+                    <a href="product-edit.html" class="action-card">
+                        <span class="action-icon">➕</span>
+                        <span class="action-text">Nouveau Produit</span>
+                    </a>
+                    <a href="products.html?status=draft" class="action-card">
+                        <span class="action-icon">📝</span>
+                        <span class="action-text">Voir Brouillons</span>
+                    </a>
+                    <a href="products.html?low_stock=true" class="action-card">
+                        <span class="action-icon">⚠️</span>
+                        <span class="action-text">Stock Faible</span>
+                    </a>
+                    <a href="products.html?missing_translation=en" class="action-card">
+                        <span class="action-icon">🌍</span>
+                        <span class="action-text">Traductions Manquantes</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Recent Products -->
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Produits Récents</h2>
+                    <a href="products.html" class="btn btn-sm btn-outline">Voir Tout</a>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="recentProductsTable">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Nom</th>
+                                <th>Catégorie</th>
+                                <th>Prix</th>
+                                <th>Stock</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentProducts">
+                            <tr>
+                                <td colspan="7" class="loading">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/admin-config.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>

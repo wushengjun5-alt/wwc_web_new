@@ -33,6 +33,36 @@ def serve_checkout_page(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_shop_admin_page(request, page='index'):
+    """Serve shop admin HTML pages"""
+    if not page.endswith('.html'):
+        page = page + '.html'
+    admin_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'admin', page)
+    if os.path.exists(admin_path):
+        return FileResponse(open(admin_path, 'rb'), content_type='text/html')
+    # Default to index
+    admin_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'admin', 'index.html')
+    return FileResponse(open(admin_path, 'rb'), content_type='text/html')
+
+
+def serve_shop_admin_static(request, folder, filename):
+    """Serve shop admin static files (CSS, JS)"""
+    file_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'admin', folder, filename)
+    content_types = {
+        '.css': 'text/css',
+        '.js': 'application/javascript',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.svg': 'image/svg+xml',
+    }
+    ext = os.path.splitext(filename)[1]
+    content_type = content_types.get(ext, 'application/octet-stream')
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'), content_type=content_type)
+    from django.http import Http404
+    raise Http404("File not found")
+
+
 urlpatterns = [
     # Root redirect to shop frontend
     path('', RedirectView.as_view(url='/shop/', permanent=False), name='root'),
@@ -42,7 +72,13 @@ urlpatterns = [
     path('shop/product/', serve_product_page, name='shop-product'),
     path('shop/checkout/', serve_checkout_page, name='shop-checkout'),
 
-    # Admin
+    # Shop admin (HTML interface for product management)
+    path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),
+    path('shop/admin/<str:page>', serve_shop_admin_page, name='shop-admin-page'),
+    path('shop/admin/css/<str:filename>', serve_shop_admin_static, {'folder': 'css'}, name='shop-admin-css'),
+    path('shop/admin/js/<str:filename>', serve_shop_admin_static, {'folder': 'js'}, name='shop-admin-js'),
+
+    # Django Admin
     path('admin/', admin.site.urls),
 
     # API v1
