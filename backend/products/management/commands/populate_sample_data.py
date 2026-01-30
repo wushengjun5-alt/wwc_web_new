@@ -3,7 +3,10 @@ Management command to populate sample data for testing the WWC Shop.
 """
 from decimal import Decimal
 from django.core.management.base import BaseCommand
-from products.models import ProductCategory, Producer, Product
+from django.contrib.auth import get_user_model
+from products.models import ProductCategory, Producer, Product, Review
+
+User = get_user_model()
 
 
 class Command(BaseCommand):
@@ -422,7 +425,154 @@ class Command(BaseCommand):
             status = 'Created' if created else 'Updated'
             self.stdout.write(f'  {status}: {product.name} - {product.price_tnd} DT')
 
+        # Create sample users for reviews
+        self.stdout.write('\nCreating sample users for reviews...')
+        sample_users = []
+        users_data = [
+            {'username': 'sarah_m', 'email': 'sarah@example.com', 'first_name': 'Sarah'},
+            {'username': 'ahmed_b', 'email': 'ahmed@example.com', 'first_name': 'Ahmed'},
+            {'username': 'fatima_k', 'email': 'fatima@example.com', 'first_name': 'Fatima'},
+            {'username': 'youssef_n', 'email': 'youssef@example.com', 'first_name': 'Youssef'},
+            {'username': 'nadia_l', 'email': 'nadia@example.com', 'first_name': 'Nadia'},
+            {'username': 'karim_s', 'email': 'karim@example.com', 'first_name': 'Karim'},
+        ]
+        for user_data in users_data:
+            user, created = User.objects.get_or_create(
+                username=user_data['username'],
+                defaults={
+                    'email': user_data['email'],
+                    'first_name': user_data['first_name'],
+                }
+            )
+            sample_users.append(user)
+            if created:
+                user.set_password('samplepassword123')
+                user.save()
+
+        # Create sample reviews
+        self.stdout.write('\nCreating sample reviews...')
+        reviews_data = [
+            # Huile d'Argan reviews
+            {'product_slug': 'huile-argan-pure', 'user': sample_users[0], 'rating': 5,
+             'title': 'Produit exceptionnel!',
+             'comment': 'Cette huile d\'argan est vraiment pure et de très haute qualité. Ma peau est transformée après seulement deux semaines d\'utilisation. Je recommande vivement!',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'huile-argan-pure', 'user': sample_users[1], 'rating': 5,
+             'title': 'Excellent rapport qualité-prix',
+             'comment': 'Très satisfait de mon achat. L\'huile sent bon et s\'absorbe facilement. Et en plus on aide une bonne cause!',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'huile-argan-pure', 'user': sample_users[2], 'rating': 4,
+             'title': 'Bon produit',
+             'comment': 'Bonne huile, j\'aurais aimé un flacon un peu plus grand. Mais la qualité est au rendez-vous.',
+             'is_verified_purchase': True, 'is_approved': True},
+
+            # Savon au Lait de Chèvre reviews
+            {'product_slug': 'savon-lait-chevre', 'user': sample_users[3], 'rating': 5,
+             'title': 'Peau de bébé!',
+             'comment': 'Ce savon est une merveille. Ma peau sensible l\'adore! Plus de rougeurs ni d\'irritations.',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'savon-lait-chevre', 'user': sample_users[4], 'rating': 4,
+             'title': 'Très doux',
+             'comment': 'Savon très doux qui mousse bien. J\'apprécie aussi le fait qu\'il soit artisanal et naturel.',
+             'is_verified_purchase': True, 'is_approved': True},
+
+            # Miel de Forêt Bio reviews
+            {'product_slug': 'miel-foret-bio', 'user': sample_users[0], 'rating': 5,
+             'title': 'Le meilleur miel que j\'ai goûté',
+             'comment': 'Un goût incroyable! On sent vraiment la différence avec le miel industriel. Je ne peux plus m\'en passer.',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'miel-foret-bio', 'user': sample_users[5], 'rating': 5,
+             'title': 'Authentique miel de forêt',
+             'comment': 'Produit d\'excellente qualité, livraison rapide. Mes enfants l\'adorent au petit-déjeuner!',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'miel-foret-bio', 'user': sample_users[2], 'rating': 4,
+             'title': 'Très bon',
+             'comment': 'Miel délicieux et authentique. Prix un peu élevé mais la qualité justifie.',
+             'is_verified_purchase': False, 'is_approved': True},
+
+            # Dattes Deglet Nour reviews
+            {'product_slug': 'dattes-deglet-nour', 'user': sample_users[1], 'rating': 5,
+             'title': 'Dattes exceptionnelles',
+             'comment': 'Les meilleures dattes! Moelleuses et sucrées à souhait. Parfaites pour le ramadan.',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'dattes-deglet-nour', 'user': sample_users[4], 'rating': 5,
+             'title': 'Qualité premium',
+             'comment': 'Vraiment des dattes de première qualité. Emballage soigné, produit frais.',
+             'is_verified_purchase': True, 'is_approved': True},
+
+            # Huile d'Olive Extra Vierge reviews
+            {'product_slug': 'huile-olive-extra-vierge', 'user': sample_users[3], 'rating': 5,
+             'title': 'Un délice',
+             'comment': 'Cette huile d\'olive est fantastique! Goût fruité et légèrement piquant en fin de bouche. Parfaite pour mes salades.',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'huile-olive-extra-vierge', 'user': sample_users[5], 'rating': 4,
+             'title': 'Bonne huile tunisienne',
+             'comment': 'Je suis content de retrouver le goût de l\'huile d\'olive de chez nous. À recommander!',
+             'is_verified_purchase': True, 'is_approved': True},
+
+            # Bougie Parfumée reviews
+            {'product_slug': 'bougie-fleur-oranger', 'user': sample_users[0], 'rating': 5,
+             'title': 'Parfum envoûtant',
+             'comment': 'Le parfum de fleur d\'oranger est absolument divin! Ça me rappelle le jardin de ma grand-mère en Tunisie.',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'bougie-fleur-oranger', 'user': sample_users[2], 'rating': 4,
+             'title': 'Belle bougie',
+             'comment': 'Jolie présentation et bon parfum. La bougie brûle bien et longtemps.',
+             'is_verified_purchase': True, 'is_approved': True},
+
+            # Coffret Découverte Soins reviews
+            {'product_slug': 'coffret-decouverte-soins', 'user': sample_users[4], 'rating': 5,
+             'title': 'Cadeau parfait!',
+             'comment': 'J\'ai offert ce coffret à ma mère pour son anniversaire. Elle a adoré! Tous les produits sont de qualité.',
+             'is_verified_purchase': True, 'is_approved': True},
+            {'product_slug': 'coffret-decouverte-soins', 'user': sample_users[1], 'rating': 5,
+             'title': 'Excellente idée cadeau',
+             'comment': 'Coffret très bien composé avec des produits variés. Le packaging est aussi très soigné.',
+             'is_verified_purchase': True, 'is_approved': True},
+
+            # Coffret Saveurs de Tunisie reviews
+            {'product_slug': 'coffret-saveurs-tunisie', 'user': sample_users[5], 'rating': 5,
+             'title': 'Un voyage gustatif',
+             'comment': 'Ce coffret est une vraie pépite! Tous les produits sont délicieux et authentiques. C\'est comme si j\'étais en Tunisie.',
+             'is_verified_purchase': True, 'is_approved': True},
+
+            # Crème Hydratante reviews
+            {'product_slug': 'creme-hydratante-olive', 'user': sample_users[3], 'rating': 4,
+             'title': 'Très hydratante',
+             'comment': 'Cette crème nourrit bien ma peau sèche. Le parfum est discret et agréable.',
+             'is_verified_purchase': True, 'is_approved': True},
+
+            # Tisane Détox reviews
+            {'product_slug': 'tisane-detox', 'user': sample_users[0], 'rating': 4,
+             'title': 'Bonne tisane',
+             'comment': 'Goût agréable et effet détox ressenti. Je la prends tous les soirs avant de dormir.',
+             'is_verified_purchase': True, 'is_approved': True},
+        ]
+
+        reviews_created = 0
+        for review_data in reviews_data:
+            try:
+                product = Product.objects.get(slug=review_data['product_slug'])
+                review, created = Review.objects.get_or_create(
+                    product=product,
+                    user=review_data['user'],
+                    defaults={
+                        'rating': review_data['rating'],
+                        'title': review_data['title'],
+                        'comment': review_data['comment'],
+                        'is_verified_purchase': review_data['is_verified_purchase'],
+                        'is_approved': review_data['is_approved'],
+                    }
+                )
+                if created:
+                    reviews_created += 1
+            except Product.DoesNotExist:
+                self.stdout.write(f'  Product {review_data["product_slug"]} not found, skipping review')
+
+        self.stdout.write(f'  Created {reviews_created} reviews')
+
         self.stdout.write(self.style.SUCCESS(f'\nSample data created successfully!'))
         self.stdout.write(f'  - {ProductCategory.objects.count()} categories')
         self.stdout.write(f'  - {Producer.objects.count()} producers')
         self.stdout.write(f'  - {Product.objects.count()} products')
+        self.stdout.write(f'  - {Review.objects.count()} reviews')

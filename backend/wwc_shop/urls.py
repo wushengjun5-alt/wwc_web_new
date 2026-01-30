@@ -21,12 +21,19 @@ def serve_frontend(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_product_page(request):
+    """Serve the product detail HTML file"""
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'product.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
 urlpatterns = [
     # Root redirect to shop frontend
     path('', RedirectView.as_view(url='/shop/', permanent=False), name='root'),
 
     # Shop frontend (served by Django to avoid CORS issues)
     path('shop/', serve_frontend, name='shop'),
+    path('shop/product/', serve_product_page, name='shop-product'),
 
     # Admin
     path('admin/', admin.site.urls),

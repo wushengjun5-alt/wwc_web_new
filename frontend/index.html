@@ -1464,7 +1464,7 @@
                 }
 
                 container.innerHTML = products.map(product => `
-                    <div class="product-card" onclick="openProductDetail('${product.slug}')" style="cursor: pointer;">
+                    <div class="product-card" onclick="window.location.href='/shop/product/?slug=${product.slug}'" style="cursor: pointer;">
                         <div class="product-image">🧴</div>
                         <div class="product-info">
                             <h3 class="product-name">${product.name}</h3>
