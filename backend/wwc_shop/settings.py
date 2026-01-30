@@ -172,6 +172,18 @@ else:
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Session Configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400 * 7  # 7 days
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_SAVE_EVERY_REQUEST = True
+
+# In DEBUG mode, ensure cookies work on localhost
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
 # Stripe Configuration
 # Get your test keys from https://dashboard.stripe.com/test/apikeys
 # For testing, use keys starting with pk_test_ and sk_test_

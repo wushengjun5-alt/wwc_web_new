@@ -550,6 +550,7 @@ class Command(BaseCommand):
         ]
 
         reviews_created = 0
+        products_to_update = set()
         for review_data in reviews_data:
             try:
                 product = Product.objects.get(slug=review_data['product_slug'])
@@ -566,10 +567,16 @@ class Command(BaseCommand):
                 )
                 if created:
                     reviews_created += 1
+                    products_to_update.add(product)
             except Product.DoesNotExist:
                 self.stdout.write(f'  Product {review_data["product_slug"]} not found, skipping review')
 
+        # Update product ratings
         self.stdout.write(f'  Created {reviews_created} reviews')
+        self.stdout.write(f'  Updating product ratings...')
+        for product in products_to_update:
+            product.update_rating()
+            self.stdout.write(f'    Updated: {product.name} - {product.average_rating}/5 ({product.review_count} reviews)')
 
         self.stdout.write(self.style.SUCCESS(f'\nSample data created successfully!'))
         self.stdout.write(f'  - {ProductCategory.objects.count()} categories')

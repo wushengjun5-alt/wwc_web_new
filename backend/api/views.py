@@ -312,12 +312,17 @@ class CartViewSet(viewsets.ViewSet):
 class CheckoutView(APIView):
     """Handle checkout process"""
     permission_classes = [AllowAny]
+    authentication_classes = []  # Disable authentication to avoid CSRF issues for guest checkout
 
     def post(self, request):
         """Create order from cart"""
         serializer = CheckoutSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Ensure session exists
+        if not request.session.session_key:
+            request.session.create()
 
         # Get cart
         if request.user.is_authenticated:
