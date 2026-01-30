@@ -977,6 +977,23 @@ body {
     padding: 3px;
 }
 
+.pending-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--admin-warning);
+    color: white;
+    font-size: 10px;
+    text-align: center;
+    padding: 3px;
+}
+
+.image-item.pending {
+    border-color: var(--admin-warning);
+    border-style: dashed;
+}
+
 .upload-area {
     border: 2px dashed var(--admin-border);
     border-radius: var(--radius);

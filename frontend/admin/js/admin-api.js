@@ -19,7 +19,27 @@ const AdminAPI = {
                 throw new Error('Authentification requise. Vérifiez votre clé API.');
             }
             const error = await response.json().catch(() => ({}));
-            throw new Error(error.detail || error.message || `Erreur ${response.status}`);
+
+            // Parse Django REST Framework validation errors
+            let errorMessage = '';
+            if (error.detail) {
+                errorMessage = error.detail;
+            } else if (error.non_field_errors) {
+                errorMessage = error.non_field_errors.join(', ');
+            } else if (typeof error === 'object') {
+                // Field-specific errors
+                const fieldErrors = [];
+                for (const [field, messages] of Object.entries(error)) {
+                    const fieldName = field.replace(/_/g, ' ');
+                    const msgList = Array.isArray(messages) ? messages : [messages];
+                    fieldErrors.push(`${fieldName}: ${msgList.join(', ')}`);
+                }
+                errorMessage = fieldErrors.join('\n') || `Erreur ${response.status}`;
+            } else {
+                errorMessage = `Erreur ${response.status}`;
+            }
+
+            throw new Error(errorMessage);
         }
 
         AdminConfig.updateApiStatus('connected');

@@ -181,6 +181,26 @@ class AdminProductCreateUpdateSerializer(serializers.ModelSerializer):
     Serializer for creating and updating products.
     Handles validation and auto-slug generation.
     """
+    # Make optional fields explicitly optional
+    description = serializers.CharField(required=False, allow_blank=True, default='')
+    description_en = serializers.CharField(required=False, allow_blank=True, default='')
+    description_ar = serializers.CharField(required=False, allow_blank=True, default='')
+    short_description = serializers.CharField(required=False, allow_blank=True, default='')
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=ProductCategory.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    producer = serializers.PrimaryKeyRelatedField(
+        queryset=Producer.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    price_tnd = serializers.DecimalField(
+        max_digits=10, decimal_places=2,
+        required=False,
+        default=0
+    )
 
     class Meta:
         model = Product
@@ -295,8 +315,18 @@ class AdminProductCreateUpdateSerializer(serializers.ModelSerializer):
         if not data.get('sku'):
             import uuid
             category = data.get('category')
-            prefix = category.slug[:4].upper() if category else 'PROD'
+            prefix = category.slug[:4].upper() if category and hasattr(category, 'slug') else 'PROD'
             data['sku'] = f"{prefix}-{uuid.uuid4().hex[:6].upper()}"
+
+        # Set default category if not provided (use first active category)
+        if not data.get('category') and not self.instance:
+            default_category = ProductCategory.objects.filter(is_active=True).first()
+            if default_category:
+                data['category'] = default_category
+
+        # Ensure description has a default value
+        if not data.get('description'):
+            data['description'] = data.get('name', 'Nouveau produit')
 
         return data
 

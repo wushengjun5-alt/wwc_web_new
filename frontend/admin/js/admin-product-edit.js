@@ -5,6 +5,7 @@
 let productId = null;
 let productData = null;
 let isNewProduct = true;
+let pendingImages = []; // Images to upload after product creation
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Get product ID from URL
@@ -33,8 +34,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     } else {
         // New product setup
         document.getElementById('pageTitle').textContent = 'Nouveau Produit';
-        document.getElementById('imagesHint').style.display = 'block';
-        document.getElementById('uploadArea').style.display = 'none';
+        // Show upload area even for new products
+        document.getElementById('imagesHint').style.display = 'none';
+        document.getElementById('uploadArea').style.display = 'block';
     }
 });
 
@@ -90,7 +92,7 @@ function setupEventListeners() {
         document.getElementById('imageInput').click();
     });
 
-    document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+    document.getElementById('imageInput').addEventListener('change', handleImageSelect);
 
     // Drag and drop
     const uploadArea = document.getElementById('uploadArea');
@@ -108,7 +110,7 @@ function setupEventListeners() {
         this.classList.remove('dragover');
         const files = e.dataTransfer.files;
         if (files.length) {
-            uploadImages(files);
+            handleFilesSelected(files);
         }
     });
 
@@ -184,7 +186,6 @@ async function loadProduct() {
         fillFormField('price_tnd', productData.price_tnd);
         fillFormField('price_eur', productData.price_eur);
         fillFormField('compare_at_price', productData.compare_at_price_tnd);
-        fillFormField('cost_price', productData.cost_price);
 
         if (productData.b2b_price_tnd) {
             document.getElementById('has_b2b_pricing').checked = true;
@@ -226,8 +227,8 @@ async function loadProduct() {
         document.getElementById('createdAt').textContent = AdminConfig.formatDate(productData.created_at);
         document.getElementById('updatedAt').textContent = AdminConfig.formatDate(productData.updated_at);
 
-        // Load images
-        renderImages(productData.images || []);
+        // Load images (both saved and pending)
+        renderAllImages();
 
         // Update impact preview
         updateImpactPreview();
@@ -290,14 +291,22 @@ async function saveProduct(publish = true) {
             // Update URL without reload
             window.history.replaceState({}, '', `product-edit.html?id=${productId}`);
 
-            // Enable image upload
-            document.getElementById('imagesHint').style.display = 'none';
-            document.getElementById('uploadArea').style.display = 'block';
-
             document.getElementById('pageTitle').textContent = `Modifier: ${result.name}`;
             document.getElementById('previewBtn').style.display = 'inline-flex';
+
+            // Upload pending images after product creation
+            if (pendingImages.length > 0) {
+                AdminConfig.showToast('Téléchargement des images...', 'success');
+                await uploadPendingImages();
+            }
         } else {
             result = await AdminAPI.updateProduct(productId, formData);
+
+            // Upload any new pending images
+            if (pendingImages.length > 0) {
+                AdminConfig.showToast('Téléchargement des images...', 'success');
+                await uploadPendingImages();
+            }
         }
 
         AdminConfig.showToast('Produit sauvegardé', 'success');
@@ -318,16 +327,14 @@ async function saveProduct(publish = true) {
 function collectFormData() {
     const data = {
         name: document.getElementById('name').value,
-        description: document.getElementById('description').value || null,
-        short_description: document.getElementById('short_description').value || null,
+        description: document.getElementById('description').value || '',
+        short_description: document.getElementById('short_description').value || '',
 
-        name_en: document.getElementById('name_en').value || null,
-        description_en: document.getElementById('description_en').value || null,
-        short_description_en: document.getElementById('short_description_en').value || null,
+        name_en: document.getElementById('name_en').value || '',
+        description_en: document.getElementById('description_en').value || '',
 
-        name_ar: document.getElementById('name_ar').value || null,
-        description_ar: document.getElementById('description_ar').value || null,
-        short_description_ar: document.getElementById('short_description_ar').value || null,
+        name_ar: document.getElementById('name_ar').value || '',
+        description_ar: document.getElementById('description_ar').value || '',
 
         price_tnd: parseFloat(document.getElementById('price_tnd').value) || 0,
         price_eur: parseFloat(document.getElementById('price_eur').value) || null,
@@ -367,47 +374,105 @@ function collectFormData() {
 
 // === IMAGES ===
 
-function renderImages(images) {
+function renderAllImages() {
     const grid = document.getElementById('imagesGrid');
+    let html = '';
 
-    if (!images.length) {
-        grid.innerHTML = '';
+    // Render saved images (from API)
+    const savedImages = productData?.images || [];
+    savedImages.forEach(img => {
+        html += `
+            <div class="image-item ${img.is_primary ? 'primary' : ''}" data-id="${img.id}">
+                <img src="${img.image_url || img.image}" alt="">
+                <div class="image-actions">
+                    ${!img.is_primary ? `
+                        <button type="button" class="image-set-primary" onclick="setPrimaryImage(${img.id})" title="Définir comme principale">★</button>
+                    ` : ''}
+                    <button type="button" class="image-delete" onclick="deleteImage(${img.id})" title="Supprimer">×</button>
+                </div>
+                ${img.is_primary ? '<div class="primary-badge">Principale</div>' : ''}
+            </div>
+        `;
+    });
+
+    // Render pending images (not yet uploaded)
+    pendingImages.forEach((file, index) => {
+        html += `
+            <div class="image-item pending" data-pending-index="${index}">
+                <img src="${file.preview}" alt="">
+                <div class="image-actions">
+                    <button type="button" class="image-delete" onclick="removePendingImage(${index})" title="Retirer">×</button>
+                </div>
+                <div class="pending-badge">En attente</div>
+            </div>
+        `;
+    });
+
+    grid.innerHTML = html;
+}
+
+function handleImageSelect(e) {
+    const files = e.target.files;
+    if (files.length) {
+        handleFilesSelected(files);
+    }
+    // Reset input so same file can be selected again
+    e.target.value = '';
+}
+
+function handleFilesSelected(files) {
+    // If product exists, upload directly
+    if (productId && !isNewProduct) {
+        uploadImages(files);
         return;
     }
 
-    grid.innerHTML = images.map(img => `
-        <div class="image-item ${img.is_primary ? 'primary' : ''}" data-id="${img.id}">
-            <img src="${img.image_url || img.image}" alt="">
-            <div class="image-actions">
-                ${!img.is_primary ? `
-                    <button type="button" class="image-set-primary" onclick="setPrimaryImage(${img.id})" title="Définir comme principale">★</button>
-                ` : ''}
-                <button type="button" class="image-delete" onclick="deleteImage(${img.id})" title="Supprimer">×</button>
-            </div>
-            ${img.is_primary ? '<div class="primary-badge">Principale</div>' : ''}
-        </div>
-    `).join('');
+    // Otherwise, add to pending images
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+
+        // Create preview URL
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            file.preview = e.target.result;
+            pendingImages.push(file);
+            renderAllImages();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    AdminConfig.showToast('Image(s) ajoutée(s). Elles seront téléchargées à la sauvegarde.', 'success');
 }
 
-function handleImageUpload(e) {
-    const files = e.target.files;
-    if (files.length) {
-        uploadImages(files);
+function removePendingImage(index) {
+    pendingImages.splice(index, 1);
+    renderAllImages();
+}
+
+async function uploadPendingImages() {
+    const imagesToUpload = [...pendingImages];
+    pendingImages = []; // Clear pending
+
+    for (let i = 0; i < imagesToUpload.length; i++) {
+        const file = imagesToUpload[i];
+        try {
+            const isPrimary = i === 0 && (!productData?.images || productData.images.length === 0);
+            await AdminAPI.uploadProductImage(productId, file, isPrimary);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            AdminConfig.showToast(`Erreur upload: ${error.message}`, 'error');
+        }
     }
 }
 
 async function uploadImages(files) {
-    if (!productId) {
-        AdminConfig.showToast('Sauvegardez le produit d\'abord', 'warning');
-        return;
-    }
-
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
         try {
-            const result = await AdminAPI.uploadProductImage(productId, file, i === 0 && !productData.images?.length);
-            AdminConfig.showToast(`Image téléchargée`, 'success');
+            const isPrimary = i === 0 && (!productData?.images || productData.images.length === 0);
+            await AdminAPI.uploadProductImage(productId, file, isPrimary);
+            AdminConfig.showToast('Image téléchargée', 'success');
         } catch (error) {
             AdminConfig.showToast(`Erreur: ${error.message}`, 'error');
         }
