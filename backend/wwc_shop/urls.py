@@ -27,6 +27,12 @@ def serve_product_page(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_checkout_page(request):
+    """Serve the checkout HTML file"""
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'checkout.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
 urlpatterns = [
     # Root redirect to shop frontend
     path('', RedirectView.as_view(url='/shop/', permanent=False), name='root'),
@@ -34,6 +40,7 @@ urlpatterns = [
     # Shop frontend (served by Django to avoid CORS issues)
     path('shop/', serve_frontend, name='shop'),
     path('shop/product/', serve_product_page, name='shop-product'),
+    path('shop/checkout/', serve_checkout_page, name='shop-checkout'),
 
     # Admin
     path('admin/', admin.site.urls),
