@@ -120,7 +120,7 @@ const AdminAPI = {
 
     // Bulk action on products
     async bulkAction(action, productIds) {
-        return this.post('/admin/products/bulk_action/', {
+        return this.post('/admin/products/bulk/', {
             action: action,
             product_ids: productIds
         });
@@ -135,20 +135,18 @@ const AdminAPI = {
     async uploadProductImage(productId, file, isPrimary = false) {
         const formData = new FormData();
         formData.append('image', file);
-        formData.append('is_primary', isPrimary);
-        return this.upload(`/admin/products/${productId}/upload_image/`, formData);
+        formData.append('is_primary', isPrimary.toString());
+        return this.upload(`/admin/products/${productId}/images/`, formData);
     },
 
     // Delete product image
     async deleteProductImage(productId, imageId) {
-        return this.delete(`/admin/products/${productId}/delete_image/?image_id=${imageId}`);
+        return this.delete(`/admin/products/${productId}/images/${imageId}/`);
     },
 
     // Set primary image
     async setPrimaryImage(productId, imageId) {
-        return this.post(`/admin/products/${productId}/set_primary_image/`, {
-            image_id: imageId
-        });
+        return this.patch(`/admin/products/${productId}/images/${imageId}/primary/`, {});
     },
 
     // === CATEGORIES ===

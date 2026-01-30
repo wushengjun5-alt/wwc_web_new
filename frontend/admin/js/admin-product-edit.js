@@ -183,7 +183,7 @@ async function loadProduct() {
 
         fillFormField('price_tnd', productData.price_tnd);
         fillFormField('price_eur', productData.price_eur);
-        fillFormField('compare_at_price', productData.compare_at_price);
+        fillFormField('compare_at_price', productData.compare_at_price_tnd);
         fillFormField('cost_price', productData.cost_price);
 
         if (productData.b2b_price_tnd) {
@@ -204,9 +204,11 @@ async function loadProduct() {
         fillFormField('is_active', productData.is_active ? 'true' : 'false');
 
         document.getElementById('is_featured').checked = productData.is_featured;
-        document.getElementById('is_new').checked = productData.is_new;
-        document.getElementById('is_bestseller').checked = productData.is_bestseller;
-        document.getElementById('is_eco_friendly').checked = productData.is_eco_friendly;
+        document.getElementById('is_natural').checked = productData.is_natural;
+        document.getElementById('is_organic').checked = productData.is_organic;
+        document.getElementById('is_handmade').checked = productData.is_handmade;
+        document.getElementById('is_vegan').checked = productData.is_vegan;
+        document.getElementById('is_cruelty_free').checked = productData.is_cruelty_free;
 
         fillFormField('impact_quantity', productData.impact_quantity);
         fillFormField('impact_item', productData.impact_item);
@@ -329,8 +331,7 @@ function collectFormData() {
 
         price_tnd: parseFloat(document.getElementById('price_tnd').value) || 0,
         price_eur: parseFloat(document.getElementById('price_eur').value) || null,
-        compare_at_price: parseFloat(document.getElementById('compare_at_price').value) || null,
-        cost_price: parseFloat(document.getElementById('cost_price').value) || null,
+        compare_at_price_tnd: parseFloat(document.getElementById('compare_at_price').value) || null,
 
         sku: document.getElementById('sku').value || null,
         stock_quantity: parseInt(document.getElementById('stock_quantity').value) || 0,
@@ -342,9 +343,11 @@ function collectFormData() {
 
         is_active: document.getElementById('is_active').value === 'true',
         is_featured: document.getElementById('is_featured').checked,
-        is_new: document.getElementById('is_new').checked,
-        is_bestseller: document.getElementById('is_bestseller').checked,
-        is_eco_friendly: document.getElementById('is_eco_friendly').checked,
+        is_natural: document.getElementById('is_natural').checked,
+        is_organic: document.getElementById('is_organic').checked,
+        is_handmade: document.getElementById('is_handmade').checked,
+        is_vegan: document.getElementById('is_vegan').checked,
+        is_cruelty_free: document.getElementById('is_cruelty_free').checked,
 
         impact_quantity: parseInt(document.getElementById('impact_quantity').value) || null,
         impact_item: document.getElementById('impact_item').value || null,
@@ -374,7 +377,7 @@ function renderImages(images) {
 
     grid.innerHTML = images.map(img => `
         <div class="image-item ${img.is_primary ? 'primary' : ''}" data-id="${img.id}">
-            <img src="${img.image}" alt="">
+            <img src="${img.image_url || img.image}" alt="">
             <div class="image-actions">
                 ${!img.is_primary ? `
                     <button type="button" class="image-set-primary" onclick="setPrimaryImage(${img.id})" title="Définir comme principale">★</button>

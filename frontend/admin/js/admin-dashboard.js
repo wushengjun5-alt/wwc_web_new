@@ -29,11 +29,11 @@ async function loadStats() {
         const stats = await AdminAPI.getStats();
 
         document.getElementById('statTotalProducts').textContent = stats.total_products || 0;
-        document.getElementById('statPublished').textContent = stats.published || 0;
-        document.getElementById('statDraft').textContent = stats.draft || 0;
-        document.getElementById('statLowStock').textContent = stats.low_stock || 0;
-        document.getElementById('statMissingEn').textContent = stats.missing_en || 0;
-        document.getElementById('statMissingAr').textContent = stats.missing_ar || 0;
+        document.getElementById('statPublished').textContent = stats.published_products || 0;
+        document.getElementById('statDraft').textContent = stats.draft_products || 0;
+        document.getElementById('statLowStock').textContent = stats.low_stock_products || 0;
+        document.getElementById('statMissingEn').textContent = stats.missing_english || 0;
+        document.getElementById('statMissingAr').textContent = stats.missing_arabic || 0;
 
     } catch (error) {
         console.error('Error loading stats:', error);
@@ -63,8 +63,8 @@ async function loadRecentProducts() {
         tbody.innerHTML = products.map(product => `
             <tr>
                 <td>
-                    ${product.primary_image
-                        ? `<img src="${product.primary_image}" alt="" class="product-thumb">`
+                    ${product.primary_image_url
+                        ? `<img src="${product.primary_image_url}" alt="" class="product-thumb">`
                         : '<div class="no-image">📦</div>'
                     }
                 </td>

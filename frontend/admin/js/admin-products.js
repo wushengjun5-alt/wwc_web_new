@@ -190,8 +190,8 @@ function renderProductRow(product) {
                     ${selectedProducts.has(product.id) ? 'checked' : ''}>
             </td>
             <td>
-                ${product.primary_image
-                    ? `<img src="${product.primary_image}" alt="" class="product-thumb">`
+                ${product.primary_image_url
+                    ? `<img src="${product.primary_image_url}" alt="" class="product-thumb">`
                     : '<div class="no-image">📦</div>'
                 }
             </td>
