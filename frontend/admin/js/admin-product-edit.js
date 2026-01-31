@@ -248,7 +248,7 @@ async function loadProduct() {
 
     } catch (error) {
         console.error('Error loading product:', error);
-        AdminConfig.showToast('Erreur de chargement du produit', 'error');
+        AdminConfig.showToast(`Erreur de chargement: ${error.message}`, 'error');
     }
 }
 
