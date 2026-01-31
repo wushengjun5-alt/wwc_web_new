@@ -490,15 +490,30 @@ class AdminProductCreateUpdateSerializer(serializers.ModelSerializer):
             prefix = category.slug[:4].upper() if category and hasattr(category, 'slug') else 'PROD'
             data['sku'] = f"{prefix}-{uuid.uuid4().hex[:6].upper()}"
 
-        # Set default category if not provided (use first active category)
-        if not data.get('category') and not self.instance:
-            default_category = ProductCategory.objects.filter(is_active=True).first()
-            if default_category:
-                data['category'] = default_category
+        # Set default category if not provided (model requires category)
+        if not data.get('category'):
+            # For updates, keep existing category
+            if self.instance and self.instance.category:
+                data['category'] = self.instance.category
+            else:
+                # For creates, use first active category
+                default_category = ProductCategory.objects.filter(is_active=True).first()
+                if default_category:
+                    data['category'] = default_category
 
         # Ensure description has a default value
         if not data.get('description'):
             data['description'] = data.get('name', 'Nouveau produit')
+
+        # Provide defaults for required impact fields (model requires these)
+        if not data.get('impact_description'):
+            data['impact_description'] = 'Impact social à définir'
+        if not data.get('impact_school'):
+            data['impact_school'] = 'École à définir'
+        if not data.get('impact_quantity'):
+            data['impact_quantity'] = 1
+        if not data.get('impact_item'):
+            data['impact_item'] = 'article(s)'
 
         return data
 
