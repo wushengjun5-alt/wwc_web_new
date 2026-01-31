@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         AdminConfig.updateApiStatus('error', 'Clé API requise');
         document.getElementById('categoriesBody').innerHTML = `
             <tr>
-                <td colspan="9" class="no-products">
+                <td colspan="10" class="no-products">
                     <p>Entrez votre clé API admin pour gérer les catégories.</p>
                     <p style="margin-top: 10px; color: var(--admin-text-light);">
                         Clé par défaut: <code>wwc-admin-dev-key-change-in-production</code>
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 async function loadCategories() {
     const tbody = document.getElementById('categoriesBody');
-    tbody.innerHTML = '<tr><td colspan="9" class="loading">Chargement...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="loading">Chargement...</td></tr>';
 
     try {
         categories = await AdminAPI.getCategoriesAdmin();
@@ -37,7 +37,7 @@ async function loadCategories() {
         if (!categories.length) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="no-products">
+                    <td colspan="10" class="no-products">
                         <p>Aucune catégorie.</p>
                         <button class="btn btn-primary" onclick="showAddCategoryModal()">Créer une catégorie</button>
                     </td>
@@ -77,7 +77,7 @@ async function loadCategories() {
         console.error('Error loading categories:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="loading">Erreur: ${error.message}</td>
+                <td colspan="10" class="loading">Erreur: ${error.message}</td>
             </tr>
         `;
     }
@@ -103,6 +103,7 @@ function editCategory(id) {
     document.getElementById('catNameAr').value = cat.name_ar || '';
     document.getElementById('catIcon').value = cat.icon || '';
     document.getElementById('catDescription').value = cat.description || '';
+    document.getElementById('catSlug').value = cat.slug || '';
     document.getElementById('catOrder').value = cat.order || 0;
     document.getElementById('catActive').value = cat.is_active ? 'true' : 'false';
     document.getElementById('catShowInMenu').value = cat.show_in_menu ? 'true' : 'false';
@@ -118,10 +119,12 @@ async function saveCategory(e) {
     e.preventDefault();
 
     const id = document.getElementById('categoryId').value;
+    const slugValue = document.getElementById('catSlug').value.trim();
     const data = {
         name: document.getElementById('catName').value,
         name_en: document.getElementById('catNameEn').value || null,
         name_ar: document.getElementById('catNameAr').value || null,
+        slug: slugValue || '',  // Empty string will trigger auto-generation
         icon: document.getElementById('catIcon').value || null,
         description: document.getElementById('catDescription').value || '',
         order: parseInt(document.getElementById('catOrder').value) || 0,

@@ -98,6 +98,7 @@ function editProducer(id) {
     document.getElementById('producerId').value = prod.id;
     document.getElementById('prodName').value = prod.name || '';
     document.getElementById('prodLocation').value = prod.location || '';
+    document.getElementById('prodSlug').value = prod.slug || '';
     document.getElementById('prodBio').value = prod.bio || '';
     document.getElementById('prodActive').value = prod.is_active ? 'true' : 'false';
 
@@ -112,9 +113,11 @@ async function saveProducer(e) {
     e.preventDefault();
 
     const id = document.getElementById('producerId').value;
+    const slugValue = document.getElementById('prodSlug').value.trim();
     const data = {
         name: document.getElementById('prodName').value,
         location: document.getElementById('prodLocation').value || '',
+        slug: slugValue || '',  // Empty string will trigger auto-generation
         bio: document.getElementById('prodBio').value || '',
         is_active: document.getElementById('prodActive').value === 'true'
     };

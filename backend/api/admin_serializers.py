@@ -45,6 +45,7 @@ class AdminCategoryListSerializer(serializers.ModelSerializer):
 class AdminCategoryManageSerializer(serializers.ModelSerializer):
     """Full serializer for category management"""
     products_count = serializers.SerializerMethodField()
+    slug = serializers.SlugField(required=False, allow_blank=True)
 
     class Meta:
         model = ProductCategory
@@ -98,6 +99,7 @@ class AdminProducerManageSerializer(serializers.ModelSerializer):
     """Full serializer for producer management"""
     products_count = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+    slug = serializers.SlugField(required=False, allow_blank=True)
 
     class Meta:
         model = Producer
