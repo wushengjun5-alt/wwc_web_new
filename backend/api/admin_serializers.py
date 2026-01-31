@@ -280,12 +280,29 @@ class AdminProductCreateUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating and updating products.
     Handles validation and auto-slug generation.
+    Only 'name' is required - all other fields are optional.
     """
-    # Make optional fields explicitly optional
+    # Make all fields optional except name
+    slug = serializers.SlugField(required=False, allow_blank=True)
+    sku = serializers.CharField(required=False, allow_blank=True)
+
+    # Names - only French is required
+    name_en = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    name_ar = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    # Descriptions
     description = serializers.CharField(required=False, allow_blank=True, default='')
-    description_en = serializers.CharField(required=False, allow_blank=True, default='')
-    description_ar = serializers.CharField(required=False, allow_blank=True, default='')
-    short_description = serializers.CharField(required=False, allow_blank=True, default='')
+    description_en = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    description_ar = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    short_description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    # Additional content
+    ingredients = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    ingredients_en = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    usage = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    usage_en = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    # Categorization
     category = serializers.PrimaryKeyRelatedField(
         queryset=ProductCategory.objects.all(),
         required=False,
@@ -296,11 +313,46 @@ class AdminProductCreateUpdateSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+    unit_type = serializers.CharField(required=False, allow_blank=True, default='unit')
+
+    # Pricing
     price_tnd = serializers.DecimalField(
         max_digits=10, decimal_places=2,
         required=False,
         default=0
     )
+    price_eur = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
+    compare_at_price_tnd = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
+    b2b_min_quantity = serializers.IntegerField(required=False, allow_null=True)
+    b2b_price_tnd = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
+    b2b_price_eur = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
+
+    # Impact - all optional
+    impact_description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    impact_description_en = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    impact_description_ar = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    impact_school = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    impact_quantity = serializers.IntegerField(required=False, allow_null=True)
+    impact_item = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    impact_item_en = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    # Inventory
+    stock_quantity = serializers.IntegerField(required=False, default=0)
+    track_inventory = serializers.BooleanField(required=False, default=True)
+    low_stock_threshold = serializers.IntegerField(required=False, default=5)
+    allow_backorder = serializers.BooleanField(required=False, default=False)
+
+    # Attributes
+    weight = serializers.DecimalField(max_digits=8, decimal_places=2, required=False, allow_null=True)
+    dimensions = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    # SEO - all optional
+    meta_title = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    meta_description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    # Status
+    is_active = serializers.BooleanField(required=False, default=False)
+    is_featured = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = Product
