@@ -135,14 +135,21 @@ async function loadCategories() {
         const categories = await AdminAPI.getCategories();
         const select = document.getElementById('category');
 
+        if (!categories || categories.length === 0) {
+            console.warn('No categories found');
+            AdminConfig.showToast('Aucune catégorie trouvée. Créez-en une d\'abord.', 'warning');
+            return;
+        }
+
         categories.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat.id;
-            option.textContent = cat.name;
+            option.textContent = cat.full_name || cat.name;
             select.appendChild(option);
         });
     } catch (error) {
         console.error('Error loading categories:', error);
+        AdminConfig.showToast('Erreur chargement catégories: ' + error.message, 'error');
     }
 }
 
@@ -150,6 +157,11 @@ async function loadProducers() {
     try {
         const producers = await AdminAPI.getProducers();
         const select = document.getElementById('producer');
+
+        if (!producers || producers.length === 0) {
+            console.warn('No producers found');
+            return;
+        }
 
         producers.forEach(prod => {
             const option = document.createElement('option');
@@ -159,6 +171,7 @@ async function loadProducers() {
         });
     } catch (error) {
         console.error('Error loading producers:', error);
+        AdminConfig.showToast('Erreur chargement producteurs: ' + error.message, 'error');
     }
 }
 
@@ -503,3 +516,8 @@ async function setPrimaryImage(imageId) {
         AdminConfig.showToast(error.message, 'error');
     }
 }
+
+// Expose functions to global scope for onclick handlers
+window.setPrimaryImage = setPrimaryImage;
+window.deleteImage = deleteImage;
+window.removePendingImage = removePendingImage;

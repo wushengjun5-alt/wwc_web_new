@@ -175,10 +175,42 @@ const AdminAPI = {
         return this.get('/admin/categories/');
     },
 
+    async getCategoriesAdmin() {
+        return this.get('/admin/categories/manage/');
+    },
+
+    async createCategory(data) {
+        return this.post('/admin/categories/manage/', data);
+    },
+
+    async updateCategory(id, data) {
+        return this.patch(`/admin/categories/manage/${id}/`, data);
+    },
+
+    async deleteCategory(id) {
+        return this.delete(`/admin/categories/manage/${id}/`);
+    },
+
     // === PRODUCERS ===
 
     async getProducers() {
         return this.get('/admin/producers/');
+    },
+
+    async getProducersAdmin() {
+        return this.get('/admin/producers/manage/');
+    },
+
+    async createProducer(data) {
+        return this.post('/admin/producers/manage/', data);
+    },
+
+    async updateProducer(id, data) {
+        return this.patch(`/admin/producers/manage/${id}/`, data);
+    },
+
+    async deleteProducer(id) {
+        return this.delete(`/admin/producers/manage/${id}/`);
     },
 
     // === STATS ===

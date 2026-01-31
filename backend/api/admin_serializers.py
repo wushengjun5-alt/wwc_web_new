@@ -42,12 +42,99 @@ class AdminCategoryListSerializer(serializers.ModelSerializer):
         return obj.name
 
 
+class AdminCategoryManageSerializer(serializers.ModelSerializer):
+    """Full serializer for category management"""
+    products_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProductCategory
+        fields = [
+            'id', 'name', 'name_en', 'name_ar', 'slug', 'description',
+            'description_en', 'description_ar', 'icon', 'image', 'parent',
+            'order', 'is_active', 'show_in_menu', 'products_count',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'products_count']
+
+    def get_products_count(self, obj):
+        return obj.products.count()
+
+    def validate_slug(self, value):
+        if value:
+            from django.utils.text import slugify
+            value = slugify(value)
+            queryset = ProductCategory.objects.filter(slug=value)
+            if self.instance:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise serializers.ValidationError("Ce slug existe déjà.")
+        return value
+
+    def validate(self, data):
+        # Auto-generate slug if not provided
+        if not data.get('slug') and data.get('name'):
+            from django.utils.text import slugify
+            base_slug = slugify(data['name'])
+            slug = base_slug
+            counter = 1
+            while ProductCategory.objects.filter(slug=slug).exclude(
+                pk=self.instance.pk if self.instance else None
+            ).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            data['slug'] = slug
+        return data
+
+
 class AdminProducerListSerializer(serializers.ModelSerializer):
     """Lightweight producer serializer for dropdown selections"""
 
     class Meta:
         model = Producer
         fields = ['id', 'name', 'slug', 'location']
+
+
+class AdminProducerManageSerializer(serializers.ModelSerializer):
+    """Full serializer for producer management"""
+    products_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Producer
+        fields = [
+            'id', 'name', 'slug', 'bio', 'location', 'image',
+            'website', 'is_active', 'products_count',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'products_count']
+
+    def get_products_count(self, obj):
+        return obj.products.count()
+
+    def validate_slug(self, value):
+        if value:
+            from django.utils.text import slugify
+            value = slugify(value)
+            queryset = Producer.objects.filter(slug=value)
+            if self.instance:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise serializers.ValidationError("Ce slug existe déjà.")
+        return value
+
+    def validate(self, data):
+        # Auto-generate slug if not provided
+        if not data.get('slug') and data.get('name'):
+            from django.utils.text import slugify
+            base_slug = slugify(data['name'])
+            slug = base_slug
+            counter = 1
+            while Producer.objects.filter(slug=slug).exclude(
+                pk=self.instance.pk if self.instance else None
+            ).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            data['slug'] = slug
+        return data
 
 
 class AdminProductListSerializer(serializers.ModelSerializer):

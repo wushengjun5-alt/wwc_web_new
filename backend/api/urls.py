@@ -33,6 +33,8 @@ router.register(r'impact-events', views.ImpactEventViewSet, basename='impact-eve
 # Create router for admin API
 admin_router = DefaultRouter()
 admin_router.register(r'products', admin_views.AdminProductViewSet, basename='admin-product')
+admin_router.register(r'categories/manage', admin_views.AdminCategoryManageViewSet, basename='admin-category-manage')
+admin_router.register(r'producers/manage', admin_views.AdminProducerManageViewSet, basename='admin-producer-manage')
 
 urlpatterns = [
     # Router URLs (public API)

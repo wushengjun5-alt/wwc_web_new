@@ -21,7 +21,9 @@ from .admin_serializers import (
     AdminProductImageSerializer,
     AdminProductImageUploadSerializer,
     AdminCategoryListSerializer,
+    AdminCategoryManageSerializer,
     AdminProducerListSerializer,
+    AdminProducerManageSerializer,
     AdminBulkActionSerializer,
 )
 from .admin_auth import AdminAPIKeyAuthentication, IsAdminAPIKeyAuthenticated
@@ -302,6 +304,17 @@ class AdminCategoryListView(generics.ListAPIView):
     queryset = ProductCategory.objects.filter(is_active=True).order_by('order', 'name')
 
 
+class AdminCategoryManageViewSet(viewsets.ModelViewSet):
+    """
+    Full CRUD for categories management.
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+    serializer_class = AdminCategoryManageSerializer
+    queryset = ProductCategory.objects.all().order_by('order', 'name')
+    lookup_field = 'id'
+
+
 class AdminProducerListView(generics.ListAPIView):
     """
     List all producers for dropdown selection in product editor.
@@ -310,6 +323,17 @@ class AdminProducerListView(generics.ListAPIView):
     permission_classes = [IsAdminAPIKeyAuthenticated]
     serializer_class = AdminProducerListSerializer
     queryset = Producer.objects.filter(is_active=True).order_by('name')
+
+
+class AdminProducerManageViewSet(viewsets.ModelViewSet):
+    """
+    Full CRUD for producers management.
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+    serializer_class = AdminProducerManageSerializer
+    queryset = Producer.objects.all().order_by('name')
+    lookup_field = 'id'
 
 
 class AdminStatsView(APIView):
