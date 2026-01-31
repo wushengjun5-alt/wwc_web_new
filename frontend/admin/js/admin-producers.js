@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         AdminConfig.updateApiStatus('error', 'Clé API requise');
         document.getElementById('producersBody').innerHTML = `
             <tr>
-                <td colspan="7" class="no-products">
+                <td colspan="6" class="no-products">
                     <p>Entrez votre clé API admin pour gérer les producteurs.</p>
                     <p style="margin-top: 10px; color: var(--admin-text-light);">
                         Clé par défaut: <code>wwc-admin-dev-key-change-in-production</code>
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 async function loadProducers() {
     const tbody = document.getElementById('producersBody');
-    tbody.innerHTML = '<tr><td colspan="7" class="loading">Chargement...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="loading">Chargement...</td></tr>';
 
     try {
         producers = await AdminAPI.getProducersAdmin();
@@ -37,7 +37,7 @@ async function loadProducers() {
         if (!producers.length) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="no-products">
+                    <td colspan="6" class="no-products">
                         <p>Aucun producteur.</p>
                         <button class="btn btn-primary" onclick="showAddProducerModal()">Créer un producteur</button>
                     </td>
@@ -56,12 +56,6 @@ async function loadProducers() {
                 </td>
                 <td><strong>${escapeHtml(prod.name)}</strong></td>
                 <td>${escapeHtml(prod.location) || '<span class="text-muted">-</span>'}</td>
-                <td>
-                    ${prod.website
-                        ? `<a href="${prod.website}" target="_blank">Visiter</a>`
-                        : '<span class="text-muted">-</span>'
-                    }
-                </td>
                 <td style="text-align: center;">${prod.products_count || 0}</td>
                 <td>
                     <span class="status-badge status-${prod.is_active ? 'published' : 'draft'}">
@@ -82,7 +76,7 @@ async function loadProducers() {
         console.error('Error loading producers:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="loading">Erreur: ${error.message}</td>
+                <td colspan="6" class="loading">Erreur: ${error.message}</td>
             </tr>
         `;
     }
@@ -104,7 +98,6 @@ function editProducer(id) {
     document.getElementById('producerId').value = prod.id;
     document.getElementById('prodName').value = prod.name || '';
     document.getElementById('prodLocation').value = prod.location || '';
-    document.getElementById('prodWebsite').value = prod.website || '';
     document.getElementById('prodBio').value = prod.bio || '';
     document.getElementById('prodActive').value = prod.is_active ? 'true' : 'false';
 
@@ -121,8 +114,7 @@ async function saveProducer(e) {
     const id = document.getElementById('producerId').value;
     const data = {
         name: document.getElementById('prodName').value,
-        location: document.getElementById('prodLocation').value || null,
-        website: document.getElementById('prodWebsite').value || null,
+        location: document.getElementById('prodLocation').value || '',
         bio: document.getElementById('prodBio').value || '',
         is_active: document.getElementById('prodActive').value === 'true'
     };

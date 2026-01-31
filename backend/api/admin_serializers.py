@@ -97,15 +97,26 @@ class AdminProducerListSerializer(serializers.ModelSerializer):
 class AdminProducerManageSerializer(serializers.ModelSerializer):
     """Full serializer for producer management"""
     products_count = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Producer
         fields = [
-            'id', 'name', 'slug', 'bio', 'location', 'image',
-            'website', 'is_active', 'products_count',
+            'id', 'name', 'slug', 'bio', 'bio_en', 'bio_ar',
+            'location', 'photo', 'image',
+            'is_active', 'products_count',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'products_count']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'products_count', 'image']
+
+    def get_image(self, obj):
+        """Return photo URL for compatibility with frontend"""
+        if obj.photo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+            return obj.photo.url
+        return None
 
     def get_products_count(self, obj):
         return obj.products.count()
