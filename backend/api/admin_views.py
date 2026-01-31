@@ -302,6 +302,7 @@ class AdminCategoryListView(generics.ListAPIView):
     permission_classes = [IsAdminAPIKeyAuthenticated]
     serializer_class = AdminCategoryListSerializer
     queryset = ProductCategory.objects.filter(is_active=True).order_by('order', 'name')
+    pagination_class = None  # Disable pagination for dropdown lists
 
 
 class AdminCategoryManageViewSet(viewsets.ModelViewSet):
@@ -343,6 +344,7 @@ class AdminProducerListView(generics.ListAPIView):
     permission_classes = [IsAdminAPIKeyAuthenticated]
     serializer_class = AdminProducerListSerializer
     queryset = Producer.objects.filter(is_active=True).order_by('name')
+    pagination_class = None  # Disable pagination for dropdown lists
 
 
 class AdminProducerManageViewSet(viewsets.ModelViewSet):
