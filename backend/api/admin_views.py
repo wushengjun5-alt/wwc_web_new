@@ -307,12 +307,32 @@ class AdminCategoryListView(generics.ListAPIView):
 class AdminCategoryManageViewSet(viewsets.ModelViewSet):
     """
     Full CRUD for categories management.
+    Deleting a category will also delete all products in that category.
     """
     authentication_classes = [AdminAPIKeyAuthentication]
     permission_classes = [IsAdminAPIKeyAuthenticated]
     serializer_class = AdminCategoryManageSerializer
     queryset = ProductCategory.objects.all().order_by('order', 'name')
     lookup_field = 'id'
+    pagination_class = None  # Disable pagination for admin management
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete category and all associated products"""
+        instance = self.get_object()
+        category_name = instance.name
+        products_count = instance.products.count()
+
+        # Delete all products in this category
+        instance.products.all().delete()
+
+        # Delete the category
+        instance.delete()
+
+        return Response({
+            'message': f'Catégorie "{category_name}" supprimée avec {products_count} produit(s).',
+            'deleted': True,
+            'products_deleted': products_count
+        }, status=status.HTTP_200_OK)
 
 
 class AdminProducerListView(generics.ListAPIView):
@@ -328,12 +348,32 @@ class AdminProducerListView(generics.ListAPIView):
 class AdminProducerManageViewSet(viewsets.ModelViewSet):
     """
     Full CRUD for producers management.
+    Deleting a producer will also delete all products from that producer.
     """
     authentication_classes = [AdminAPIKeyAuthentication]
     permission_classes = [IsAdminAPIKeyAuthenticated]
     serializer_class = AdminProducerManageSerializer
     queryset = Producer.objects.all().order_by('name')
     lookup_field = 'id'
+    pagination_class = None  # Disable pagination for admin management
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete producer and all associated products"""
+        instance = self.get_object()
+        producer_name = instance.name
+        products_count = instance.products.count()
+
+        # Delete all products from this producer
+        instance.products.all().delete()
+
+        # Delete the producer
+        instance.delete()
+
+        return Response({
+            'message': f'Producteur "{producer_name}" supprimé avec {products_count} produit(s).',
+            'deleted': True,
+            'products_deleted': products_count
+        }, status=status.HTTP_200_OK)
 
 
 class AdminStatsView(APIView):

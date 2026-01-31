@@ -137,6 +137,14 @@ async function saveProducer(e) {
 
 function showDeleteModal(id) {
     deleteProducerId = id;
+    const prod = producers.find(p => p.id === id);
+    const countEl = document.getElementById('deleteProductsCount');
+    if (prod && countEl) {
+        const count = prod.products_count || 0;
+        countEl.textContent = count > 0
+            ? `Ce producteur a ${count} produit(s) qui seront supprimés.`
+            : 'Ce producteur n\'a aucun produit.';
+    }
     document.getElementById('deleteModal').classList.add('active');
 }
 

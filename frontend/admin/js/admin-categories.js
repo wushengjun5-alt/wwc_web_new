@@ -147,6 +147,14 @@ async function saveCategory(e) {
 
 function showDeleteModal(id) {
     deleteCategoryId = id;
+    const cat = categories.find(c => c.id === id);
+    const countEl = document.getElementById('deleteProductsCount');
+    if (cat && countEl) {
+        const count = cat.products_count || 0;
+        countEl.textContent = count > 0
+            ? `Cette catégorie contient ${count} produit(s) qui seront supprimés.`
+            : 'Cette catégorie ne contient aucun produit.';
+    }
     document.getElementById('deleteModal').classList.add('active');
 }
 
