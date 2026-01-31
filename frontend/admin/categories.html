@@ -79,13 +79,14 @@
                                 <th>Slug</th>
                                 <th>Ordre</th>
                                 <th>Produits</th>
+                                <th>Menu</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="categoriesBody">
                             <tr>
-                                <td colspan="9" class="loading">Chargement...</td>
+                                <td colspan="10" class="loading">Chargement...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -144,6 +145,17 @@
                                 <option value="true">Actif</option>
                                 <option value="false">Inactif</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="catShowInMenu">Afficher dans le menu</label>
+                            <select id="catShowInMenu">
+                                <option value="true">Oui - Visible sur le site</option>
+                                <option value="false">Non - Caché du menu</option>
+                            </select>
+                            <small style="color: var(--admin-text-light);">Les catégories visibles apparaissent dans la navigation du site</small>
                         </div>
                     </div>
                 </div>

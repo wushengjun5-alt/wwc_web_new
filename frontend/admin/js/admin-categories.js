@@ -55,6 +55,9 @@ async function loadCategories() {
                 <td><code>${cat.slug}</code></td>
                 <td style="text-align: center;">${cat.order}</td>
                 <td style="text-align: center;">${cat.products_count || 0}</td>
+                <td style="text-align: center;">
+                    ${cat.show_in_menu ? '✅' : '❌'}
+                </td>
                 <td>
                     <span class="status-badge status-${cat.is_active ? 'published' : 'draft'}">
                         ${cat.is_active ? 'Actif' : 'Inactif'}
@@ -85,6 +88,7 @@ function showAddCategoryModal() {
     document.getElementById('categoryId').value = '';
     document.getElementById('categoryForm').reset();
     document.getElementById('catActive').value = 'true';
+    document.getElementById('catShowInMenu').value = 'true';
     document.getElementById('categoryModal').classList.add('active');
 }
 
@@ -101,6 +105,7 @@ function editCategory(id) {
     document.getElementById('catDescription').value = cat.description || '';
     document.getElementById('catOrder').value = cat.order || 0;
     document.getElementById('catActive').value = cat.is_active ? 'true' : 'false';
+    document.getElementById('catShowInMenu').value = cat.show_in_menu ? 'true' : 'false';
 
     document.getElementById('categoryModal').classList.add('active');
 }
@@ -120,7 +125,8 @@ async function saveCategory(e) {
         icon: document.getElementById('catIcon').value || null,
         description: document.getElementById('catDescription').value || '',
         order: parseInt(document.getElementById('catOrder').value) || 0,
-        is_active: document.getElementById('catActive').value === 'true'
+        is_active: document.getElementById('catActive').value === 'true',
+        show_in_menu: document.getElementById('catShowInMenu').value === 'true'
     };
 
     try {
