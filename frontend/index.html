@@ -1217,7 +1217,14 @@
 
                 container.innerHTML = products.map(product => `
                     <div class="product-card" onclick="window.location.href='/shop/product/?slug=${product.slug}'" style="cursor: pointer;">
-                        <div class="product-image">🧴</div>
+                        <div class="product-image">
+                            ${product.primary_image_url
+                                ? `<img src="${product.primary_image_url}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+                                : (product.images && product.images.length > 0
+                                    ? `<img src="${product.images[0].image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+                                    : '🧴')
+                            }
+                        </div>
                         <div class="product-info">
                             <h3 class="product-name">${product.name}</h3>
                             ${product.review_count > 0 ? `
@@ -1629,7 +1636,12 @@
 
             contentEl.innerHTML = cart.items.map(item => `
                 <div class="cart-item">
-                    <div class="cart-item-image">🧴</div>
+                    <div class="cart-item-image">
+                        ${item.product.primary_image_url
+                            ? `<img src="${item.product.primary_image_url}" alt="${item.product.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`
+                            : '🧴'
+                        }
+                    </div>
                     <div class="cart-item-details">
                         <div class="cart-item-name">${item.product.name}</div>
                         <div class="cart-item-price">${item.subtotal} DT</div>
