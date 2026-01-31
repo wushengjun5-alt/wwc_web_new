@@ -208,8 +208,8 @@ class AdminProductDetailSerializer(serializers.ModelSerializer):
     Supports all fields including translations.
     """
     images = AdminProductImageSerializer(many=True, read_only=True)
-    category_data = AdminCategoryListSerializer(source='category', read_only=True)
-    producer_data = AdminProducerListSerializer(source='producer', read_only=True)
+    category_data = AdminCategoryListSerializer(source='category', read_only=True, allow_null=True)
+    producer_data = AdminProducerListSerializer(source='producer', read_only=True, allow_null=True)
     impact_preview = serializers.SerializerMethodField()
 
     class Meta:
