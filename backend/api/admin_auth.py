@@ -79,3 +79,7 @@ class IsAdminAPIKeyAuthenticated:
             return request.user.is_staff or request.user.is_superuser
 
         return False
+
+    def has_object_permission(self, request, view, obj):
+        # Object-level permission - if they have view permission, they can access any object
+        return self.has_permission(request, view)
