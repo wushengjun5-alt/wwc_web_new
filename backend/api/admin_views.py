@@ -136,6 +136,19 @@ class AdminProductViewSet(viewsets.ModelViewSet):
         )
         return Response(detail_serializer.data, status=status.HTTP_201_CREATED)
 
+    def retrieve(self, request, *args, **kwargs):
+        """Get a single product with better error handling"""
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, context={'request': request})
+            return Response(serializer.data)
+        except Exception as e:
+            import traceback
+            return Response({
+                'error': str(e),
+                'detail': traceback.format_exc()
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     def update(self, request, *args, **kwargs):
         """Update a product (full or partial)"""
         partial = kwargs.pop('partial', False)
