@@ -208,9 +208,29 @@ class AdminProductDetailSerializer(serializers.ModelSerializer):
     Supports all fields including translations.
     """
     images = AdminProductImageSerializer(many=True, read_only=True)
-    category_data = AdminCategoryListSerializer(source='category', read_only=True, allow_null=True)
-    producer_data = AdminProducerListSerializer(source='producer', read_only=True, allow_null=True)
+    category_data = serializers.SerializerMethodField()
+    producer_data = serializers.SerializerMethodField()
     impact_preview = serializers.SerializerMethodField()
+
+    def get_category_data(self, obj):
+        """Return category data or None"""
+        if obj.category:
+            return {
+                'id': obj.category.id,
+                'name': obj.category.name,
+                'slug': obj.category.slug
+            }
+        return None
+
+    def get_producer_data(self, obj):
+        """Return producer data or None"""
+        if obj.producer:
+            return {
+                'id': obj.producer.id,
+                'name': obj.producer.name,
+                'slug': obj.producer.slug
+            }
+        return None
 
     class Meta:
         model = Product
