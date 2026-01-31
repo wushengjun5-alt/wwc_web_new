@@ -515,6 +515,19 @@ class AdminProductCreateUpdateSerializer(serializers.ModelSerializer):
         if not data.get('impact_item'):
             data['impact_item'] = 'article(s)'
 
+        # Convert null to empty string for fields that are blank=True but not null=True
+        # These fields can't be NULL in the database
+        null_to_empty_fields = [
+            'meta_title', 'meta_description', 'short_description',
+            'name_en', 'name_ar', 'description_en', 'description_ar',
+            'ingredients', 'ingredients_en', 'usage', 'usage_en',
+            'impact_description_en', 'impact_description_ar', 'impact_item_en',
+            'dimensions'
+        ]
+        for field in null_to_empty_fields:
+            if field in data and data[field] is None:
+                data[field] = ''
+
         return data
 
     def create(self, validated_data):
