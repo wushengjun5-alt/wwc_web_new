@@ -947,9 +947,13 @@
                     <div class="reviews-list" id="reviews-list">
                         <div class="loading"><span class="spinner"></span></div>
                     </div>
+                    <div id="review-form-container" style="margin-top:32px;"></div>
                 </div>
             `;
         }
+
+        // Auth helpers
+        function getToken() { return localStorage.getItem('wwc_access_token'); }
 
         // Load reviews
         async function loadReviews(slug) {
@@ -966,20 +970,126 @@
                         <div class="review-item">
                             <div class="review-header">
                                 <div>
-                                    <span class="review-author">${review.user_name}</span>
+                                    <span class="review-author">${escHtml(review.user_name || 'Anonyme')}</span>
                                     ${review.is_verified_purchase ? '<span class="verified-badge">✓ Achat vérifié</span>' : ''}
                                 </div>
                                 <span class="review-date">${new Date(review.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                             </div>
                             <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
-                            ${review.title ? `<div class="review-title">${review.title}</div>` : ''}
-                            <div class="review-comment">${review.comment}</div>
+                            ${review.title ? `<div class="review-title">${escHtml(review.title)}</div>` : ''}
+                            <div class="review-comment">${escHtml(review.comment || '')}</div>
                         </div>
                     `).join('');
                 }
             } catch (error) {
                 console.error('Error loading reviews:', error);
                 document.getElementById('reviews-list').innerHTML = '<p class="no-reviews">Impossible de charger les avis.</p>';
+            }
+
+            renderReviewForm(slug);
+        }
+
+        function escHtml(str) {
+            return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        let selectedRatingForm = 0;
+
+        function renderReviewForm(slug) {
+            const container = document.getElementById('review-form-container');
+            if (!container) return;
+
+            if (!getToken()) {
+                container.innerHTML = `
+                    <div style="border:1px solid var(--wwc-border); border-radius:12px; padding:24px; text-align:center; color:var(--wwc-text-light);">
+                        <p><a href="/shop/login/?redirect=/shop/product/?slug=${encodeURIComponent(slug)}" style="color:var(--wwc-secondary); font-weight:600;">Connectez-vous</a> pour laisser un avis.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div style="border:1px solid var(--wwc-border); border-radius:12px; padding:24px;">
+                    <h3 style="font-size:18px; color:var(--wwc-primary); margin-bottom:16px;">Laisser un avis</h3>
+                    <div id="review-msg" style="display:none; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:14px;"></div>
+                    <form id="review-form" onsubmit="submitReview(event, '${slug}')">
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Note *</label>
+                            <div id="star-picker" style="font-size:28px; cursor:pointer; letter-spacing:4px; display:inline-block;">
+                                ${[1,2,3,4,5].map(n => `<span onclick="setReviewRating(${n})" onmouseover="hoverStars(${n})" onmouseout="resetStars()" style="color:#ccc;" data-star="${n}">★</span>`).join('')}
+                            </div>
+                        </div>
+                        <div style="margin-bottom:14px;">
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Titre</label>
+                            <input id="review-title" type="text" placeholder="Résumé de votre avis" maxlength="200"
+                                style="width:100%; padding:10px 12px; border:1px solid var(--wwc-border); border-radius:8px; font-size:14px; font-family:inherit;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Commentaire *</label>
+                            <textarea id="review-comment" rows="4" required placeholder="Partagez votre expérience…"
+                                style="width:100%; padding:10px 12px; border:1px solid var(--wwc-border); border-radius:8px; font-size:14px; font-family:inherit; resize:vertical;"></textarea>
+                        </div>
+                        <button type="submit" id="review-submit" style="padding:12px 24px; background:var(--wwc-secondary); color:white; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer;">
+                            Publier mon avis
+                        </button>
+                    </form>
+                </div>`;
+        }
+
+        function hoverStars(n) {
+            document.querySelectorAll('#star-picker span').forEach(s => {
+                s.style.color = parseInt(s.dataset.star) <= n ? '#f59e0b' : '#ccc';
+            });
+        }
+
+        function resetStars() {
+            document.querySelectorAll('#star-picker span').forEach(s => {
+                s.style.color = parseInt(s.dataset.star) <= selectedRatingForm ? '#f59e0b' : '#ccc';
+            });
+        }
+
+        function setReviewRating(n) {
+            selectedRatingForm = n;
+            resetStars();
+        }
+
+        async function submitReview(e, slug) {
+            e.preventDefault();
+            const msg = document.getElementById('review-msg');
+            const btn = document.getElementById('review-submit');
+
+            if (!selectedRatingForm) {
+                msg.textContent = 'Veuillez sélectionner une note.';
+                msg.style.background = '#f8d7da'; msg.style.color = '#721c24'; msg.style.display = 'block';
+                return;
+            }
+
+            const comment = document.getElementById('review-comment').value.trim();
+            if (!comment) return;
+
+            btn.disabled = true; btn.textContent = '…';
+
+            try {
+                const res = await fetch(`${API_URL}/products/${slug}/add_review/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                    body: JSON.stringify({
+                        rating: selectedRatingForm,
+                        title: document.getElementById('review-title').value.trim(),
+                        comment,
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || data.error || JSON.stringify(data));
+
+                msg.textContent = 'Merci pour votre avis !';
+                msg.style.background = '#d4edda'; msg.style.color = '#155724'; msg.style.display = 'block';
+                document.getElementById('review-form').style.display = 'none';
+                // Reload reviews
+                loadReviews(slug);
+            } catch (err) {
+                msg.textContent = err.message;
+                msg.style.background = '#f8d7da'; msg.style.color = '#721c24'; msg.style.display = 'block';
+                btn.disabled = false; btn.textContent = 'Publier mon avis';
             }
         }
 
@@ -1067,8 +1177,26 @@
         }
 
         // Add to wishlist
-        function addToWishlist() {
-            showNotification('Ajouté aux favoris!', 'success');
+        async function addToWishlist() {
+            if (!currentProduct) return;
+            if (!getToken()) {
+                window.location.href = `/shop/login/?redirect=/shop/product/?slug=${currentProduct.slug}`;
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/wishlist/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                    body: JSON.stringify({ product_id: currentProduct.id })
+                });
+                if (res.ok || res.status === 201) {
+                    showNotification('Ajouté aux favoris !', 'success');
+                } else if (res.status === 200) {
+                    showNotification('Déjà dans vos favoris.', 'info');
+                }
+            } catch {
+                showNotification('Erreur lors de l\'ajout aux favoris.', 'error');
+            }
         }
 
         // Show notification

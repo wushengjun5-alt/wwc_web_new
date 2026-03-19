@@ -10,10 +10,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from django.db.models import Q
+from django.db.models import Q, Count, Sum
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from products.models import Product, ProductImage, ProductCategory, Producer
+from orders.models import Order
 from .admin_serializers import (
     AdminProductListSerializer,
     AdminProductDetailSerializer,
@@ -424,4 +426,143 @@ class AdminStatsView(APIView):
             'missing_arabic': missing_ar,
             'categories_count': ProductCategory.objects.filter(is_active=True).count(),
             'producers_count': Producer.objects.filter(is_active=True).count(),
+        })
+
+
+# ============================================
+# Admin Order Management
+# ============================================
+
+class AdminOrderListView(APIView):
+    """
+    List and filter orders for admin management.
+    GET /api/v1/admin/orders/
+    Query params: status, search, page, page_size
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request):
+        queryset = Order.objects.select_related('user').order_by('-created_at')
+
+        # Filter by status
+        status_filter = request.query_params.get('status', '')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        # Search by order number, email, phone
+        search = request.query_params.get('search', '')
+        if search:
+            queryset = queryset.filter(
+                Q(order_number__icontains=search) |
+                Q(email__icontains=search) |
+                Q(phone__icontains=search)
+            )
+
+        # Pagination
+        page_size = int(request.query_params.get('page_size', 20))
+        page = int(request.query_params.get('page', 1))
+        total = queryset.count()
+        offset = (page - 1) * page_size
+        orders = queryset[offset:offset + page_size]
+
+        data = [{
+            'order_number': o.order_number,
+            'email': o.email,
+            'phone': o.phone,
+            'status': o.status,
+            'currency': o.currency,
+            'total': str(o.total),
+            'payment_method': o.payment_method,
+            'tracking_number': o.tracking_number or '',
+            'created_at': o.created_at.isoformat(),
+            'item_count': o.items.count(),
+        } for o in orders]
+
+        return Response({
+            'count': total,
+            'page': page,
+            'page_size': page_size,
+            'results': data,
+        })
+
+
+class AdminOrderDetailView(APIView):
+    """
+    Get full order detail or update status/tracking for a single order.
+    GET  /api/v1/admin/orders/<order_number>/
+    PATCH /api/v1/admin/orders/<order_number>/
+      Body: { status, tracking_number }
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    VALID_STATUSES = {'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'}
+
+    def get(self, request, order_number):
+        order = get_object_or_404(Order, order_number=order_number)
+        items = [{
+            'product_name': item.product_name,
+            'quantity': item.quantity,
+            'unit_price': str(item.unit_price),
+            'subtotal': str(item.subtotal),
+        } for item in order.items.all()]
+
+        addr = order.shipping_address or {}
+
+        return Response({
+            'order_number': order.order_number,
+            'email': order.email,
+            'phone': order.phone,
+            'status': order.status,
+            'currency': order.currency,
+            'subtotal': str(order.subtotal),
+            'shipping_cost': str(order.shipping_cost),
+            'total': str(order.total),
+            'payment_method': order.payment_method,
+            'tracking_number': order.tracking_number or '',
+            'created_at': order.created_at.isoformat(),
+            'updated_at': order.updated_at.isoformat(),
+            'items': items,
+            'shipping_address': addr,
+        })
+
+    def patch(self, request, order_number):
+        order = get_object_or_404(Order, order_number=order_number)
+        updated_fields = []
+
+        new_status = request.data.get('status')
+        if new_status is not None:
+            if new_status not in self.VALID_STATUSES:
+                return Response(
+                    {'error': f'Statut invalide. Valeurs acceptées : {", ".join(sorted(self.VALID_STATUSES))}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            order.status = new_status
+            updated_fields.append('status')
+
+            # Auto-set shipped_at / delivered_at timestamps
+            if new_status == 'shipped' and not order.shipped_at:
+                order.shipped_at = timezone.now()
+                updated_fields.append('shipped_at')
+            elif new_status == 'delivered' and not order.delivered_at:
+                order.delivered_at = timezone.now()
+                updated_fields.append('delivered_at')
+
+        tracking = request.data.get('tracking_number')
+        if tracking is not None:
+            order.tracking_number = tracking.strip()
+            updated_fields.append('tracking_number')
+
+        if not updated_fields:
+            return Response({'error': 'Aucun champ à mettre à jour.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        order.save(update_fields=updated_fields)
+
+        return Response({
+            'order_number': order.order_number,
+            'status': order.status,
+            'tracking_number': order.tracking_number or '',
+            'updated_fields': updated_fields,
+            'message': 'Commande mise à jour avec succès.',
         })

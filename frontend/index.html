@@ -1188,6 +1188,9 @@
             localStorage.removeItem('wwc_refresh_token');
         }
 
+        // Wishlist state
+        let wishlistIds = new Set();
+
         // Products state
         let currentCategory = '';
         let currentPage     = 1;
@@ -1201,6 +1204,7 @@
             loadCategories();
             loadProducts();
             loadCart();
+            loadWishlist();
             checkPaymentReturn();
         });
 
@@ -1317,8 +1321,15 @@
                     return;
                 }
 
-                container.innerHTML = products.map(product => `
-                    <div class="product-card" onclick="window.location.href='/shop/product/?slug=${product.slug}'" style="cursor:pointer;">
+                container.innerHTML = products.map(product => {
+                    const inWL = wishlistIds.has(product.id);
+                    return `
+                    <div class="product-card" onclick="window.location.href='/shop/product/?slug=${product.slug}'" style="cursor:pointer; position:relative;">
+                        <button
+                            onclick="event.stopPropagation(); toggleWishlist(${product.id}, this)"
+                            title="${inWL ? 'Retirer des favoris' : 'Ajouter aux favoris'}"
+                            style="position:absolute;top:8px;right:8px;background:white;border:none;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;z-index:2;"
+                        >${inWL ? '♥' : '♡'}</button>
                         <div class="product-image">
                             ${product.primary_image?.image
                                 ? `<img src="${product.primary_image.image}" alt="${escHtml(product.name)}" style="width:100%;height:100%;object-fit:cover;">`
@@ -1341,7 +1352,8 @@
                                 ${product.is_in_stock === false ? 'Rupture de stock' : 'Ajouter au panier'}
                             </button>
                         </div>
-                    </div>`).join('');
+                    </div>`;
+                }).join('');
 
                 // Pagination
                 renderPagination(currentPage, totalPages);
@@ -1402,6 +1414,61 @@
 
         function escHtml(str) {
             return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        // ── Wishlist ──────────────────────────────────────────────
+
+        async function loadWishlist() {
+            if (!getToken()) return;
+            try {
+                const res = await fetch(`${API_URL}/wishlist/`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                const items = data.results || data;
+                wishlistIds = new Set(items.map(w => w.product?.id || w.product));
+            } catch {}
+        }
+
+        async function toggleWishlist(productId, btn) {
+            if (!getToken()) {
+                window.location.href = '/shop/login/?redirect=/shop/';
+                return;
+            }
+            const inWishlist = wishlistIds.has(productId);
+
+            try {
+                if (inWishlist) {
+                    // Find the wishlist item id to delete
+                    const res = await fetch(`${API_URL}/wishlist/`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    const data = await res.json();
+                    const items = data.results || data;
+                    const item = items.find(w => (w.product?.id || w.product) === productId);
+                    if (item) {
+                        await fetch(`${API_URL}/wishlist/${item.id}/`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${getToken()}` }
+                        });
+                    }
+                    wishlistIds.delete(productId);
+                    btn.textContent = '♡';
+                    btn.title = 'Ajouter aux favoris';
+                    showNotification('Retiré des favoris', 'info');
+                } else {
+                    await fetch(`${API_URL}/wishlist/`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ product_id: productId })
+                    });
+                    wishlistIds.add(productId);
+                    btn.textContent = '♥';
+                    btn.title = 'Retirer des favoris';
+                    showNotification('Ajouté aux favoris !', 'success');
+                }
+            } catch { showNotification('Erreur wishlist', 'error'); }
         }
 
         // ============================================

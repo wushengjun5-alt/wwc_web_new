@@ -45,6 +45,8 @@ urlpatterns = [
     path('admin/categories/', admin_views.AdminCategoryListView.as_view(), name='admin-categories'),
     path('admin/producers/', admin_views.AdminProducerListView.as_view(), name='admin-producers'),
     path('admin/stats/', admin_views.AdminStatsView.as_view(), name='admin-stats'),
+    path('admin/orders/', admin_views.AdminOrderListView.as_view(), name='admin-orders'),
+    path('admin/orders/<str:order_number>/', admin_views.AdminOrderDetailView.as_view(), name='admin-order-detail'),
 
     # Checkout
     path('checkout/', views.CheckoutView.as_view(), name='checkout'),
