@@ -282,7 +282,7 @@ class CheckoutSerializer(serializers.Serializer):
 
     # Payment — Stripe for all currencies; customer's bank handles conversion
     payment_method = serializers.ChoiceField(
-        choices=['stripe', 'bank_transfer'],
+        choices=['stripe', 'bank_transfer', 'cash_on_delivery'],
         default='stripe'
     )
 
