@@ -178,6 +178,9 @@
                         ${parseFloat(order.shipping_cost) > 0
                             ? `<div class="total-row"><span>Livraison</span><span>${order.shipping_cost} ${symbol}</span></div>`
                             : ''}
+                        ${parseFloat(order.tax_amount) > 0
+                            ? `<div class="total-row"><span>🎁 Emballage cadeau</span><span>${order.tax_amount} ${symbol}</span></div>`
+                            : ''}
                         <div class="total-row grand"><span>Total</span><span>${order.total} ${symbol}</span></div>
                     </div>
 

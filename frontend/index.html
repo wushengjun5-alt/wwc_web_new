@@ -619,7 +619,6 @@
                     🛒
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
-                <a href="/shop/box/" class="btn btn-don" style="padding:9px 18px;">📦 MA BOX</a>
                 <div id="auth-nav">
                     <!-- filled by JS -->
                 </div>
@@ -1180,6 +1179,24 @@
         // API Configuration
         const API_URL = 'http://127.0.0.1:8000/api/v1';
 
+        // Session key — stable identifier for guest cart (stored in localStorage)
+        function getSessionKey() {
+            let key = localStorage.getItem('wwc_session_key');
+            if (!key) {
+                key = crypto.randomUUID();
+                localStorage.setItem('wwc_session_key', key);
+            }
+            return key;
+        }
+
+        // Base headers for all API calls
+        function apiHeaders(extra) {
+            const h = { 'Content-Type': 'application/json', 'X-Session-Key': getSessionKey() };
+            const token = localStorage.getItem('wwc_access_token');
+            if (token) h['Authorization'] = `Bearer ${token}`;
+            return Object.assign(h, extra);
+        }
+
         // Cart state
         let cart = { items: [], total: '0', total_impact: {} };
 
@@ -1622,7 +1639,7 @@
             try {
                 const response = await fetch(`${API_URL}/cart/add/`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: apiHeaders(),
                     body: JSON.stringify({ product_id: productId, quantity: quantity })
                 });
                 const data = await response.json();
@@ -1754,7 +1771,7 @@
         // Load cart
         async function loadCart() {
             try {
-                const response = await fetch(`${API_URL}/cart/`);
+                const response = await fetch(`${API_URL}/cart/`, { headers: apiHeaders() });
                 cart = await response.json();
                 updateCartDisplay();
             } catch (error) {
@@ -1767,7 +1784,7 @@
             try {
                 const response = await fetch(`${API_URL}/cart/add/`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: apiHeaders(),
                     body: JSON.stringify({ product_id: productId, quantity: 1 })
                 });
                 const data = await response.json();
@@ -1790,7 +1807,7 @@
                 }
                 const response = await fetch(`${API_URL}/cart/update/${itemId}/`, {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: apiHeaders(),
                     body: JSON.stringify({ quantity })
                 });
                 cart = await response.json();
@@ -1804,7 +1821,8 @@
         async function removeFromCart(itemId) {
             try {
                 const response = await fetch(`${API_URL}/cart/remove/${itemId}/`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: apiHeaders()
                 });
                 cart = await response.json();
                 updateCartDisplay();

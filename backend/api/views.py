@@ -7,9 +7,16 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
+from rest_framework.authentication import SessionAuthentication
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
+
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    """SessionAuthentication without CSRF enforcement — safe for API-only endpoints."""
+    def enforce_csrf(self, request):
+        return
 
 from products.models import (
     Producer, ProductCategory, Product, ProductImage,
@@ -315,61 +322,6 @@ class CartViewSet(viewsets.ViewSet):
         cart.save()
         return Response(CartSerializer(cart).data)
 
-    @action(detail=False, methods=['post'], url_path='add-box')
-    def add_box(self, request):
-        """Add a composable box to cart.
-
-        Body: { composable_box_id, box_items: [product_id, ...], quantity }
-        """
-        box_id   = request.data.get('composable_box_id')
-        box_items = request.data.get('box_items', [])
-        quantity  = int(request.data.get('quantity', 1))
-
-        if not box_id:
-            return Response({'error': 'composable_box_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-        if not box_items:
-            return Response({'error': 'box_items is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        box = get_object_or_404(ComposableBox, id=box_id, is_active=True)
-
-        # Validate product count
-        if len(box_items) < box.min_items or len(box_items) > box.max_items:
-            return Response(
-                {'error': f'Le nombre de produits doit être entre {box.min_items} et {box.max_items}.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Validate all products are eligible
-        eligible_ids = set(box.eligible_products.values_list('id', flat=True))
-        invalid = [pid for pid in box_items if pid not in eligible_ids]
-        if invalid:
-            return Response(
-                {'error': f'Produits non éligibles pour cette box: {invalid}'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # CartItem.product is a required FK. We use the first selected product as a
-        # placeholder; the actual box contents are stored in box_items JSON.
-        first_product = get_object_or_404(Product, id=box_items[0])
-
-        cart = self.get_cart(request)
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            product=first_product,
-            composable_box=box,
-            defaults={'box_items': box_items, 'quantity': quantity},
-        )
-        if not created:
-            cart_item.quantity += quantity
-            cart_item.box_items = box_items
-            cart_item.save()
-
-        cart.refresh_from_db()
-        return Response({
-            'message': 'Box ajoutée au panier',
-            'cart': CartSerializer(cart).data
-        }, status=status.HTTP_201_CREATED)
-
 
 # ============================================
 # Checkout Views
@@ -392,7 +344,7 @@ def _calculate_shipping(country, subtotal, currency):
 class CheckoutView(APIView):
     """Handle checkout process"""
     permission_classes = [AllowAny]
-    authentication_classes = []  # Disable authentication to avoid CSRF issues for guest checkout
+    authentication_classes = [CsrfExemptSessionAuthentication]
 
     def post(self, request):
         """Create order from cart"""
@@ -404,12 +356,15 @@ class CheckoutView(APIView):
         if not request.session.session_key:
             request.session.create()
 
-        # Get cart
+        # Get cart — mirror CartViewSet.get_cart() logic
         if request.user.is_authenticated:
             cart = Cart.objects.filter(user=request.user).first()
         else:
-            session_key = request.session.session_key
-            cart = Cart.objects.filter(session_key=session_key).first()
+            session_key = (
+                request.META.get('HTTP_X_SESSION_KEY')
+                or request.session.session_key
+            )
+            cart = Cart.objects.filter(session_key=session_key).first() if session_key else None
 
         if not cart or cart.items.count() == 0:
             return Response(
@@ -426,7 +381,12 @@ class CheckoutView(APIView):
         country = data.get('shipping_country', 'TN')
         from decimal import Decimal
         shipping_cost = Decimal(str(_calculate_shipping(country, float(subtotal), cart.currency)))
-        total = subtotal + shipping_cost
+        gift_packaging = data.get('gift_packaging', False)
+        gift_packaging_fee = Decimal('0.00')
+        if gift_packaging:
+            gift_packaging_fee = Decimal('5.00') if cart.currency == 'TND' else Decimal('2.00')
+
+        total = subtotal + shipping_cost + gift_packaging_fee
 
         # Calculate impact
         impact_summary = cart.get_total_impact()
@@ -441,6 +401,7 @@ class CheckoutView(APIView):
             currency=cart.currency,
             subtotal=subtotal,
             shipping_cost=shipping_cost,
+            tax_amount=gift_packaging_fee,
             total=total,
             total_impact_items=total_impact,
             impact_summary=impact_summary,

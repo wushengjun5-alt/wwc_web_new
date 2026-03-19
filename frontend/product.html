@@ -763,6 +763,18 @@
         // API Configuration
         const API_URL = 'http://127.0.0.1:8000/api/v1';
 
+        function getSessionKey() {
+            let key = localStorage.getItem('wwc_session_key');
+            if (!key) { key = crypto.randomUUID(); localStorage.setItem('wwc_session_key', key); }
+            return key;
+        }
+        function apiHeaders(extra) {
+            const h = { 'Content-Type': 'application/json', 'X-Session-Key': getSessionKey() };
+            const token = localStorage.getItem('wwc_access_token');
+            if (token) h['Authorization'] = `Bearer ${token}`;
+            return Object.assign(h, extra);
+        }
+
         let currentProduct = null;
 
         // Get product slug from URL
@@ -1129,7 +1141,7 @@
             try {
                 const response = await fetch(`${API_URL}/cart/add/`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: apiHeaders(),
                     body: JSON.stringify({ product_id: currentProduct.id, quantity: quantity })
                 });
 
@@ -1149,7 +1161,7 @@
         // Load cart count
         async function loadCart() {
             try {
-                const response = await fetch(`${API_URL}/cart/`);
+                const response = await fetch(`${API_URL}/cart/`, { headers: apiHeaders() });
                 const cart = await response.json();
                 updateCartCount(cart.item_count || cart.items?.length || 0);
             } catch (error) {

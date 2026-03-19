@@ -1,0 +1,59 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 40px auto;">
+    <h1>Import Products from CSV</h1>
+
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Download the <a href="{% url 'admin:products_product_export_template' %}">CSV template</a> to see the required format</li>
+            <li>Fill in your product data following the template structure</li>
+            <li>Make sure category_slug and producer_slug match existing records</li>
+            <li>Upload your completed CSV file below</li>
+        </ol>
+
+        <h4>Required Fields:</h4>
+        <ul>
+            <li><strong>sku</strong> - Unique product identifier</li>
+            <li><strong>name</strong> - Product name</li>
+            <li><strong>category_slug</strong> - Category slug (must exist in database)</li>
+            <li><strong>description</strong> - Product description</li>
+            <li><strong>price_tnd</strong> - Price in TND</li>
+            <li><strong>impact_description</strong> - Social impact description</li>
+            <li><strong>impact_school</strong> - Beneficiary school</li>
+            <li><strong>impact_quantity</strong> - Number of items provided</li>
+            <li><strong>impact_item</strong> - Type of item provided</li>
+        </ul>
+
+        <h4>Optional Fields:</h4>
+        <ul>
+            <li>name_en, description_en, price_eur, stock_quantity, weight, producer_slug</li>
+            <li>Boolean fields: is_active, is_featured, is_natural, is_organic, is_handmade, is_vegan (use: true/false)</li>
+        </ul>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" style="background: white; padding: 30px; border: 1px solid #ddd; border-radius: 5px;">
+        {% csrf_token %}
+
+        <div style="margin-bottom: 20px;">
+            <label for="csv_file" style="display: block; font-weight: bold; margin-bottom: 10px;">
+                Select CSV File:
+            </label>
+            <input type="file" name="csv_file" id="csv_file" accept=".csv" required
+                   style="padding: 10px; border: 1px solid #ddd; border-radius: 3px; width: 100%;">
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button type="submit" style="background: #417690; color: white; padding: 10px 30px; border: none; border-radius: 3px; cursor: pointer; font-size: 14px;">
+                Upload and Import
+            </button>
+            <a href="{% url 'admin:products_product_changelist' %}"
+               style="margin-left: 10px; padding: 10px 30px; background: #f8f9fa; color: #333; text-decoration: none; border-radius: 3px; display: inline-block;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

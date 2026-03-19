@@ -289,6 +289,7 @@ class CheckoutSerializer(serializers.Serializer):
     # Optional
     customer_notes = serializers.CharField(required=False, allow_blank=True)
     coupon_code = serializers.CharField(required=False, allow_blank=True)
+    gift_packaging = serializers.BooleanField(required=False, default=False)
 
 
 # ============================================
