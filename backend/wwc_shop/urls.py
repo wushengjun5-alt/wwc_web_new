@@ -48,6 +48,12 @@ def serve_reset_password_page(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_box_page(request):
+    """Serve the composable box builder page"""
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'box.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
 def serve_shop_admin_page(request, page='index'):
     """Serve shop admin HTML pages"""
     if not page.endswith('.html'):
@@ -89,6 +95,7 @@ urlpatterns = [
     path('shop/login/', serve_login_page, name='shop-login'),
     path('shop/account/', serve_account_page, name='shop-account'),
     path('shop/reset-password/', serve_reset_password_page, name='shop-reset-password'),
+    path('shop/box/', serve_box_page, name='shop-box'),
 
     # Shop admin (HTML interface for product management)
     path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),

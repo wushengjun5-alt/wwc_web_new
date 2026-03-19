@@ -315,6 +315,61 @@ class CartViewSet(viewsets.ViewSet):
         cart.save()
         return Response(CartSerializer(cart).data)
 
+    @action(detail=False, methods=['post'], url_path='add-box')
+    def add_box(self, request):
+        """Add a composable box to cart.
+
+        Body: { composable_box_id, box_items: [product_id, ...], quantity }
+        """
+        box_id   = request.data.get('composable_box_id')
+        box_items = request.data.get('box_items', [])
+        quantity  = int(request.data.get('quantity', 1))
+
+        if not box_id:
+            return Response({'error': 'composable_box_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not box_items:
+            return Response({'error': 'box_items is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        box = get_object_or_404(ComposableBox, id=box_id, is_active=True)
+
+        # Validate product count
+        if len(box_items) < box.min_items or len(box_items) > box.max_items:
+            return Response(
+                {'error': f'Le nombre de produits doit être entre {box.min_items} et {box.max_items}.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate all products are eligible
+        eligible_ids = set(box.eligible_products.values_list('id', flat=True))
+        invalid = [pid for pid in box_items if pid not in eligible_ids]
+        if invalid:
+            return Response(
+                {'error': f'Produits non éligibles pour cette box: {invalid}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # CartItem.product is a required FK. We use the first selected product as a
+        # placeholder; the actual box contents are stored in box_items JSON.
+        first_product = get_object_or_404(Product, id=box_items[0])
+
+        cart = self.get_cart(request)
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            product=first_product,
+            composable_box=box,
+            defaults={'box_items': box_items, 'quantity': quantity},
+        )
+        if not created:
+            cart_item.quantity += quantity
+            cart_item.box_items = box_items
+            cart_item.save()
+
+        cart.refresh_from_db()
+        return Response({
+            'message': 'Box ajoutée au panier',
+            'cart': CartSerializer(cart).data
+        }, status=status.HTTP_201_CREATED)
+
 
 # ============================================
 # Checkout Views
