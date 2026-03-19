@@ -15,8 +15,6 @@ router = DefaultRouter()
 router.register(r'categories', views.ProductCategoryViewSet, basename='category')
 router.register(r'producers', views.ProducerViewSet, basename='producer')
 router.register(r'products', views.ProductViewSet, basename='product')
-router.register(r'boxes', views.ComposableBoxViewSet, basename='box')
-
 # Cart routes
 router.register(r'cart', views.CartViewSet, basename='cart')
 

@@ -768,6 +768,7 @@
             if (!key) { key = crypto.randomUUID(); localStorage.setItem('wwc_session_key', key); }
             return key;
         }
+        function getCurrentCurrency() { return localStorage.getItem('wwc_currency') || 'TND'; }
         function apiHeaders(extra) {
             const h = { 'Content-Type': 'application/json', 'X-Session-Key': getSessionKey() };
             const token = localStorage.getItem('wwc_access_token');
@@ -892,7 +893,7 @@
                                 <input type="number" id="product-quantity" value="1" min="1" max="99">
                                 <button type="button" onclick="changeQuantity(1)">+</button>
                             </div>
-                            <div class="product-price">${product.price_tnd} <small>DT</small></div>
+                            <div class="product-price">${getCurrentCurrency() === 'EUR' && product.price_eur ? product.price_eur + ' <small>€</small>' : product.price_tnd + ' <small>DT</small>'}</div>
                         </div>
 
                         <div class="product-impact">

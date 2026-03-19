@@ -646,8 +646,8 @@
             <select id="sort-select" onchange="applyFilters()"
                 style="padding:10px 14px; border:1px solid var(--wwc-border); border-radius:8px; font-size:14px; font-family:inherit; background:white;">
                 <option value="">Trier par défaut</option>
-                <option value="price_tnd">Prix croissant</option>
-                <option value="-price_tnd">Prix décroissant</option>
+                <option value="price_asc">Prix croissant</option>
+                <option value="price_desc">Prix décroissant</option>
                 <option value="-average_rating">Mieux notés</option>
                 <option value="-created_at">Nouveautés</option>
             </select>
@@ -1334,8 +1334,15 @@
             if (currentCategory) params.set('category', currentCategory);
             if (currentSearch)   params.set('search', currentSearch);
 
-            const sort = document.getElementById('sort-select')?.value;
-            if (sort) params.set('ordering', sort);
+            const sortVal = document.getElementById('sort-select')?.value;
+            if (sortVal) {
+                const isEur = getCurrentCurrency() === 'EUR';
+                const sortMap = {
+                    'price_asc':  isEur ? 'price_eur' : 'price_tnd',
+                    'price_desc': isEur ? '-price_eur' : '-price_tnd',
+                };
+                params.set('ordering', sortMap[sortVal] || sortVal);
+            }
             if (document.getElementById('filter-instock')?.checked)  params.set('in_stock', 'true');
             if (document.getElementById('filter-natural')?.checked)   params.set('is_natural', 'true');
             if (document.getElementById('filter-organic')?.checked)   params.set('is_organic', 'true');
@@ -1539,7 +1546,10 @@
 
                 // Populate modal with product data
                 document.getElementById('product-detail-name').textContent = currentProduct.name;
-                document.getElementById('product-detail-price').innerHTML = `${currentProduct.price_tnd} <small>DT</small>`;
+                const isEur = getCurrentCurrency() === 'EUR' && currentProduct.price_eur;
+                document.getElementById('product-detail-price').innerHTML = isEur
+                    ? `${currentProduct.price_eur} <small>€</small>`
+                    : `${currentProduct.price_tnd} <small>DT</small>`;
 
                 // Rating
                 const ratingHtml = currentProduct.review_count > 0

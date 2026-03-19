@@ -83,7 +83,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     # Note: 'category' removed from filterset_fields - we handle it manually by slug in get_queryset
     filterset_fields = ['producer', 'unit_type', 'is_featured']
     search_fields = ['name', 'description', 'sku']
-    ordering_fields = ['price_tnd', 'created_at', 'average_rating', 'name']
+    ordering_fields = ['price_tnd', 'price_eur', 'created_at', 'average_rating', 'name']
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
