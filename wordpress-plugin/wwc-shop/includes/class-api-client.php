@@ -144,31 +144,34 @@ class WWC_API_Client {
     }
 
     /**
-     * Get session key for guest users
+     * Get a stable session key for guest users.
+     * Stored in a cookie so it persists across requests and page loads.
      */
     private function get_session_key() {
-        if (!session_id()) {
-            @session_start();
+        $cookie_name = 'wwc_cart_token';
+
+        if (!empty($_COOKIE[$cookie_name])) {
+            return sanitize_text_field($_COOKIE[$cookie_name]);
         }
-        return session_id();
+
+        // Generate a new token and set cookie for 30 days
+        $token = bin2hex(random_bytes(16));
+        setcookie($cookie_name, $token, [
+            'expires'  => time() + 30 * DAY_IN_SECONDS,
+            'path'     => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+        $_COOKIE[$cookie_name] = $token; // make it available immediately this request
+
+        return $token;
     }
 
     /**
-     * Get JWT token for logged in users
+     * Get JWT token from cookie
      */
     private function get_jwt_token() {
-        if (is_user_logged_in()) {
-            $user_id = get_current_user_id();
-            return get_user_meta($user_id, 'wwc_jwt_token', true);
-        }
-        return null;
-    }
-
-    /**
-     * Set JWT token for user
-     */
-    public function set_jwt_token($user_id, $token) {
-        update_user_meta($user_id, 'wwc_jwt_token', $token);
+        return $_COOKIE['wwc_access_token'] ?? null;
     }
 
     // ============================================
@@ -312,7 +315,7 @@ class WWC_API_Client {
     }
 
     /**
-     * Create payment session
+     * Create Stripe Checkout Session (EUR orders only)
      */
     public function create_payment_session($order_number) {
         return $this->post('payments/create-session/', [
@@ -320,6 +323,13 @@ class WWC_API_Client {
             'success_url' => home_url('/checkout/success/'),
             'cancel_url' => home_url('/checkout/'),
         ]);
+    }
+
+    /**
+     * Get bank transfer instructions (TND orders only)
+     */
+    public function get_bank_transfer_instructions($order_number) {
+        return $this->get("payments/bank-transfer/{$order_number}/", [], false);
     }
 
     /**
@@ -402,22 +412,78 @@ class WWC_API_Client {
     }
 
     /**
-     * Login user
+     * Login user — uses our custom login endpoint
      */
     public function login_user($email, $password) {
-        $response = $this->post('../token/', [
-            'username' => $email,
+        $response = $this->post('auth/login/', [
+            'email'    => $email,
             'password' => $password,
         ]);
 
         if (!is_wp_error($response) && isset($response['access'])) {
-            // Store token
-            if (is_user_logged_in()) {
-                $this->set_jwt_token(get_current_user_id(), $response['access']);
-            }
+            $this->store_tokens($response['access'], $response['refresh'] ?? '');
         }
 
         return $response;
+    }
+
+    /**
+     * Request password reset email
+     */
+    public function request_password_reset($email) {
+        return $this->post('auth/password-reset/', ['email' => $email]);
+    }
+
+    /**
+     * Confirm password reset
+     */
+    public function confirm_password_reset($uid, $token, $password, $password_confirm) {
+        return $this->post('auth/password-reset/confirm/', [
+            'uid'              => $uid,
+            'token'            => $token,
+            'password'         => $password,
+            'password_confirm' => $password_confirm,
+        ]);
+    }
+
+    /**
+     * Store JWT tokens in a cookie (not user meta — works for non-WP users too)
+     */
+    public function store_tokens($access, $refresh = '') {
+        // 1-hour access token cookie
+        setcookie('wwc_access_token', $access, [
+            'expires'  => time() + 3600,
+            'path'     => '/',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+        $_COOKIE['wwc_access_token'] = $access;
+
+        if ($refresh) {
+            setcookie('wwc_refresh_token', $refresh, [
+                'expires'  => time() + 7 * DAY_IN_SECONDS,
+                'path'     => '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+            $_COOKIE['wwc_refresh_token'] = $refresh;
+        }
+    }
+
+    /**
+     * Clear JWT tokens (logout)
+     */
+    public function clear_tokens() {
+        setcookie('wwc_access_token', '', ['expires' => time() - 3600, 'path' => '/']);
+        setcookie('wwc_refresh_token', '', ['expires' => time() - 3600, 'path' => '/']);
+        unset($_COOKIE['wwc_access_token'], $_COOKIE['wwc_refresh_token']);
+    }
+
+    /**
+     * Check if user is authenticated with Django
+     */
+    public function is_authenticated() {
+        return !empty($_COOKIE['wwc_access_token']);
     }
 
     /**

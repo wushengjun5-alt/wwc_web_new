@@ -43,6 +43,11 @@ final class WWC_Shop {
     public $cart;
 
     /**
+     * Auth instance
+     */
+    public $auth;
+
+    /**
      * Get single instance of the class
      */
     public static function get_instance() {
@@ -70,6 +75,7 @@ final class WWC_Shop {
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-product.php';
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-checkout.php';
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-impact.php';
+        require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-auth.php';
 
         // Admin classes (only in admin)
         if (is_admin()) {
@@ -77,8 +83,9 @@ final class WWC_Shop {
         }
 
         // Initialize API client
-        $this->api = new WWC_API_Client();
+        $this->api  = new WWC_API_Client();
         $this->cart = new WWC_Cart($this->api);
+        $this->auth = new WWC_Auth($this->api);
     }
 
     /**
@@ -153,6 +160,15 @@ final class WWC_Shop {
             true
         );
 
+        // Auth JavaScript
+        wp_enqueue_script(
+            'wwc-shop-auth',
+            WWC_SHOP_PLUGIN_URL . 'assets/js/auth.js',
+            ['jquery', 'wwc-shop-cart'],
+            WWC_SHOP_VERSION,
+            true
+        );
+
         // Localize scripts
         wp_localize_script('wwc-shop-cart', 'wwcShop', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -188,8 +204,13 @@ final class WWC_Shop {
         add_shortcode('wwc_categories', [$this, 'categories_shortcode']);
         add_shortcode('wwc_cart', [$this, 'cart_shortcode']);
         add_shortcode('wwc_checkout', [$this, 'checkout_shortcode']);
+        add_shortcode('wwc_checkout_success', [$this, 'checkout_success_shortcode']);
         add_shortcode('wwc_customer_dashboard', [$this, 'dashboard_shortcode']);
         add_shortcode('wwc_impact', [$this, 'impact_shortcode']);
+        add_shortcode('wwc_login', [$this, 'login_shortcode']);
+        add_shortcode('wwc_register', [$this, 'register_shortcode']);
+        add_shortcode('wwc_forgot_password', [$this, 'forgot_password_shortcode']);
+        add_shortcode('wwc_reset_password', [$this, 'reset_password_shortcode']);
     }
 
     /**
@@ -294,6 +315,15 @@ final class WWC_Shop {
     }
 
     /**
+     * Checkout success / order confirmation shortcode
+     */
+    public function checkout_success_shortcode($atts) {
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/checkout-success.php';
+        return ob_get_clean();
+    }
+
+    /**
      * Customer dashboard shortcode
      */
     public function dashboard_shortcode($atts) {
@@ -303,6 +333,54 @@ final class WWC_Shop {
 
         ob_start();
         include WWC_SHOP_PLUGIN_DIR . 'templates/customer-dashboard.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Login shortcode
+     */
+    public function login_shortcode($atts) {
+        if ($this->api->is_authenticated()) {
+            return '<p>' . sprintf(
+                __('You are already logged in. <a href="%s">Go to your account</a>.', 'wwc-shop'),
+                esc_url(home_url('/mon-compte/'))
+            ) . '</p>';
+        }
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/auth-login.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Register shortcode
+     */
+    public function register_shortcode($atts) {
+        if ($this->api->is_authenticated()) {
+            return '<p>' . sprintf(
+                __('You are already logged in. <a href="%s">Go to your account</a>.', 'wwc-shop'),
+                esc_url(home_url('/mon-compte/'))
+            ) . '</p>';
+        }
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/auth-register.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Forgot password shortcode
+     */
+    public function forgot_password_shortcode($atts) {
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/auth-forgot-password.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Reset password confirm shortcode
+     */
+    public function reset_password_shortcode($atts) {
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/auth-reset-password.php';
         return ob_get_clean();
     }
 
@@ -329,7 +407,7 @@ final class WWC_Shop {
      * Register AJAX handlers
      */
     private function register_ajax_handlers() {
-        $ajax_actions = [
+        $cart_actions = [
             'wwc_add_to_cart',
             'wwc_update_cart',
             'wwc_remove_from_cart',
@@ -339,9 +417,23 @@ final class WWC_Shop {
             'wwc_checkout',
         ];
 
-        foreach ($ajax_actions as $action) {
+        foreach ($cart_actions as $action) {
             add_action("wp_ajax_{$action}", [$this->cart, str_replace('wwc_', 'ajax_', $action)]);
             add_action("wp_ajax_nopriv_{$action}", [$this->cart, str_replace('wwc_', 'ajax_', $action)]);
+        }
+
+        // Auth AJAX actions (available to both logged-in and guests)
+        $auth_actions = [
+            'wwc_register'               => 'ajax_register',
+            'wwc_login'                  => 'ajax_login',
+            'wwc_logout'                 => 'ajax_logout',
+            'wwc_password_reset_request' => 'ajax_password_reset_request',
+            'wwc_password_reset_confirm' => 'ajax_password_reset_confirm',
+        ];
+
+        foreach ($auth_actions as $action => $method) {
+            add_action("wp_ajax_{$action}",        [$this->auth, $method]);
+            add_action("wp_ajax_nopriv_{$action}", [$this->auth, $method]);
         }
     }
 

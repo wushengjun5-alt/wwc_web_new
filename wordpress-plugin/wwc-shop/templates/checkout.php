@@ -7,13 +7,16 @@
 
 defined('ABSPATH') || exit;
 
-$countries = WWC_Checkout::get_shipping_countries();
-$payment_methods = WWC_Checkout::get_payment_methods();
-$states = WWC_Checkout::get_tunisia_states();
+$currency        = get_option('wwc_default_currency', 'TND');
+$currency_symbol = $currency === 'EUR' ? '€' : 'DT';
+$countries       = WWC_Checkout::get_shipping_countries();
+$payment_methods = WWC_Checkout::get_payment_methods($currency);
+$states          = WWC_Checkout::get_tunisia_states();
 ?>
 
 <div class="wwc-checkout-wrapper">
     <form id="wwc-checkout-form" class="wwc-checkout-form">
+        <input type="hidden" name="currency" value="<?php echo esc_attr($currency); ?>">
 
         <div class="wwc-checkout-main">
 
@@ -101,10 +104,13 @@ $states = WWC_Checkout::get_tunisia_states();
                 <h2><?php esc_html_e('Méthode de paiement', 'wwc-shop'); ?></h2>
 
                 <div class="wwc-payment-methods">
-                    <?php foreach ($payment_methods as $method): ?>
+                    <?php
+                    $first_method = true;
+                    foreach ($payment_methods as $method):
+                    ?>
                         <label class="wwc-payment-method">
                             <input type="radio" name="payment_method" value="<?php echo esc_attr($method['id']); ?>"
-                                   <?php checked($method['id'], 'stripe'); ?>>
+                                   <?php if ($first_method) { echo 'checked'; $first_method = false; } ?>>
                             <span class="wwc-payment-method-content">
                                 <span class="wwc-payment-method-title"><?php echo esc_html($method['title']); ?></span>
                                 <span class="wwc-payment-method-desc"><?php echo esc_html($method['description']); ?></span>
@@ -139,18 +145,18 @@ $states = WWC_Checkout::get_tunisia_states();
                     </div>
                 </div>
 
-                <div class="wwc-checkout-totals">
+                <div class="wwc-checkout-totals" data-currency="<?php echo esc_attr($currency); ?>" data-currency-symbol="<?php echo esc_attr($currency_symbol); ?>">
                     <div class="wwc-checkout-row">
                         <span><?php esc_html_e('Sous-total', 'wwc-shop'); ?></span>
-                        <span id="wwc-checkout-subtotal">0 DT</span>
+                        <span id="wwc-checkout-subtotal">0 <?php echo esc_html($currency_symbol); ?></span>
                     </div>
                     <div class="wwc-checkout-row">
                         <span><?php esc_html_e('Livraison', 'wwc-shop'); ?></span>
-                        <span id="wwc-checkout-shipping">7 DT</span>
+                        <span id="wwc-checkout-shipping"><?php esc_html_e('Calculé selon le pays', 'wwc-shop'); ?></span>
                     </div>
                     <div class="wwc-checkout-row wwc-checkout-total">
                         <span><?php esc_html_e('Total', 'wwc-shop'); ?></span>
-                        <span id="wwc-checkout-total">0 DT</span>
+                        <span id="wwc-checkout-total">0 <?php echo esc_html($currency_symbol); ?></span>
                     </div>
                 </div>
 

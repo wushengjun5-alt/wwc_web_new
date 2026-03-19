@@ -198,17 +198,19 @@ STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
 
 # Site URL (for redirects after payment)
 if DEBUG:
-    SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
-    API_URL = config('API_URL', default='http://127.0.0.1:8000/api/v1')
+    SITE_URL  = config('SITE_URL',    default='http://127.0.0.1:8000')
+    API_URL   = config('API_URL',     default='http://127.0.0.1:8000/api/v1')
+    WP_SITE_URL = config('WP_SITE_URL', default='http://localhost')
 else:
-    SITE_URL = config('SITE_URL', default='https://wallahwecan.org')
-    API_URL = config('API_URL', default='https://api.wallahwecan.org')
+    SITE_URL  = config('SITE_URL',    default='https://wallahwecan.org')
+    API_URL   = config('API_URL',     default='https://api.wallahwecan.org')
+    WP_SITE_URL = config('WP_SITE_URL', default='https://wallahwecan.org')
 
-# Currency Exchange Rates (update periodically or use API)
-EXCHANGE_RATES = {
-    'TND': 1.0,
-    'EUR': 0.30,  # 1 TND = 0.30 EUR approximately
-}
+# TND to EUR conversion rate used when charging via Stripe.
+# Stripe does not support TND natively; orders are charged in EUR.
+# The customer's bank handles the final TND conversion on their card statement.
+# Update this value periodically or replace with a live rate API in production.
+TND_TO_EUR_RATE = config('TND_TO_EUR_RATE', default=0.30, cast=float)
 
 # Email Configuration
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')

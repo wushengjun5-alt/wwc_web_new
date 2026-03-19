@@ -176,23 +176,34 @@ class ComposableBoxViewSet(viewsets.ReadOnlyModelViewSet):
 class CartViewSet(viewsets.ViewSet):
     """ViewSet for shopping cart operations"""
     permission_classes = [AllowAny]
+    # Disable SessionAuthentication so CSRF is not enforced on POST requests
+    # from the WordPress plugin. Cart identity uses X-Session-Key header instead.
+    authentication_classes = []
 
     def get_cart(self, request):
-        """Get or create cart for user/session"""
+        """Get or create cart for user/session.
+
+        Identity priority:
+        1. Authenticated user (JWT token in Authorization header)
+        2. X-Session-Key header sent by the WP plugin (PHP session ID)
+        3. Django session key as fallback
+        """
         if request.user.is_authenticated:
             cart, created = Cart.objects.get_or_create(user=request.user)
-            # Merge any session cart
-            session_key = request.session.session_key
+            # Merge any guest cart that shares the same session key
+            session_key = request.META.get('HTTP_X_SESSION_KEY') or request.session.session_key
             if session_key:
                 session_cart = Cart.objects.filter(session_key=session_key).first()
                 if session_cart and session_cart != cart:
                     cart.merge_with(session_cart)
         else:
-            if not request.session.session_key:
-                request.session.create()
-            cart, created = Cart.objects.get_or_create(
-                session_key=request.session.session_key
-            )
+            # Use the PHP session key sent by the WP plugin, fall back to Django session
+            session_key = request.META.get('HTTP_X_SESSION_KEY')
+            if not session_key:
+                if not request.session.session_key:
+                    request.session.create()
+                session_key = request.session.session_key
+            cart, created = Cart.objects.get_or_create(session_key=session_key)
         return cart
 
     def list(self, request):
@@ -309,6 +320,20 @@ class CartViewSet(viewsets.ViewSet):
 # Checkout Views
 # ============================================
 
+def _calculate_shipping(country, subtotal, currency):
+    """
+    Calculate shipping cost based on destination country and order subtotal.
+    Mirrors the logic in WWC_Checkout::calculate_shipping() in the WP plugin.
+    """
+    rates = {'TN': 7.00, 'FR': 15.00, 'BE': 15.00, 'CH': 20.00, 'DE': 20.00}
+    free_thresholds = {'TN': 100.00, 'FR': 50.00, 'BE': 50.00, 'CH': 75.00, 'DE': 75.00}
+
+    threshold = free_thresholds.get(country, 75.00)
+    if subtotal >= threshold:
+        return 0.00
+    return rates.get(country, 20.00)
+
+
 class CheckoutView(APIView):
     """Handle checkout process"""
     permission_classes = [AllowAny]
@@ -339,9 +364,13 @@ class CheckoutView(APIView):
 
         data = serializer.validated_data
 
+        payment_method = data['payment_method']
+
         # Calculate totals
         subtotal = cart.get_total()
-        shipping_cost = 7.00  # Fixed shipping for now
+        country = data.get('shipping_country', 'TN')
+        from decimal import Decimal
+        shipping_cost = Decimal(str(_calculate_shipping(country, float(subtotal), cart.currency)))
         total = subtotal + shipping_cost
 
         # Calculate impact
@@ -399,14 +428,32 @@ class CheckoutView(APIView):
         # Clear cart
         cart.clear()
 
-        return Response({
+        # For bank transfer orders, send instructions email immediately
+        if order.payment_method == 'bank_transfer':
+            from .payments import _send_order_confirmation_email
+            _send_order_confirmation_email(order)
+
+        response_data = {
             'order_number': order.order_number,
             'order_id': str(order.id),
             'total': str(order.total),
             'currency': order.currency,
             'status': order.status,
             'payment_method': order.payment_method,
-        }, status=status.HTTP_201_CREATED)
+        }
+
+        # For bank transfer, include instructions directly in response
+        if order.payment_method == 'bank_transfer':
+            response_data['bank_transfer'] = {
+                'bank_name': 'Banque de Tunisie',
+                'account_holder': 'Wallah We Can',
+                'iban': 'TN59 XXXX XXXX XXXX XXXX XXXX',
+                'reference': order.order_number,
+                'amount': str(order.total),
+                'currency': order.currency,
+            }
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
@@ -575,6 +622,7 @@ class ImpactSummaryView(APIView):
 class UserRegistrationView(generics.CreateAPIView):
     """User registration endpoint"""
     permission_classes = [AllowAny]
+    authentication_classes = []
     serializer_class = UserRegistrationSerializer
 
     def create(self, request, *args, **kwargs):
@@ -582,8 +630,22 @@ class UserRegistrationView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
+        # Issue JWT tokens immediately so the user is logged in after registration
+        from rest_framework_simplejwt.tokens import RefreshToken
+        refresh = RefreshToken.for_user(user)
+
+        # Merge guest cart if session key provided
+        session_key = request.META.get('HTTP_X_SESSION_KEY')
+        if session_key:
+            guest_cart = Cart.objects.filter(session_key=session_key).first()
+            if guest_cart and guest_cart.items.exists():
+                user_cart, _ = Cart.objects.get_or_create(user=user)
+                user_cart.merge_with(guest_cart)
+
         return Response({
-            'message': 'Registration successful',
+            'message': 'Inscription réussie',
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
             'user': {
                 'id': user.id,
                 'email': user.email,
@@ -591,3 +653,140 @@ class UserRegistrationView(generics.CreateAPIView):
                 'last_name': user.last_name,
             }
         }, status=status.HTTP_201_CREATED)
+
+
+class UserLoginView(APIView):
+    """Login with email + password, returns JWT tokens"""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        from django.contrib.auth import authenticate
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        email = request.data.get('email', '').strip().lower()
+        password = request.data.get('password', '')
+
+        if not email or not password:
+            return Response(
+                {'error': 'Email et mot de passe requis'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Django username == email in this project
+        user = authenticate(request, username=email, password=password)
+        if not user:
+            return Response(
+                {'error': 'Email ou mot de passe incorrect'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_active:
+            return Response(
+                {'error': 'Ce compte est désactivé'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        refresh = RefreshToken.for_user(user)
+
+        # Merge guest cart on login
+        session_key = request.META.get('HTTP_X_SESSION_KEY')
+        if session_key:
+            guest_cart = Cart.objects.filter(session_key=session_key).first()
+            if guest_cart and guest_cart.items.exists():
+                user_cart, _ = Cart.objects.get_or_create(user=user)
+                user_cart.merge_with(guest_cart)
+
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'customer_type': user.customer.customer_type if hasattr(user, 'customer') else 'individual',
+            }
+        })
+
+
+class PasswordResetRequestView(APIView):
+    """Send password reset email"""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        from django.contrib.auth.models import User
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.core.mail import send_mail
+
+        email = request.data.get('email', '').strip().lower()
+        if not email:
+            return Response({'error': 'Email requis'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Always return success to avoid email enumeration
+        try:
+            user = User.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = f"{settings.WP_SITE_URL}/reinitialiser-mot-de-passe/?uid={uid}&token={token}"
+
+            send_mail(
+                subject='Réinitialisation de votre mot de passe - Wallah We Can',
+                message=(
+                    f"Bonjour {user.first_name},\n\n"
+                    f"Cliquez sur ce lien pour réinitialiser votre mot de passe :\n{reset_url}\n\n"
+                    "Ce lien est valable 24 heures.\n\n"
+                    "Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.\n\n"
+                    "L'équipe WWC"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=True,
+            )
+        except User.DoesNotExist:
+            pass  # Don't reveal whether email exists
+
+        return Response({'message': 'Si cet email existe, un lien de réinitialisation a été envoyé.'})
+
+
+class PasswordResetConfirmView(APIView):
+    """Confirm password reset with uid + token"""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        from django.contrib.auth.models import User
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_decode
+        from django.utils.encoding import force_str
+
+        uid = request.data.get('uid', '')
+        token = request.data.get('token', '')
+        password = request.data.get('password', '')
+        password_confirm = request.data.get('password_confirm', '')
+
+        if not all([uid, token, password, password_confirm]):
+            return Response({'error': 'Tous les champs sont requis'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if password != password_confirm:
+            return Response({'error': 'Les mots de passe ne correspondent pas'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(password) < 8:
+            return Response({'error': 'Le mot de passe doit contenir au moins 8 caractères'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except (User.DoesNotExist, ValueError, TypeError):
+            return Response({'error': 'Lien invalide'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({'error': 'Lien expiré ou invalide'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(password)
+        user.save()
+
+        return Response({'message': 'Mot de passe réinitialisé avec succès'})

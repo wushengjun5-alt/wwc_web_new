@@ -280,9 +280,9 @@ class CheckoutSerializer(serializers.Serializer):
     shipping_postal_code = serializers.CharField(max_length=20)
     shipping_country = serializers.CharField(max_length=2, default='TN')
 
-    # Payment
+    # Payment — Stripe for all currencies; customer's bank handles conversion
     payment_method = serializers.ChoiceField(
-        choices=['stripe', 'bank_transfer', 'cash_on_delivery'],
+        choices=['stripe', 'bank_transfer'],
         default='stripe'
     )
 

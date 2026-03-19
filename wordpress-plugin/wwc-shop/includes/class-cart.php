@@ -187,34 +187,36 @@ class WWC_Cart {
             }
         }
 
-        // Create order
+        // Create order via API
         $order_result = $this->api->create_order($checkout_data);
 
         if (is_wp_error($order_result)) {
             wp_send_json_error(['message' => $order_result->get_error_message()]);
         }
 
-        // If payment method is Stripe, create payment session
-        if ($checkout_data['payment_method'] === 'stripe') {
-            $payment_result = $this->api->create_payment_session($order_result['order_number']);
+        $order_number = $order_result['order_number'];
 
-            if (is_wp_error($payment_result)) {
-                wp_send_json_error(['message' => $payment_result->get_error_message()]);
-            }
+        // All orders go through Stripe; redirect to hosted checkout
+        $payment_result = $this->api->create_payment_session($order_number);
 
-            wp_send_json_success([
-                'message' => __('Order created', 'wwc-shop'),
-                'order_number' => $order_result['order_number'],
-                'checkout_url' => $payment_result['checkout_url'],
-                'redirect' => true,
-            ]);
+        if (is_wp_error($payment_result)) {
+            wp_send_json_error(['message' => $payment_result->get_error_message()]);
         }
 
-        // For other payment methods
+        // API returned an error field (e.g. Stripe not configured, Stripe error)
+        if (isset($payment_result['error'])) {
+            wp_send_json_error(['message' => $payment_result['error']]);
+        }
+
+        if (empty($payment_result['checkout_url'])) {
+            wp_send_json_error(['message' => __('Impossible de créer la session de paiement.', 'wwc-shop')]);
+        }
+
         wp_send_json_success([
-            'message' => __('Order created successfully', 'wwc-shop'),
-            'order_number' => $order_result['order_number'],
-            'redirect_url' => home_url('/checkout/success/?order=' . $order_result['order_number']),
+            'message'      => __('Commande créée', 'wwc-shop'),
+            'order_number' => $order_number,
+            'checkout_url' => $payment_result['checkout_url'],
+            'redirect'     => true,
         ]);
     }
 

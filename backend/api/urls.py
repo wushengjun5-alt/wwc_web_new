@@ -58,10 +58,15 @@ urlpatterns = [
 
     # Auth
     path('auth/register/', views.UserRegistrationView.as_view(), name='register'),
+    path('auth/login/', views.UserLoginView.as_view(), name='login'),
+    path('auth/password-reset/', views.PasswordResetRequestView.as_view(), name='password-reset'),
+    path('auth/password-reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 
-    # Payments
-    path('payments/create-intent/', payments.CreatePaymentIntentView.as_view(), name='create-payment-intent'),
+    # Payments - Stripe (EUR only)
     path('payments/create-session/', payments.CreateCheckoutSessionView.as_view(), name='create-checkout-session'),
     path('payments/webhook/', payments.StripeWebhookView.as_view(), name='stripe-webhook'),
     path('payments/status/<str:order_number>/', payments.PaymentStatusView.as_view(), name='payment-status'),
+
+    # Payments - Bank transfer (TND only)
+    path('payments/bank-transfer/<str:order_number>/', payments.BankTransferInstructionsView.as_view(), name='bank-transfer-instructions'),
 ]
