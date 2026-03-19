@@ -307,7 +307,7 @@ class CartViewSet(viewsets.ViewSet):
             'item_count': cart.get_item_count()
         })
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path='currency')
     def set_currency(self, request):
         """Set cart currency"""
         currency = request.data.get('currency', 'TND')
