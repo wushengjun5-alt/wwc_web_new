@@ -590,15 +590,56 @@
         // Order totals (set by renderCheckoutPage, used by updateTotal)
         let _subtotal = 0;
         let _shipping = 0;
+        let _discountAmount = 0;
+        let _appliedCoupon = '';
 
         function updateTotal() {
             const giftChecked = document.getElementById('gift_packaging')?.checked;
             const giftFee = giftChecked ? 5.00 : 0;
-            const newTotal = _subtotal + _shipping + giftFee;
+            const newTotal = Math.max(0, _subtotal + _shipping + giftFee - _discountAmount);
             const totalEl = document.getElementById('total-display');
             const giftRow = document.getElementById('gift-row');
+            const discountRow = document.getElementById('discount-row');
             if (totalEl) totalEl.textContent = newTotal.toFixed(2) + ' DT';
             if (giftRow) giftRow.style.display = giftChecked ? '' : 'none';
+            if (discountRow) discountRow.style.display = _discountAmount > 0 ? '' : 'none';
+        }
+
+        async function applyCoupon() {
+            const code = document.getElementById('coupon-input')?.value.trim().toUpperCase();
+            const msgEl = document.getElementById('coupon-msg');
+            if (!code) return;
+
+            try {
+                const res = await fetch(`${API_URL}/coupons/apply/`, {
+                    method: 'POST',
+                    headers: apiHeaders(),
+                    body: JSON.stringify({ code, subtotal: _subtotal })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    msgEl.textContent = data.error || 'Code invalide.';
+                    msgEl.style.color = 'var(--wwc-error, #dc3545)';
+                    msgEl.style.display = '';
+                    _discountAmount = 0;
+                    _appliedCoupon = '';
+                } else {
+                    _discountAmount = parseFloat(data.discount_amount);
+                    _appliedCoupon = data.code;
+                    msgEl.textContent = `Code "${data.code}" applique : -${_discountAmount.toFixed(2)} DT`;
+                    msgEl.style.color = 'green';
+                    msgEl.style.display = '';
+                    const label = document.getElementById('discount-code-label');
+                    const amountEl = document.getElementById('discount-amount-display');
+                    if (label) label.textContent = data.code;
+                    if (amountEl) amountEl.textContent = `-${_discountAmount.toFixed(2)} DT`;
+                }
+            } catch {
+                msgEl.textContent = 'Erreur lors de la vérification.';
+                msgEl.style.color = 'var(--wwc-error, #dc3545)';
+                msgEl.style.display = '';
+            }
+            updateTotal();
         }
 
         // Render checkout page
@@ -752,6 +793,15 @@
                                 ${itemsHtml}
                             </div>
 
+                            <!-- Coupon code -->
+                            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                                <input type="text" id="coupon-input" placeholder="Code promo"
+                                    style="flex:1;padding:9px 12px;border:1px solid var(--wwc-border);border-radius:8px;font-size:14px;font-family:inherit;text-transform:uppercase;">
+                                <button type="button" onclick="applyCoupon()"
+                                    style="padding:9px 16px;background:var(--wwc-primary);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Appliquer</button>
+                            </div>
+                            <div id="coupon-msg" style="font-size:13px;margin-bottom:12px;display:none;"></div>
+
                             <div class="summary-totals">
                                 <div class="summary-row">
                                     <span>Sous-total</span>
@@ -760,6 +810,10 @@
                                 <div class="summary-row">
                                     <span>Livraison</span>
                                     <span>${shipping.toFixed(2)} DT</span>
+                                </div>
+                                <div class="summary-row" id="discount-row" style="display:none;color:green;">
+                                    <span>Remise (<span id="discount-code-label"></span>)</span>
+                                    <span id="discount-amount-display">-0.00 DT</span>
                                 </div>
                                 <div class="summary-row" id="gift-row" style="display:none;">
                                     <span>🎁 Emballage cadeau</span>
@@ -835,6 +889,7 @@
                 payment_method: formData.get('payment_method'),
                 customer_notes: formData.get('customer_notes') || '',
                 gift_packaging: document.getElementById('gift_packaging')?.checked || false,
+                coupon_code: _appliedCoupon || '',
             };
 
             try {

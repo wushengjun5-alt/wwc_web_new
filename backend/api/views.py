@@ -22,7 +22,7 @@ from products.models import (
     Producer, ProductCategory, Product, ProductImage,
     ComposableBox, Review
 )
-from orders.models import Cart, CartItem, Order, OrderItem, ImpactEvent
+from orders.models import Cart, CartItem, Order, OrderItem, ImpactEvent, Coupon
 from customers.models import Customer, CustomerAddress, Wishlist
 
 from .serializers import (
@@ -341,6 +341,38 @@ def _calculate_shipping(country, subtotal, currency):
     return rates.get(country, 20.00)
 
 
+class ApplyCouponView(APIView):
+    """Validate a coupon code and return the discount amount"""
+    permission_classes = [AllowAny]
+    authentication_classes = [CsrfExemptSessionAuthentication]
+
+    def post(self, request):
+        code = request.data.get('code', '').strip().upper()
+        subtotal = request.data.get('subtotal', 0)
+        try:
+            subtotal = float(subtotal)
+        except (ValueError, TypeError):
+            subtotal = 0
+
+        try:
+            coupon = Coupon.objects.get(code=code)
+        except Coupon.DoesNotExist:
+            return Response({'error': 'Code promo invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        valid, msg = coupon.is_valid(subtotal)
+        if not valid:
+            return Response({'error': msg}, status=status.HTTP_400_BAD_REQUEST)
+
+        from decimal import Decimal
+        discount = coupon.calculate_discount(Decimal(str(subtotal)))
+        return Response({
+            'code': coupon.code,
+            'discount_type': coupon.discount_type,
+            'discount_value': str(coupon.discount_value),
+            'discount_amount': str(discount),
+        })
+
+
 class CheckoutView(APIView):
     """Handle checkout process"""
     permission_classes = [AllowAny]
@@ -386,7 +418,21 @@ class CheckoutView(APIView):
         if gift_packaging:
             gift_packaging_fee = Decimal('5.00') if cart.currency == 'TND' else Decimal('2.00')
 
-        total = subtotal + shipping_cost + gift_packaging_fee
+        # Apply coupon discount
+        coupon_code = data.get('coupon_code', '').strip().upper()
+        discount_amount = Decimal('0.00')
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code=coupon_code)
+                valid, _ = coupon.is_valid(float(subtotal))
+                if valid:
+                    discount_amount = coupon.calculate_discount(subtotal)
+                    coupon.used_count += 1
+                    coupon.save(update_fields=['used_count'])
+            except Coupon.DoesNotExist:
+                pass
+
+        total = subtotal + shipping_cost + gift_packaging_fee - discount_amount
 
         # Calculate impact
         impact_summary = cart.get_total_impact()
@@ -400,6 +446,7 @@ class CheckoutView(APIView):
             status='pending',
             currency=cart.currency,
             subtotal=subtotal,
+            discount_amount=discount_amount,
             shipping_cost=shipping_cost,
             tax_amount=gift_packaging_fee,
             total=total,
@@ -444,8 +491,8 @@ class CheckoutView(APIView):
         # Clear cart
         cart.clear()
 
-        # For bank transfer orders, send instructions email immediately
-        if order.payment_method == 'bank_transfer':
+        # Send confirmation email for non-Stripe orders immediately
+        if order.payment_method in ('bank_transfer', 'cash_on_delivery'):
             from .payments import _send_order_confirmation_email
             _send_order_confirmation_email(order)
 

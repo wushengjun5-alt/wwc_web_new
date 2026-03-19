@@ -615,6 +615,10 @@
                 <a href="#">Événements</a>
             </nav>
             <div class="header-actions">
+                <div id="currency-switcher" style="display:flex;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;">
+                    <button id="btn-tnd" onclick="switchCurrency('TND')" style="padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:white;color:var(--wwc-primary);">DT</button>
+                    <button id="btn-eur" onclick="switchCurrency('EUR')" style="padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:transparent;color:white;">€</button>
+                </div>
                 <button class="cart-icon" onclick="toggleCart()" title="Voir le panier">
                     🛒
                     <span class="cart-count" id="cart-count">0</span>
@@ -1217,9 +1221,32 @@
         let searchTimer     = null;
         const PAGE_SIZE     = 12;
 
+        // Currency
+        function getCurrentCurrency() {
+            return localStorage.getItem('wwc_currency') || 'TND';
+        }
+        function renderCurrencySwitcher() {
+            const cur = getCurrentCurrency();
+            const activeStyle = 'padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:white;color:var(--wwc-primary);';
+            const inactiveStyle = 'padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:transparent;color:white;';
+            document.getElementById('btn-tnd').style.cssText = cur === 'TND' ? activeStyle : inactiveStyle;
+            document.getElementById('btn-eur').style.cssText = cur === 'EUR' ? activeStyle : inactiveStyle;
+        }
+        async function switchCurrency(currency) {
+            localStorage.setItem('wwc_currency', currency);
+            renderCurrencySwitcher();
+            await fetch(`${API_URL}/cart/currency/`, {
+                method: 'POST', headers: apiHeaders(),
+                body: JSON.stringify({ currency })
+            });
+            await loadCart();
+            loadProducts();
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             renderAuthNav();
+            renderCurrencySwitcher();
             loadCategories();
             loadProducts();
             loadCart();
@@ -1365,7 +1392,7 @@
                                 ${product.is_natural ? '<span class="badge badge-natural">NATUREL</span>' : ''}
                                 ${product.is_organic ? '<span class="badge badge-organic">BIO</span>' : ''}
                             </div>
-                            <div class="product-price">${product.price_tnd} DT</div>
+                            <div class="product-price">${getCurrentCurrency() === 'EUR' && product.price_eur ? product.price_eur + ' €' : product.price_tnd + ' DT'}</div>
                             <div class="product-impact">💝 ${product.impact_quantity} ${escHtml(product.impact_item)} pour ${escHtml(product.impact_school)}</div>
                             <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${product.id})">
                                 ${product.is_in_stock === false ? 'Rupture de stock' : 'Ajouter au panier'}

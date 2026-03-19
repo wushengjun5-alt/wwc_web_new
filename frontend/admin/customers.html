@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWC Admin - Clients</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">W</span>
+                <span class="logo-text">WWC Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="nav-icon">📦</span>
+                <span>Produits</span>
+            </a>
+            <a href="categories.html" class="nav-item">
+                <span class="nav-icon">📁</span>
+                <span>Catégories</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="nav-icon">🛒</span>
+                <span>Commandes</span>
+            </a>
+            <a href="customers.html" class="nav-item active">
+                <span class="nav-icon">👥</span>
+                <span>Clients</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="../index.html" class="nav-item">
+                <span class="nav-icon">🏪</span>
+                <span>Voir la boutique</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connexion...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1>Clients</h1>
+            </div>
+            <div class="header-right">
+                <span id="customerCount" style="font-size:14px; color:var(--admin-text-light);"></span>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Filters -->
+            <section class="filters-section">
+                <form id="filtersForm" class="filters-form" onsubmit="return false;">
+                    <div class="filter-group">
+                        <input type="search" id="searchInput" placeholder="Nom, email, téléphone..." class="search-input">
+                    </div>
+                    <div class="filter-actions">
+                        <button type="button" onclick="applySearch()" class="btn btn-sm">Rechercher</button>
+                        <button type="button" id="clearFilters" class="btn btn-sm btn-outline">Effacer</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Customers Table -->
+            <section class="section">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Commandes</th>
+                                <th>Impact</th>
+                                <th>Total dépensé</th>
+                                <th>Inscrit le</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersBody">
+                            <tr><td colspan="8" class="loading">Chargement...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/admin-config.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script>
+        let currentPage = 1;
+        let currentSearch = '';
+        let searchTimer = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const connected = await AdminAPI.testConnection();
+            if (!connected && !AdminConfig.getApiKey()) {
+                AdminConfig.updateApiStatus('error', 'Clé API requise');
+                document.getElementById('customersBody').innerHTML =
+                    '<tr><td colspan="8" style="text-align:center; padding:40px;">Entrez votre clé API pour accéder à la liste des clients.</td></tr>';
+                return;
+            }
+            loadCustomers();
+
+            document.getElementById('searchInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') applySearch();
+            });
+            document.getElementById('searchInput').addEventListener('input', function() {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(applySearch, 400);
+            });
+            document.getElementById('clearFilters').addEventListener('click', () => {
+                document.getElementById('searchInput').value = '';
+                currentSearch = '';
+                currentPage = 1;
+                loadCustomers();
+            });
+        });
+
+        function applySearch() {
+            currentSearch = document.getElementById('searchInput').value.trim();
+            currentPage = 1;
+            loadCustomers();
+        }
+
+        async function loadCustomers() {
+            const tbody = document.getElementById('customersBody');
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">Chargement...</td></tr>';
+
+            try {
+                const params = { page: currentPage, page_size: 20 };
+                if (currentSearch) params.search = currentSearch;
+                const qs = new URLSearchParams(params).toString();
+
+                const data = await AdminAPI.get(`/admin/customers/?${qs}`);
+                const customers = data.results || data;
+                const total = data.count || customers.length;
+
+                document.getElementById('customerCount').textContent =
+                    total > 0 ? `${total} client${total > 1 ? 's' : ''}` : '';
+
+                if (!customers.length) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--admin-text-light);">Aucun client trouvé.</td></tr>';
+                    document.getElementById('pagination').innerHTML = '';
+                    return;
+                }
+
+                tbody.innerHTML = customers.map(c => `
+                    <tr>
+                        <td>
+                            <div style="font-weight:600;">${escHtml((c.first_name + ' ' + c.last_name).trim() || '—')}</div>
+                            <div style="font-size:12px; color:var(--admin-text-light);">${escHtml(c.customer_type || '')}</div>
+                        </td>
+                        <td>${escHtml(c.email || '—')}</td>
+                        <td>${escHtml(c.phone || '—')}</td>
+                        <td style="text-align:center; font-weight:600;">${c.total_orders || 0}</td>
+                        <td style="text-align:center;">${c.total_impact_items || 0} articles</td>
+                        <td style="font-weight:600;">${parseFloat(c.total_purchases || 0).toFixed(2)} DT</td>
+                        <td style="color:var(--admin-text-light); font-size:13px;">${formatDate(c.date_joined)}</td>
+                        <td>
+                            <div class="row-actions">
+                                <a href="orders.html?customer=${encodeURIComponent(c.email || '')}">Commandes</a>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                renderPagination(total, 20);
+
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--admin-danger);">Erreur: ${escHtml(error.message)}</td></tr>`;
+            }
+        }
+
+        function renderPagination(total, pageSize) {
+            const el = document.getElementById('pagination');
+            const totalPages = Math.ceil(total / pageSize);
+            if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+            let html = '';
+            if (currentPage > 1)
+                html += `<button class="btn btn-sm btn-outline" onclick="goToPage(${currentPage - 1})">← Précédent</button>`;
+            html += `<span style="font-size:14px; color:var(--admin-text-light); padding:0 12px;">Page ${currentPage} / ${totalPages}</span>`;
+            if (currentPage < totalPages)
+                html += `<button class="btn btn-sm btn-outline" onclick="goToPage(${currentPage + 1})">Suivant →</button>`;
+            el.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            loadCustomers();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function escHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

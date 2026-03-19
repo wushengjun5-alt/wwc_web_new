@@ -178,6 +178,9 @@
                         ${parseFloat(order.shipping_cost) > 0
                             ? `<div class="total-row"><span>Livraison</span><span>${order.shipping_cost} ${symbol}</span></div>`
                             : ''}
+                        ${parseFloat(order.discount_amount) > 0
+                            ? `<div class="total-row" style="color:green;"><span>Remise${order.coupon_code ? ` (${escHtml(order.coupon_code)})` : ''}</span><span>-${order.discount_amount} ${symbol}</span></div>`
+                            : ''}
                         ${parseFloat(order.tax_amount) > 0
                             ? `<div class="total-row"><span>🎁 Emballage cadeau</span><span>${order.tax_amount} ${symbol}</span></div>`
                             : ''}

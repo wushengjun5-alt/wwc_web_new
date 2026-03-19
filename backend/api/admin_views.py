@@ -16,6 +16,7 @@ from django.utils import timezone
 
 from products.models import Product, ProductImage, ProductCategory, Producer
 from orders.models import Order
+from customers.models import Customer
 from .admin_serializers import (
     AdminProductListSerializer,
     AdminProductDetailSerializer,
@@ -417,6 +418,13 @@ class AdminStatsView(APIView):
             Q(name_ar__isnull=True) | Q(name_ar='')
         ).count()
 
+        # Order stats
+        total_orders = Order.objects.count()
+        pending_orders = Order.objects.filter(status='pending').count()
+        total_revenue = Order.objects.filter(
+            status__in=['paid', 'processing', 'shipped', 'delivered']
+        ).aggregate(rev=Sum('total'))['rev'] or 0
+
         return Response({
             'total_products': total_products,
             'published_products': published_products,
@@ -426,6 +434,10 @@ class AdminStatsView(APIView):
             'missing_arabic': missing_ar,
             'categories_count': ProductCategory.objects.filter(is_active=True).count(),
             'producers_count': Producer.objects.filter(is_active=True).count(),
+            'total_orders': total_orders,
+            'pending_orders': pending_orders,
+            'total_revenue': str(total_revenue),
+            'total_customers': Customer.objects.count(),
         })
 
 
@@ -565,4 +577,57 @@ class AdminOrderDetailView(APIView):
             'tracking_number': order.tracking_number or '',
             'updated_fields': updated_fields,
             'message': 'Commande mise à jour avec succès.',
+        })
+
+
+# ============================================
+# Admin Customer Management
+# ============================================
+
+class AdminCustomerListView(APIView):
+    """
+    List customers for admin.
+    GET /api/v1/admin/customers/
+    Query params: search, page, page_size
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request):
+        queryset = Customer.objects.select_related('user').order_by('-user__date_joined')
+
+        search = request.query_params.get('search', '')
+        if search:
+            queryset = queryset.filter(
+                Q(user__email__icontains=search) |
+                Q(user__first_name__icontains=search) |
+                Q(user__last_name__icontains=search) |
+                Q(phone__icontains=search)
+            )
+
+        page_size = int(request.query_params.get('page_size', 20))
+        page = int(request.query_params.get('page', 1))
+        total = queryset.count()
+        offset = (page - 1) * page_size
+        customers = queryset[offset:offset + page_size]
+
+        data = [{
+            'id': c.id,
+            'email': c.user.email,
+            'first_name': c.user.first_name,
+            'last_name': c.user.last_name,
+            'phone': c.phone or '',
+            'customer_type': c.customer_type,
+            'total_orders': c.total_orders,
+            'total_purchases': str(c.total_purchases),
+            'total_impact_items': c.total_impact_items,
+            'date_joined': c.user.date_joined.isoformat(),
+            'is_active': c.user.is_active,
+        } for c in customers]
+
+        return Response({
+            'count': total,
+            'page': page,
+            'page_size': page_size,
+            'results': data,
         })

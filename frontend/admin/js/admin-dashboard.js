@@ -34,6 +34,10 @@ async function loadStats() {
         document.getElementById('statLowStock').textContent = stats.low_stock_products || 0;
         document.getElementById('statMissingEn').textContent = stats.missing_english || 0;
         document.getElementById('statMissingAr').textContent = stats.missing_arabic || 0;
+        document.getElementById('statTotalOrders').textContent = stats.total_orders || 0;
+        document.getElementById('statPendingOrders').textContent = stats.pending_orders || 0;
+        document.getElementById('statTotalCustomers').textContent = stats.total_customers || 0;
+        document.getElementById('statRevenue').textContent = parseFloat(stats.total_revenue || 0).toFixed(0);
 
     } catch (error) {
         console.error('Error loading stats:', error);
