@@ -181,11 +181,15 @@ class WWC_API_Client {
     /**
      * Get all products
      */
-    public function get_products($params = []) {
+    public function get_products($params = [], $paginated = false) {
         $response = $this->get('products/', $params);
 
         if (is_wp_error($response)) {
             return $response;
+        }
+
+        if ($paginated) {
+            return $response; // return full { count, next, previous, results }
         }
 
         // Handle paginated response

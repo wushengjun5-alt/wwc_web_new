@@ -10,10 +10,18 @@
 defined('ABSPATH') || exit;
 
 $api = wwc_shop()->api;
+
+// Redirect to login if not authenticated with Django
+if (!$api->is_authenticated()) {
+    $login_url = add_query_arg('redirect', urlencode(home_url('/mon-compte/')), home_url('/connexion/'));
+    wp_redirect($login_url);
+    exit;
+}
+
 $dashboard_data = $api->get_customer_dashboard();
 
 if (is_wp_error($dashboard_data)) {
-    echo '<p class="wwc-error">' . esc_html__('Unable to load dashboard data', 'wwc-shop') . '</p>';
+    echo '<p class="wwc-error">' . esc_html__('Impossible de charger les données du tableau de bord.', 'wwc-shop') . '</p>';
     return;
 }
 
@@ -110,7 +118,7 @@ $impact_summary = $dashboard_data['impact_summary'] ?? [];
                     <?php foreach ($recent_orders as $order): ?>
                     <tr>
                         <td>
-                            <a href="<?php echo esc_url(home_url('/account/order/' . $order['order_number'] . '/')); ?>">
+                            <a href="<?php echo esc_url(add_query_arg('order', $order['order_number'], home_url('/ma-commande/'))); ?>">
                                 #<?php echo esc_html($order['order_number']); ?>
                             </a>
                         </td>
@@ -131,12 +139,12 @@ $impact_summary = $dashboard_data['impact_summary'] ?? [];
 
     <!-- Account Actions -->
     <div class="wwc-dashboard-actions">
-        <a href="<?php echo esc_url(home_url('/shop/')); ?>" class="wwc-btn wwc-btn-primary">
+        <a href="<?php echo esc_url(home_url('/boutique/')); ?>" class="wwc-btn wwc-btn-primary">
             <?php esc_html_e('Continuer vos achats', 'wwc-shop'); ?>
         </a>
-        <a href="<?php echo esc_url(wp_logout_url(home_url())); ?>" class="wwc-btn wwc-btn-secondary">
+        <button type="button" class="wwc-btn wwc-btn-secondary wwc-logout-btn">
             <?php esc_html_e('Déconnexion', 'wwc-shop'); ?>
-        </a>
+        </button>
     </div>
 
 </div>

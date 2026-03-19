@@ -1081,6 +1081,318 @@
 }
 
 /* ============================================
+   Filter Sidebar + Pagination
+   ============================================ */
+
+.wwc-with-filters {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: var(--wwc-spacing-xl);
+    align-items: start;
+}
+
+.wwc-filter-sidebar {
+    background: var(--wwc-bg);
+    border: 1px solid var(--wwc-border);
+    border-radius: var(--wwc-radius-lg);
+    padding: var(--wwc-spacing-lg);
+    position: sticky;
+    top: 20px;
+}
+
+.wwc-filter-section {
+    margin-bottom: var(--wwc-spacing-lg);
+    padding-bottom: var(--wwc-spacing-lg);
+    border-bottom: 1px solid var(--wwc-border);
+}
+
+.wwc-filter-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: var(--wwc-spacing-md);
+}
+
+.wwc-filter-section h4 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--wwc-text-light);
+}
+
+.wwc-filter-search {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--wwc-border);
+    border-radius: var(--wwc-radius);
+    font-size: 14px;
+}
+
+.wwc-filter-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.wwc-filter-list li {
+    margin-bottom: 4px;
+}
+
+.wwc-filter-list a {
+    display: block;
+    padding: 6px 10px;
+    border-radius: var(--wwc-radius);
+    font-size: 14px;
+    color: var(--wwc-text);
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.wwc-filter-list a:hover,
+.wwc-filter-list a.active {
+    background: var(--wwc-bg-light);
+    color: var(--wwc-primary);
+    font-weight: 600;
+}
+
+.wwc-price-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wwc-price-range input {
+    width: 80px;
+    padding: 6px 8px;
+    border: 1px solid var(--wwc-border);
+    border-radius: var(--wwc-radius);
+    font-size: 14px;
+}
+
+.wwc-price-range span {
+    color: var(--wwc-text-light);
+}
+
+.wwc-filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.wwc-filter-sort {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--wwc-border);
+    border-radius: var(--wwc-radius);
+    font-size: 14px;
+    background: var(--wwc-bg);
+}
+
+.wwc-filter-apply {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.wwc-filter-clear {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    color: var(--wwc-text-light);
+    text-decoration: underline;
+}
+
+.wwc-search-results-label {
+    color: var(--wwc-text-light);
+    font-size: 14px;
+    margin-bottom: var(--wwc-spacing-md);
+}
+
+/* Pagination */
+.wwc-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--wwc-spacing-md);
+    margin-top: var(--wwc-spacing-xl);
+    padding-top: var(--wwc-spacing-lg);
+    border-top: 1px solid var(--wwc-border);
+}
+
+.wwc-page-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--wwc-bg);
+    border: 1px solid var(--wwc-border);
+    border-radius: var(--wwc-radius);
+    color: var(--wwc-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.wwc-page-btn:hover {
+    background: var(--wwc-primary);
+    border-color: var(--wwc-primary);
+    color: #fff;
+}
+
+.wwc-page-info {
+    color: var(--wwc-text-light);
+    font-size: 14px;
+}
+
+@media (max-width: 900px) {
+    .wwc-with-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .wwc-filter-sidebar {
+        position: static;
+    }
+}
+
+/* ============================================
+   Cart Count Badge (header nav)
+   ============================================ */
+
+.wwc-cart-nav-item a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.wwc-cart-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    background: var(--wwc-secondary);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    transition: transform 0.2s;
+}
+
+.wwc-cart-count.has-items {
+    transform: scale(1.1);
+}
+
+/* ============================================
+   Order Detail
+   ============================================ */
+
+.wwc-order-detail {
+    max-width: 800px;
+    margin: var(--wwc-spacing-xl) auto;
+}
+
+.wwc-order-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--wwc-spacing-xl);
+    padding-bottom: var(--wwc-spacing-lg);
+    border-bottom: 2px solid var(--wwc-border);
+}
+
+.wwc-order-detail-header h2 {
+    margin: 0 0 6px;
+    color: var(--wwc-primary);
+}
+
+.wwc-order-date {
+    color: var(--wwc-text-light);
+    font-size: 14px;
+    margin: 0;
+}
+
+.wwc-order-items,
+.wwc-order-address,
+.wwc-order-tracking {
+    margin-bottom: var(--wwc-spacing-xl);
+}
+
+.wwc-order-items h3,
+.wwc-order-address h3,
+.wwc-order-tracking h3 {
+    color: var(--wwc-primary);
+    border-bottom: 1px solid var(--wwc-border);
+    padding-bottom: 8px;
+    margin-bottom: var(--wwc-spacing-md);
+}
+
+.wwc-order-items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wwc-order-items-table th,
+.wwc-order-items-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--wwc-border);
+}
+
+.wwc-order-items-table th {
+    background: var(--wwc-bg-light);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--wwc-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wwc-order-item-impact {
+    font-size: 12px;
+    color: var(--wwc-text-light);
+    margin-top: 4px;
+}
+
+.wwc-order-totals {
+    background: var(--wwc-bg-light);
+    border-radius: var(--wwc-radius);
+    padding: var(--wwc-spacing-md);
+    margin-bottom: var(--wwc-spacing-xl);
+}
+
+.wwc-order-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--wwc-border);
+}
+
+.wwc-order-total-row:last-child {
+    border-bottom: none;
+}
+
+.wwc-order-total-final {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--wwc-primary);
+    padding-top: 12px;
+}
+
+.wwc-order-address address {
+    font-style: normal;
+    line-height: 1.8;
+    color: var(--wwc-text);
+}
+
+.wwc-order-detail-actions {
+    margin-top: var(--wwc-spacing-xl);
+}
+
+/* ============================================
    Auth Forms
    ============================================ */
 

@@ -107,6 +107,9 @@ final class WWC_Shop {
         // Add cart sidebar to footer
         add_action('wp_footer', [$this, 'render_cart_sidebar']);
 
+        // Inject cart count badge into theme nav menus
+        add_filter('wp_nav_menu_items', [$this, 'add_cart_count_to_menu'], 10, 2);
+
         // Admin menu
         add_action('admin_menu', [$this, 'add_admin_menu']);
 
@@ -207,6 +210,7 @@ final class WWC_Shop {
         add_shortcode('wwc_checkout_success', [$this, 'checkout_success_shortcode']);
         add_shortcode('wwc_customer_dashboard', [$this, 'dashboard_shortcode']);
         add_shortcode('wwc_impact', [$this, 'impact_shortcode']);
+        add_shortcode('wwc_order_detail', [$this, 'order_detail_shortcode']);
         add_shortcode('wwc_login', [$this, 'login_shortcode']);
         add_shortcode('wwc_register', [$this, 'register_shortcode']);
         add_shortcode('wwc_forgot_password', [$this, 'forgot_password_shortcode']);
@@ -220,25 +224,47 @@ final class WWC_Shop {
         $atts = shortcode_atts([
             'category' => '',
             'featured' => '',
-            'limit' => 12,
-            'columns' => 3,
+            'limit'    => 12,
+            'columns'  => 3,
+            'filters'  => 'false', // set to "true" to show filter sidebar
         ], $atts, 'wwc_products');
 
-        $params = ['page_size' => $atts['limit']];
+        // Build API params — merge shortcode atts with URL query params (user-applied filters)
+        $params = ['page_size' => intval($atts['limit'])];
 
         if (!empty($atts['category'])) {
-            $params['category'] = $atts['category'];
+            $params['category'] = sanitize_text_field($atts['category']);
         }
-
         if ($atts['featured'] === 'true') {
             $params['is_featured'] = 'true';
         }
 
-        $products = $this->api->get_products($params);
-
-        if (is_wp_error($products)) {
-            return '<p class="wwc-error">' . esc_html__('Unable to load products', 'wwc-shop') . '</p>';
+        // Allow URL query params to override/extend (search, filters, pagination)
+        $allowed_query_params = ['category', 'search', 'ordering', 'min_price', 'max_price',
+                                 'is_natural', 'is_organic', 'in_stock', 'page'];
+        foreach ($allowed_query_params as $qp) {
+            $val = sanitize_text_field($_GET[$qp] ?? '');
+            if ($val !== '') {
+                $params[$qp] = $val;
+            }
         }
+
+        $response  = $this->api->get_products($params, true);
+        $show_filters = $atts['filters'] === 'true';
+
+        if (is_wp_error($response)) {
+            return '<p class="wwc-error">' . esc_html__('Impossible de charger les produits.', 'wwc-shop') . '</p>';
+        }
+
+        $products   = $response['results'] ?? $response;
+        $total      = $response['count'] ?? count($products);
+        $page_size  = $params['page_size'];
+        $current_page = max(1, intval($_GET['page'] ?? 1));
+        $total_pages  = $page_size > 0 ? ceil($total / $page_size) : 1;
+
+        // Fetch categories for filter sidebar
+        $categories = $show_filters ? $this->api->get_categories() : [];
+        if (is_wp_error($categories)) $categories = [];
 
         ob_start();
         include WWC_SHOP_PLUGIN_DIR . 'templates/product-grid.php';
@@ -327,10 +353,6 @@ final class WWC_Shop {
      * Customer dashboard shortcode
      */
     public function dashboard_shortcode($atts) {
-        if (!is_user_logged_in()) {
-            return '<p>' . esc_html__('Please log in to view your dashboard.', 'wwc-shop') . '</p>';
-        }
-
         ob_start();
         include WWC_SHOP_PLUGIN_DIR . 'templates/customer-dashboard.php';
         return ob_get_clean();
@@ -562,6 +584,41 @@ final class WWC_Shop {
         if (!empty($args['description'])) {
             printf('<p class="description">%s</p>', esc_html($args['description']));
         }
+    }
+
+    /**
+     * Append cart count badge to nav menu
+     */
+    public function add_cart_count_to_menu($items, $args) {
+        $cart_link = sprintf(
+            '<li class="wwc-cart-nav-item"><a href="%s" class="wwc-cart-toggle" data-action="open-cart" aria-label="%s">%s <span class="wwc-cart-count">0</span></a></li>',
+            esc_url(home_url('/cart/')),
+            esc_attr__('Panier', 'wwc-shop'),
+            esc_html__('Panier', 'wwc-shop')
+        );
+        return $items . $cart_link;
+    }
+
+    /**
+     * Order detail shortcode
+     */
+    public function order_detail_shortcode($atts) {
+        if (!$this->api->is_authenticated()) {
+            $login_url = add_query_arg('redirect', urlencode(get_permalink()), home_url('/connexion/'));
+            return '<p>' . sprintf(
+                __('Veuillez <a href="%s">vous connecter</a> pour voir cette commande.', 'wwc-shop'),
+                esc_url($login_url)
+            ) . '</p>';
+        }
+
+        $order_number = sanitize_text_field($_GET['order'] ?? '');
+        if (empty($order_number)) {
+            return '<p class="wwc-error">' . esc_html__('Numéro de commande manquant.', 'wwc-shop') . '</p>';
+        }
+
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/order-detail.php';
+        return ob_get_clean();
     }
 
     /**

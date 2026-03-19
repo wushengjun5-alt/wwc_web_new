@@ -48,10 +48,10 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     list_display = [
         'order_number', 'user', 'email', 'status_badge', 'total_display',
-        'payment_method', 'created_at'
+        'payment_method', 'shipping_method_display', 'tracking_number_display', 'created_at'
     ]
-    list_filter = ['status', 'payment_method', 'currency', 'created_at', 'shipping_country']
-    search_fields = ['order_number', 'email', 'phone', 'user__username']
+    list_filter = ['status', 'payment_method', 'currency', 'created_at', 'shipping_country', 'shipping_method']
+    search_fields = ['order_number', 'email', 'phone', 'user__username', 'tracking_number']
     readonly_fields = [
         'id', 'order_number', 'created_at', 'updated_at',
         'total_impact_items', 'impact_summary'
@@ -125,6 +125,22 @@ class OrderAdmin(admin.ModelAdmin):
     def total_display(self, obj):
         return f"{obj.total} {obj.currency}"
     total_display.short_description = 'Total'
+
+    def shipping_method_display(self, obj):
+        if obj.shipping_method:
+            return obj.shipping_method
+        return format_html('<span style="color: #999;">-</span>')
+    shipping_method_display.short_description = 'Transporter'
+
+    def tracking_number_display(self, obj):
+        if obj.tracking_number:
+            return format_html(
+                '<span style="background-color: #e9ecef; padding: 2px 6px; '
+                'border-radius: 3px; font-family: monospace; font-size: 11px;">{}</span>',
+                obj.tracking_number
+            )
+        return format_html('<span style="color: #999;">-</span>')
+    tracking_number_display.short_description = 'Tracking Number'
 
     actions = ['mark_as_paid', 'mark_as_shipped', 'mark_as_delivered']
 
