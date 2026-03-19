@@ -494,8 +494,8 @@
     <header class="header">
         <div class="header-container">
             <a href="/shop/" class="logo">WALLAH WE CAN</a>
-            <a href="/shop/" class="back-link">
-                ← Retour à la boutique
+            <a href="/shop/cart/" class="back-link">
+                ← Mon panier
             </a>
         </div>
     </header>
@@ -825,7 +825,7 @@
                         credentials: 'include',
                         body: JSON.stringify({
                             order_number: orderData.order_number,
-                            success_url: window.location.origin + '/shop/?payment=success&order=' + orderData.order_number,
+                            success_url: window.location.origin + '/shop/order-success/?order=' + orderData.order_number + '&method=stripe',
                             cancel_url: window.location.origin + '/shop/checkout/?payment=cancelled'
                         })
                     });
@@ -853,26 +853,8 @@
                         throw new Error('URL de paiement non reçue');
                     }
                 } else {
-                    // Cash on delivery - order is complete
-                    showNotification('Commande confirmée!', 'success');
-
-                    // Show success page
-                    document.getElementById('main-content').innerHTML = `
-                        <div class="empty-cart" style="background: white; padding: 60px 40px;">
-                            <div class="empty-cart-icon">🎉</div>
-                            <h2 style="color: var(--wwc-success);">Commande confirmée!</h2>
-                            <p style="font-size: 18px; margin: 20px 0;">
-                                Merci pour votre commande <strong>#${orderData.order_number}</strong>
-                            </p>
-                            <p style="color: var(--wwc-text-light);">
-                                Un email de confirmation a été envoyé à <strong>${checkoutData.email}</strong>
-                            </p>
-                            <p style="margin-top: 15px;">
-                                <strong>Total à payer à la livraison:</strong> ${orderData.total} ${orderData.currency}
-                            </p>
-                            <a href="/shop/" style="margin-top: 30px;">Continuer mes achats</a>
-                        </div>
-                    `;
+                    // Bank transfer or cash on delivery — redirect to success page
+                    window.location.href = `/shop/order-success/?order=${orderData.order_number}&method=${checkoutData.payment_method}`;
                 }
 
             } catch (error) {

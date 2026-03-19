@@ -615,7 +615,7 @@
                 <a href="#">Événements</a>
             </nav>
             <div class="header-actions">
-                <button class="cart-icon" onclick="toggleCart()">
+                <button class="cart-icon" onclick="toggleCart()" title="Voir le panier">
                     🛒
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
@@ -705,6 +705,7 @@
                 </div>
             </div>
             <div class="cart-actions">
+                <a href="/shop/cart/" style="display:block; text-align:center; font-size:13px; color:var(--wwc-text-light); text-decoration:none; margin-bottom:10px;">Voir le panier complet →</a>
                 <button class="btn-checkout" onclick="proceedToCheckout()">Passer la commande</button>
             </div>
         </div>

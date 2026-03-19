@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon panier - Wallah We Can</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wwc-primary: #1e3a5f;
+            --wwc-secondary: #ff6b35;
+            --wwc-accent: #f8b4c4;
+            --wwc-text: #2c3e50;
+            --wwc-text-light: #6c757d;
+            --wwc-bg: #ffffff;
+            --wwc-bg-light: #f8f9fa;
+            --wwc-border: #dee2e6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
+
+        .header { background: var(--wwc-primary); padding: 15px 0; }
+        .header-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 22px; font-weight: 700; color: white; text-decoration: none; }
+        .back-link { color: white; text-decoration: none; font-size: 14px; font-weight: 600; opacity: 0.9; }
+        .back-link:hover { opacity: 1; }
+
+        .main { max-width: 1100px; margin: 0 auto; padding: 40px 20px; display: grid; grid-template-columns: 1fr 340px; gap: 28px; align-items: start; }
+        @media (max-width: 820px) { .main { grid-template-columns: 1fr; } }
+
+        .card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .card-title { font-size: 22px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .item-count { font-size: 14px; font-weight: 400; color: var(--wwc-text-light); }
+
+        /* Cart table */
+        .cart-table { width: 100%; border-collapse: collapse; }
+        .cart-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--wwc-text-light); padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--wwc-border); }
+        .cart-table td { padding: 16px 14px; border-bottom: 1px solid var(--wwc-border); vertical-align: middle; }
+        .cart-table tr:last-child td { border-bottom: none; }
+
+        .product-cell { display: flex; align-items: center; gap: 14px; }
+        .product-thumb { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: var(--wwc-bg-light); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden; }
+        .product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .product-name { font-weight: 600; font-size: 15px; }
+        .product-meta { font-size: 12px; color: var(--wwc-text-light); margin-top: 3px; }
+
+        .qty-control { display: flex; align-items: center; gap: 8px; }
+        .qty-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--wwc-border); background: white; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--wwc-text); }
+        .qty-btn:hover { border-color: var(--wwc-primary); color: var(--wwc-primary); }
+        .qty-val { width: 32px; text-align: center; font-weight: 600; font-size: 15px; }
+
+        .remove-btn { background: none; border: none; color: var(--wwc-text-light); cursor: pointer; font-size: 18px; padding: 4px; border-radius: 6px; }
+        .remove-btn:hover { color: #dc3545; background: #fff5f5; }
+
+        .price-cell { font-weight: 700; font-size: 15px; color: var(--wwc-primary); white-space: nowrap; }
+
+        /* Empty */
+        .cart-empty { text-align: center; padding: 60px 20px; }
+        .cart-empty-icon { font-size: 56px; margin-bottom: 16px; }
+        .cart-empty h2 { font-size: 22px; color: var(--wwc-primary); margin-bottom: 8px; }
+        .cart-empty p { color: var(--wwc-text-light); margin-bottom: 24px; }
+
+        /* Summary */
+        .summary-card { position: sticky; top: 20px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--wwc-border); font-size: 14px; }
+        .summary-row:last-of-type { border-bottom: none; }
+        .summary-row.total { font-size: 20px; font-weight: 700; color: var(--wwc-primary); padding-top: 14px; margin-top: 4px; }
+
+        .impact-box { background: linear-gradient(135deg, var(--wwc-accent) 0%, #fce8ed 100%); border-radius: 12px; padding: 16px; margin: 20px 0; }
+        .impact-box h4 { font-size: 14px; color: var(--wwc-primary); margin-bottom: 8px; }
+        .impact-box ul { padding-left: 16px; }
+        .impact-box li { font-size: 13px; color: var(--wwc-text); margin-bottom: 4px; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 14px 22px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; border: none; width: 100%; transition: all 0.18s; margin-top: 10px; }
+        .btn-primary { background: var(--wwc-secondary); color: white; }
+        .btn-primary:hover { background: #e55a2b; }
+        .btn-outline { background: transparent; color: var(--wwc-primary); border: 2px solid var(--wwc-primary); margin-top: 8px; }
+        .btn-outline:hover { background: var(--wwc-primary); color: white; }
+
+        /* Spinner */
+        .spinner { display: inline-block; width: 36px; height: 36px; border: 3px solid var(--wwc-border); border-top-color: var(--wwc-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-state { text-align: center; padding: 60px 0; }
+
+        /* Notification */
+        .notification { position: fixed; bottom: 20px; right: 20px; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transform: translateY(80px); opacity: 0; transition: all 0.3s; z-index: 1000; }
+        .notification.show { transform: translateY(0); opacity: 1; }
+        .notification.success { background: #d4edda; color: #155724; }
+        .notification.error   { background: #f8d7da; color: #721c24; }
+        .notification.info    { background: #d1ecf1; color: #0c5460; }
+
+        @media (max-width: 640px) {
+            .cart-table th:nth-child(2), .cart-table td:nth-child(2) { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <a href="/shop/" class="logo">WALLAH WE CAN</a>
+            <a href="/shop/" class="back-link">← Continuer mes achats</a>
+        </div>
+    </header>
+
+    <div class="main">
+        <!-- Cart items -->
+        <div class="card" id="cart-card">
+            <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+
+        <!-- Summary -->
+        <aside class="card summary-card" id="summary-card" style="display:none;">
+            <div class="card-title" style="margin-bottom:16px;">Récapitulatif</div>
+            <div class="summary-row"><span>Sous-total</span><span id="sum-subtotal">—</span></div>
+            <div class="summary-row"><span>Livraison</span><span style="color:var(--wwc-text-light);">Calculée à l'étape suivante</span></div>
+            <div class="summary-row total"><span>Total estimé</span><span id="sum-total">—</span></div>
+
+            <div class="impact-box" id="sum-impact" style="display:none;">
+                <h4>💝 Votre impact avec cette commande</h4>
+                <ul id="sum-impact-list"></ul>
+            </div>
+
+            <a href="/shop/checkout/" class="btn btn-primary">Passer la commande →</a>
+            <a href="/shop/" class="btn btn-outline">Continuer mes achats</a>
+        </aside>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/api/v1';
+
+        function escHtml(str) {
+            return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function showNotification(msg, type = 'success') {
+            const el = document.getElementById('notification');
+            el.textContent = msg;
+            el.className = `notification ${type} show`;
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCart);
+
+        async function loadCart() {
+            try {
+                const res  = await fetch(`${API_URL}/cart/`);
+                const cart = await res.json();
+                renderCart(cart);
+            } catch {
+                document.getElementById('cart-card').innerHTML =
+                    '<p style="text-align:center;color:#c00;padding:40px;">Impossible de charger le panier. Assurez-vous que le serveur est lancé.</p>';
+            }
+        }
+
+        function renderCart(cart) {
+            const items = cart.items || [];
+            const card  = document.getElementById('cart-card');
+
+            if (items.length === 0) {
+                card.innerHTML = `
+                    <div class="cart-empty">
+                        <div class="cart-empty-icon">🛒</div>
+                        <h2>Votre panier est vide</h2>
+                        <p>Ajoutez des produits pour commencer votre commande.</p>
+                        <a href="/shop/" class="btn btn-primary" style="display:inline-flex;width:auto;padding:12px 28px;">
+                            Découvrir nos produits
+                        </a>
+                    </div>`;
+                document.getElementById('summary-card').style.display = 'none';
+                return;
+            }
+
+            const symbol = cart.currency === 'EUR' ? '€' : 'DT';
+
+            card.innerHTML = `
+                <div class="card-title">
+                    Mon panier
+                    <span class="item-count">${items.length} article${items.length > 1 ? 's' : ''}</span>
+                </div>
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Prix unitaire</th>
+                            <th>Quantité</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => {
+                            const p = item.product || {};
+                            const imgHtml = p.primary_image?.image
+                                ? `<img src="${p.primary_image.image}" alt="${escHtml(p.name)}">`
+                                : '🧴';
+                            const unitPrice = item.unit_price || p.price_tnd || '—';
+                            const subtotal  = item.subtotal || '—';
+                            return `
+                            <tr id="row-${item.id}">
+                                <td>
+                                    <div class="product-cell">
+                                        <a href="/shop/product/?slug=${p.slug || ''}" style="text-decoration:none;">
+                                            <div class="product-thumb">${imgHtml}</div>
+                                        </a>
+                                        <div>
+                                            <div class="product-name">${escHtml(p.name || '—')}</div>
+                                            ${p.impact_item ? `<div class="product-meta">💝 ${escHtml(p.impact_item)}</div>` : ''}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="price-cell">${unitPrice} ${symbol}</td>
+                                <td>
+                                    <div class="qty-control">
+                                        <button class="qty-btn" onclick="updateQty(${item.id}, ${item.quantity - 1})">−</button>
+                                        <span class="qty-val" id="qty-${item.id}">${item.quantity}</span>
+                                        <button class="qty-btn" onclick="updateQty(${item.id}, ${item.quantity + 1})">+</button>
+                                    </div>
+                                </td>
+                                <td class="price-cell" id="sub-${item.id}">${subtotal} ${symbol}</td>
+                                <td>
+                                    <button class="remove-btn" onclick="removeItem(${item.id})" title="Retirer">🗑</button>
+                                </td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>`;
+
+            // Summary
+            const sumCard = document.getElementById('summary-card');
+            sumCard.style.display = 'block';
+            document.getElementById('sum-subtotal').textContent = `${cart.total} ${symbol}`;
+            document.getElementById('sum-total').textContent    = `${cart.total} ${symbol}`;
+
+            // Impact
+            const impact = cart.total_impact || {};
+            const impactEntries = Object.entries(impact).filter(([, v]) => v > 0);
+            if (impactEntries.length) {
+                document.getElementById('sum-impact').style.display = 'block';
+                document.getElementById('sum-impact-list').innerHTML =
+                    impactEntries.map(([type, qty]) => `<li><strong>${qty}</strong> ${escHtml(type)}</li>`).join('');
+            }
+        }
+
+        async function updateQty(itemId, newQty) {
+            if (newQty < 1) { removeItem(itemId); return; }
+            try {
+                const res  = await fetch(`${API_URL}/cart/update/${itemId}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: newQty })
+                });
+                const cart = await res.json();
+                renderCart(cart);
+            } catch { showNotification('Erreur de mise à jour', 'error'); }
+        }
+
+        async function removeItem(itemId) {
+            try {
+                const res  = await fetch(`${API_URL}/cart/remove/${itemId}/`, { method: 'DELETE' });
+                const cart = await res.json();
+                renderCart(cart);
+                showNotification('Article retiré', 'info');
+            } catch { showNotification('Erreur lors de la suppression', 'error'); }
+        }
+    </script>
+</body>
+</html>
