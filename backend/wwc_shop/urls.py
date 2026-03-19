@@ -33,6 +33,21 @@ def serve_checkout_page(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_login_page(request):
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'login.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
+def serve_account_page(request):
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'account.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
+def serve_reset_password_page(request):
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'reset-password.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
 def serve_shop_admin_page(request, page='index'):
     """Serve shop admin HTML pages"""
     if not page.endswith('.html'):
@@ -71,6 +86,9 @@ urlpatterns = [
     path('shop/', serve_frontend, name='shop'),
     path('shop/product/', serve_product_page, name='shop-product'),
     path('shop/checkout/', serve_checkout_page, name='shop-checkout'),
+    path('shop/login/', serve_login_page, name='shop-login'),
+    path('shop/account/', serve_account_page, name='shop-account'),
+    path('shop/reset-password/', serve_reset_password_page, name='shop-reset-password'),
 
     # Shop admin (HTML interface for product management)
     path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),

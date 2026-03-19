@@ -731,7 +731,7 @@ class PasswordResetRequestView(APIView):
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
-            reset_url = f"{settings.WP_SITE_URL}/reinitialiser-mot-de-passe/?uid={uid}&token={token}"
+            reset_url = f"{settings.SITE_URL}/shop/reset-password/?uid={uid}&token={token}"
 
             send_mail(
                 subject='Réinitialisation de votre mot de passe - Wallah We Can',
