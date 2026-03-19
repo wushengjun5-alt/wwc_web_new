@@ -4,7 +4,7 @@ Admin configuration for Orders app
 
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Cart, CartItem, Order, OrderItem, ImpactEvent
+from .models import Cart, CartItem, Order, OrderItem, ImpactEvent, Coupon
 
 
 class CartItemInline(admin.TabularInline):
@@ -158,6 +158,14 @@ class OrderAdmin(admin.ModelAdmin):
         from django.utils import timezone
         queryset.update(status='delivered', delivered_at=timezone.now())
     mark_as_delivered.short_description = 'Mark selected orders as delivered'
+
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ['code', 'discount_type', 'discount_value', 'min_order_amount', 'used_count', 'max_uses', 'is_active', 'valid_until']
+    list_filter = ['discount_type', 'is_active']
+    search_fields = ['code']
+    readonly_fields = ['used_count']
 
 
 @admin.register(ImpactEvent)

@@ -252,7 +252,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'order_number', 'status', 'status_display', 'currency',
-            'subtotal', 'discount_amount', 'shipping_cost', 'tax_amount', 'total',
+            'subtotal', 'discount_amount', 'coupon_code', 'shipping_cost', 'tax_amount', 'total',
             'total_impact_items', 'impact_summary',
             'shipping_first_name', 'shipping_last_name', 'shipping_company',
             'shipping_address_1', 'shipping_address_2', 'shipping_city',
