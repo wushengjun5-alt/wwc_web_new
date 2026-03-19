@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
@@ -344,7 +345,7 @@ def _calculate_shipping(country, subtotal, currency):
 class ApplyCouponView(APIView):
     """Validate a coupon code and return the discount amount"""
     permission_classes = [AllowAny]
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
 
     def post(self, request):
         code = request.data.get('code', '').strip().upper()
@@ -376,7 +377,7 @@ class ApplyCouponView(APIView):
 class CheckoutView(APIView):
     """Handle checkout process"""
     permission_classes = [AllowAny]
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
 
     def post(self, request):
         """Create order from cart"""
@@ -388,15 +389,8 @@ class CheckoutView(APIView):
         if not request.session.session_key:
             request.session.create()
 
-        # Get cart — mirror CartViewSet.get_cart() logic
-        if request.user.is_authenticated:
-            cart = Cart.objects.filter(user=request.user).first()
-        else:
-            session_key = (
-                request.META.get('HTTP_X_SESSION_KEY')
-                or request.session.session_key
-            )
-            cart = Cart.objects.filter(session_key=session_key).first() if session_key else None
+        # Get cart — reuse CartViewSet logic so merging works for authenticated users
+        cart = CartViewSet().get_cart(request)
 
         if not cart or cart.items.count() == 0:
             return Response(
