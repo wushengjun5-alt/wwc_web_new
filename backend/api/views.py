@@ -485,8 +485,12 @@ class CheckoutView(APIView):
         # Clear cart
         cart.clear()
 
-        # Send confirmation email for COD orders immediately
+        # For COD orders: mark as paid immediately and update customer impact
         if order.payment_method == 'cash_on_delivery':
+            order.status = 'paid'
+            order.save(update_fields=['status'])
+            if order.user:
+                order.user.customer.update_impact_stats()
             from .payments import _send_order_confirmation_email
             _send_order_confirmation_email(order)
 
