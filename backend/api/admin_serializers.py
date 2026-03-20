@@ -20,6 +20,9 @@ class AdminProductImageSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         if obj.image:
+            val = str(obj.image)
+            if val.startswith('http://') or val.startswith('https://'):
+                return val
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.image.url)
@@ -176,6 +179,9 @@ class AdminProductListSerializer(serializers.ModelSerializer):
     def get_primary_image_url(self, obj):
         primary = obj.primary_image
         if primary and primary.image:
+            val = str(primary.image)
+            if val.startswith('http://') or val.startswith('https://'):
+                return val
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(primary.image.url)

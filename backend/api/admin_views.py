@@ -107,6 +107,16 @@ class AdminProductViewSet(viewsets.ModelViewSet):
         if is_featured.lower() == 'true':
             queryset = queryset.filter(is_featured=True)
 
+        # Low stock filter
+        low_stock = self.request.query_params.get('low_stock', '')
+        if low_stock.lower() == 'true':
+            queryset = queryset.filter(track_inventory=True, stock_quantity__lte=10)
+
+        # Out of stock filter
+        out_of_stock = self.request.query_params.get('out_of_stock', '')
+        if out_of_stock.lower() == 'true':
+            queryset = queryset.filter(stock_quantity=0)
+
         # Ordering
         ordering = self.request.query_params.get('ordering', '-updated_at')
         valid_orderings = ['name', '-name', 'price_tnd', '-price_tnd',
@@ -523,9 +533,10 @@ class AdminOrderDetailView(APIView):
             'quantity': item.quantity,
             'unit_price': str(item.unit_price),
             'subtotal': str(item.subtotal),
+            'impact_quantity': item.impact_quantity,
+            'impact_item': item.impact_item or '',
+            'impact_school': item.impact_school or '',
         } for item in order.items.all()]
-
-        addr = order.shipping_address or {}
 
         return Response({
             'order_number': order.order_number,
@@ -534,14 +545,31 @@ class AdminOrderDetailView(APIView):
             'status': order.status,
             'currency': order.currency,
             'subtotal': str(order.subtotal),
+            'discount_amount': str(order.discount_amount),
+            'coupon_code': order.coupon_code or '',
             'shipping_cost': str(order.shipping_cost),
+            'tax_amount': str(order.tax_amount),
             'total': str(order.total),
             'payment_method': order.payment_method,
             'tracking_number': order.tracking_number or '',
+            'customer_notes': order.customer_notes or '',
+            'shipped_at': order.shipped_at.isoformat() if order.shipped_at else None,
+            'delivered_at': order.delivered_at.isoformat() if order.delivered_at else None,
+            'paid_at': order.paid_at.isoformat() if order.paid_at else None,
             'created_at': order.created_at.isoformat(),
             'updated_at': order.updated_at.isoformat(),
             'items': items,
-            'shipping_address': addr,
+            'shipping_first_name': order.shipping_first_name,
+            'shipping_last_name': order.shipping_last_name,
+            'shipping_company': order.shipping_company or '',
+            'shipping_address_1': order.shipping_address_1,
+            'shipping_address_2': order.shipping_address_2 or '',
+            'shipping_city': order.shipping_city,
+            'shipping_state': order.shipping_state or '',
+            'shipping_postal_code': order.shipping_postal_code,
+            'shipping_country': order.shipping_country,
+            'total_impact_items': order.total_impact_items,
+            'impact_summary': order.impact_summary,
         })
 
     def patch(self, request, order_number):
