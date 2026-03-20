@@ -516,12 +516,12 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         return OrderListSerializer
 
     def get_object(self):
-        """Allow lookup by order_number or id"""
+        """Allow lookup by order_number"""
         lookup = self.kwargs.get('pk')
         if lookup:
             return get_object_or_404(
                 Order,
-                Q(order_number=lookup) | Q(id=lookup),
+                order_number=lookup,
                 user=self.request.user
             )
         return super().get_object()
