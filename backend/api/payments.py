@@ -16,6 +16,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from api.authentication import CsrfExemptSessionAuthentication
 
 from orders.models import Order
 
@@ -77,6 +79,7 @@ class CreateCheckoutSessionView(APIView):
     Create Stripe Checkout Session for EUR orders.
     Creates a Stripe Checkout Session for the given order.
     """
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -177,6 +180,7 @@ class CreateCheckoutSessionView(APIView):
 
 class StripeWebhookView(APIView):
     """Handle Stripe webhooks for EUR payments."""
+    authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -264,6 +268,7 @@ class StripeWebhookView(APIView):
 
 class PaymentStatusView(APIView):
     """Check payment status for an order."""
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request, order_number):
