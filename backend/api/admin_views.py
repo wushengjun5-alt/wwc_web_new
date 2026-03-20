@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from products.models import Product, ProductImage, ProductCategory, Producer
-from orders.models import Order
+from orders.models import Order, Coupon, ImpactEvent
 from customers.models import Customer
 from .admin_serializers import (
     AdminProductListSerializer,
@@ -438,6 +438,11 @@ class AdminStatsView(APIView):
             'pending_orders': pending_orders,
             'total_revenue': str(total_revenue),
             'total_customers': Customer.objects.count(),
+            'active_coupons': Coupon.objects.filter(is_active=True).count(),
+            'total_coupons': Coupon.objects.count(),
+            'total_impact_events': ImpactEvent.objects.count(),
+            'published_impact_events': ImpactEvent.objects.filter(is_published=True).count(),
+            'total_items_delivered': ImpactEvent.objects.aggregate(t=Sum('items_delivered'))['t'] or 0,
         })
 
 
@@ -631,3 +636,241 @@ class AdminCustomerListView(APIView):
             'page_size': page_size,
             'results': data,
         })
+
+
+# ============================================
+# Admin Coupon Management
+# ============================================
+
+class AdminCouponListView(APIView):
+    """
+    List and create coupons.
+    GET  /api/v1/admin/coupons/
+    POST /api/v1/admin/coupons/
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request):
+        queryset = Coupon.objects.all().order_by('-created_at')
+
+        search = request.query_params.get('search', '')
+        if search:
+            queryset = queryset.filter(code__icontains=search)
+
+        is_active = request.query_params.get('is_active', '')
+        if is_active == 'true':
+            queryset = queryset.filter(is_active=True)
+        elif is_active == 'false':
+            queryset = queryset.filter(is_active=False)
+
+        page_size = int(request.query_params.get('page_size', 20))
+        page = int(request.query_params.get('page', 1))
+        total = queryset.count()
+        offset = (page - 1) * page_size
+        coupons = queryset[offset:offset + page_size]
+
+        data = [{
+            'id': c.id,
+            'code': c.code,
+            'discount_type': c.discount_type,
+            'discount_value': str(c.discount_value),
+            'min_order_amount': str(c.min_order_amount),
+            'max_uses': c.max_uses,
+            'used_count': c.used_count,
+            'is_active': c.is_active,
+            'valid_from': c.valid_from.isoformat() if c.valid_from else None,
+            'valid_until': c.valid_until.isoformat() if c.valid_until else None,
+            'created_at': c.created_at.isoformat(),
+        } for c in coupons]
+
+        return Response({'count': total, 'page': page, 'page_size': page_size, 'results': data})
+
+    def post(self, request):
+        data = request.data
+        try:
+            coupon = Coupon.objects.create(
+                code=data['code'].strip().upper(),
+                discount_type=data.get('discount_type', 'percent'),
+                discount_value=data['discount_value'],
+                min_order_amount=data.get('min_order_amount', 0),
+                max_uses=data.get('max_uses', 0),
+                is_active=data.get('is_active', True),
+                valid_from=data.get('valid_from') or None,
+                valid_until=data.get('valid_until') or None,
+            )
+            return Response({'id': coupon.id, 'code': coupon.code, 'message': 'Coupon créé avec succès.'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminCouponDetailView(APIView):
+    """
+    Retrieve, update, or delete a coupon.
+    GET    /api/v1/admin/coupons/<id>/
+    PATCH  /api/v1/admin/coupons/<id>/
+    DELETE /api/v1/admin/coupons/<id>/
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def _get_coupon(self, pk):
+        return get_object_or_404(Coupon, pk=pk)
+
+    def get(self, request, pk):
+        c = self._get_coupon(pk)
+        return Response({
+            'id': c.id,
+            'code': c.code,
+            'discount_type': c.discount_type,
+            'discount_value': str(c.discount_value),
+            'min_order_amount': str(c.min_order_amount),
+            'max_uses': c.max_uses,
+            'used_count': c.used_count,
+            'is_active': c.is_active,
+            'valid_from': c.valid_from.isoformat() if c.valid_from else None,
+            'valid_until': c.valid_until.isoformat() if c.valid_until else None,
+            'created_at': c.created_at.isoformat(),
+        })
+
+    def patch(self, request, pk):
+        c = self._get_coupon(pk)
+        data = request.data
+        updatable = ['discount_type', 'discount_value', 'min_order_amount', 'max_uses', 'is_active', 'valid_from', 'valid_until']
+        for field in updatable:
+            if field in data:
+                val = data[field]
+                if field in ('valid_from', 'valid_until') and val == '':
+                    val = None
+                setattr(c, field, val)
+        if 'code' in data:
+            c.code = data['code'].strip().upper()
+        try:
+            c.save()
+            return Response({'message': 'Coupon mis à jour.'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        c = self._get_coupon(pk)
+        c.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ============================================
+# Admin Impact Event Management
+# ============================================
+
+class AdminImpactEventListView(APIView):
+    """
+    List and create impact events.
+    GET  /api/v1/admin/impact-events/
+    POST /api/v1/admin/impact-events/
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request):
+        queryset = ImpactEvent.objects.all().order_by('-date')
+
+        search = request.query_params.get('search', '')
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search) | Q(school__icontains=search)
+            )
+
+        is_published = request.query_params.get('is_published', '')
+        if is_published == 'true':
+            queryset = queryset.filter(is_published=True)
+        elif is_published == 'false':
+            queryset = queryset.filter(is_published=False)
+
+        page_size = int(request.query_params.get('page_size', 20))
+        page = int(request.query_params.get('page', 1))
+        total = queryset.count()
+        offset = (page - 1) * page_size
+        events = queryset[offset:offset + page_size]
+
+        data = [{
+            'id': e.id,
+            'title': e.title,
+            'title_en': e.title_en or '',
+            'school': e.school,
+            'date': e.date.isoformat(),
+            'items_delivered': e.items_delivered,
+            'item_type': e.item_type,
+            'is_published': e.is_published,
+            'description': e.description,
+            'video_url': e.video_url or '',
+            'created_at': e.created_at.isoformat(),
+        } for e in events]
+
+        return Response({'count': total, 'page': page, 'page_size': page_size, 'results': data})
+
+    def post(self, request):
+        data = request.data
+        try:
+            event = ImpactEvent.objects.create(
+                title=data['title'],
+                title_en=data.get('title_en', ''),
+                description=data.get('description', ''),
+                description_en=data.get('description_en', ''),
+                school=data['school'],
+                date=data['date'],
+                items_delivered=data['items_delivered'],
+                item_type=data['item_type'],
+                video_url=data.get('video_url', '') or '',
+                is_published=data.get('is_published', False),
+            )
+            return Response({'id': event.id, 'title': event.title, 'message': 'Événement créé avec succès.'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminImpactEventDetailView(APIView):
+    """
+    Retrieve, update, or delete an impact event.
+    GET    /api/v1/admin/impact-events/<id>/
+    PATCH  /api/v1/admin/impact-events/<id>/
+    DELETE /api/v1/admin/impact-events/<id>/
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def _get_event(self, pk):
+        return get_object_or_404(ImpactEvent, pk=pk)
+
+    def get(self, request, pk):
+        e = self._get_event(pk)
+        return Response({
+            'id': e.id,
+            'title': e.title,
+            'title_en': e.title_en or '',
+            'description': e.description,
+            'description_en': e.description_en or '',
+            'school': e.school,
+            'date': e.date.isoformat(),
+            'items_delivered': e.items_delivered,
+            'item_type': e.item_type,
+            'video_url': e.video_url or '',
+            'is_published': e.is_published,
+            'created_at': e.created_at.isoformat(),
+        })
+
+    def patch(self, request, pk):
+        e = self._get_event(pk)
+        data = request.data
+        updatable = ['title', 'title_en', 'description', 'description_en', 'school', 'date', 'items_delivered', 'item_type', 'video_url', 'is_published']
+        for field in updatable:
+            if field in data:
+                setattr(e, field, data[field])
+        try:
+            e.save()
+            return Response({'message': 'Événement mis à jour.'})
+        except Exception as ex:
+            return Response({'error': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        e = self._get_event(pk)
+        e.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

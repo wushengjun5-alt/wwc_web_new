@@ -46,6 +46,10 @@ urlpatterns = [
     path('admin/orders/', admin_views.AdminOrderListView.as_view(), name='admin-orders'),
     path('admin/orders/<str:order_number>/', admin_views.AdminOrderDetailView.as_view(), name='admin-order-detail'),
     path('admin/customers/', admin_views.AdminCustomerListView.as_view(), name='admin-customers'),
+    path('admin/coupons/', admin_views.AdminCouponListView.as_view(), name='admin-coupons'),
+    path('admin/coupons/<int:pk>/', admin_views.AdminCouponDetailView.as_view(), name='admin-coupon-detail'),
+    path('admin/impact-events/', admin_views.AdminImpactEventListView.as_view(), name='admin-impact-events'),
+    path('admin/impact-events/<int:pk>/', admin_views.AdminImpactEventDetailView.as_view(), name='admin-impact-event-detail'),
 
     # Checkout
     path('checkout/', views.CheckoutView.as_view(), name='checkout'),
