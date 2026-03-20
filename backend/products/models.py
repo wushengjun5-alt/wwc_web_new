@@ -318,8 +318,14 @@ class Product(models.Model):
 
     @property
     def discount_percentage(self):
-        if self.compare_at_price_tnd and self.compare_at_price_tnd > self.price_tnd:
-            return int(((self.compare_at_price_tnd - self.price_tnd) / self.compare_at_price_tnd) * 100)
+        from decimal import Decimal
+        try:
+            compare = Decimal(str(self.compare_at_price_tnd))
+            price = Decimal(str(self.price_tnd))
+            if compare and compare > price:
+                return int(((compare - price) / compare) * 100)
+        except Exception:
+            pass
         return 0
 
     @property
