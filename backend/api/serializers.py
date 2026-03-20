@@ -252,7 +252,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'order_number', 'status', 'status_display', 'currency',
-            'subtotal', 'discount_amount', 'shipping_cost', 'tax_amount', 'total',
+            'subtotal', 'discount_amount', 'coupon_code', 'shipping_cost', 'tax_amount', 'total',
             'total_impact_items', 'impact_summary',
             'shipping_first_name', 'shipping_last_name', 'shipping_company',
             'shipping_address_1', 'shipping_address_2', 'shipping_city',
@@ -280,7 +280,7 @@ class CheckoutSerializer(serializers.Serializer):
     shipping_postal_code = serializers.CharField(max_length=20)
     shipping_country = serializers.CharField(max_length=2, default='TN')
 
-    # Payment
+    # Payment — Stripe for all currencies; customer's bank handles conversion
     payment_method = serializers.ChoiceField(
         choices=['stripe', 'bank_transfer', 'cash_on_delivery'],
         default='stripe'
@@ -289,6 +289,7 @@ class CheckoutSerializer(serializers.Serializer):
     # Optional
     customer_notes = serializers.CharField(required=False, allow_blank=True)
     coupon_code = serializers.CharField(required=False, allow_blank=True)
+    gift_packaging = serializers.BooleanField(required=False, default=False)
 
 
 # ============================================

@@ -159,28 +159,58 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,https://wallahwecan.org,https://www.wallahwecan.org',
-    cast=Csv()
-)
+# In development (DEBUG=True), allow all origins for testing
+# In production, restrict to specific origins
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = config(
+        'CORS_ALLOWED_ORIGINS',
+        default='https://wallahwecan.org,https://www.wallahwecan.org',
+        cast=Csv()
+    )
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Session Configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400 * 7  # 7 days
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_SAVE_EVERY_REQUEST = True
+
+# In DEBUG mode, ensure cookies work on localhost
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+# Admin API Configuration
+# This key is used by the WordPress plugin to authenticate admin API calls
+# Generate a secure random key and configure it in both Django and WordPress
+ADMIN_API_KEY = config('ADMIN_API_KEY', default='wwc-admin-dev-key-change-in-production')
+
 # Stripe Configuration
+# Get your test keys from https://dashboard.stripe.com/test/apikeys
+# For testing, use keys starting with pk_test_ and sk_test_
 STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
 STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
 
 # Site URL (for redirects after payment)
-SITE_URL = config('SITE_URL', default='https://wallahwecan.org')
-API_URL = config('API_URL', default='https://api.wallahwecan.org')
+if DEBUG:
+    SITE_URL  = config('SITE_URL',    default='http://127.0.0.1:8000')
+    API_URL   = config('API_URL',     default='http://127.0.0.1:8000/api/v1')
+    WP_SITE_URL = config('WP_SITE_URL', default='http://localhost')
+else:
+    SITE_URL  = config('SITE_URL',    default='https://wallahwecan.org')
+    API_URL   = config('API_URL',     default='https://api.wallahwecan.org')
+    WP_SITE_URL = config('WP_SITE_URL', default='https://wallahwecan.org')
 
-# Currency Exchange Rates (update periodically or use API)
-EXCHANGE_RATES = {
-    'TND': 1.0,
-    'EUR': 0.30,  # 1 TND = 0.30 EUR approximately
-}
+# TND to EUR conversion rate used when charging via Stripe.
+# Stripe does not support TND natively; orders are charged in EUR.
+# The customer's bank handles the final TND conversion on their card statement.
+# Update this value periodically or replace with a live rate API in production.
+TND_TO_EUR_RATE = config('TND_TO_EUR_RATE', default=0.30, cast=float)
 
 # Email Configuration
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')

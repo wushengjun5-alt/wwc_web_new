@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWC Admin - Catégories</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">W</span>
+                <span class="logo-text">WWC Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="nav-icon">📦</span>
+                <span>Produits</span>
+            </a>
+            <a href="categories.html" class="nav-item active">
+                <span class="nav-icon">📁</span>
+                <span>Catégories</span>
+            </a>
+            <a href="producers.html" class="nav-item">
+                <span class="nav-icon">🏭</span>
+                <span>Producteurs</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="nav-icon">🛒</span>
+                <span>Commandes</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Clients</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="../index.html" class="nav-item">
+                <span class="nav-icon">🏪</span>
+                <span>Voir la boutique</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connexion...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1>Catégories</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" onclick="showAddCategoryModal()">
+                    <span>➕</span> Nouvelle Catégorie
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Categories List -->
+            <section class="section">
+                <div class="table-container">
+                    <table class="data-table" id="categoriesTable">
+                        <thead>
+                            <tr>
+                                <th>Icône</th>
+                                <th>Nom</th>
+                                <th>Nom (EN)</th>
+                                <th>Nom (AR)</th>
+                                <th>Slug</th>
+                                <th>Ordre</th>
+                                <th>Produits</th>
+                                <th>Menu</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesBody">
+                            <tr>
+                                <td colspan="10" class="loading">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Category Modal -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-overlay" onclick="closeCategoryModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="modalTitle">Nouvelle Catégorie</h3>
+                <button class="modal-close" onclick="closeCategoryModal()">&times;</button>
+            </div>
+            <form id="categoryForm" onsubmit="saveCategory(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="categoryId">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="catName">Nom (FR) <span class="required">*</span></label>
+                            <input type="text" id="catName" required placeholder="Ex: Soins">
+                        </div>
+                        <div class="form-group">
+                            <label for="catIcon">Icône (emoji)</label>
+                            <input type="text" id="catIcon" placeholder="🧴" maxlength="10">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="catNameEn">Nom (EN)</label>
+                            <input type="text" id="catNameEn" placeholder="Ex: Care">
+                        </div>
+                        <div class="form-group">
+                            <label for="catNameAr">Nom (AR)</label>
+                            <input type="text" id="catNameAr" placeholder="العناية" dir="rtl">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="catDescription">Description</label>
+                        <textarea id="catDescription" rows="2" placeholder="Description de la catégorie..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="catSlug">Slug (URL)</label>
+                        <input type="text" id="catSlug" placeholder="soins-visage (auto-généré si vide)">
+                        <small style="color: var(--admin-text-light);">Laissez vide pour générer automatiquement à partir du nom</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="catOrder">Ordre d'affichage</label>
+                            <input type="number" id="catOrder" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="catActive">Statut</label>
+                            <select id="catActive">
+                                <option value="true">Actif</option>
+                                <option value="false">Inactif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="catShowInMenu">Afficher dans le menu</label>
+                            <select id="catShowInMenu">
+                                <option value="true">Oui - Visible sur le site</option>
+                                <option value="false">Non - Caché du menu</option>
+                            </select>
+                            <small style="color: var(--admin-text-light);">Les catégories visibles apparaissent dans la navigation du site</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeCategoryModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ Confirmer la suppression</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette catégorie ?</p>
+                <p class="text-danger" style="font-weight: bold;">
+                    ⚠️ ATTENTION: Tous les produits de cette catégorie seront également supprimés !
+                </p>
+                <p id="deleteProductsCount" style="color: var(--admin-text-light);"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Supprimer tout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/admin-config.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-categories.js"></script>
+</body>
+</html>

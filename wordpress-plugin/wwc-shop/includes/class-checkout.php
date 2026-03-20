@@ -37,21 +37,19 @@ class WWC_Checkout {
     }
 
     /**
-     * Get payment methods
+     * Get available payment methods.
+     * Stripe accepts all currencies; the customer's bank handles conversion.
+     *
+     * @param string $currency Unused, kept for API compatibility.
+     * @return array
      */
-    public static function get_payment_methods() {
+    public static function get_payment_methods($currency = null) {
         return [
             'stripe' => [
-                'id' => 'stripe',
-                'title' => __('Card Payment', 'wwc-shop'),
-                'description' => __('Pay securely with your credit/debit card', 'wwc-shop'),
-                'icon' => 'credit-card',
-            ],
-            'bank_transfer' => [
-                'id' => 'bank_transfer',
-                'title' => __('Bank Transfer', 'wwc-shop'),
-                'description' => __('Pay via bank transfer', 'wwc-shop'),
-                'icon' => 'building',
+                'id'          => 'stripe',
+                'title'       => __('Paiement par carte', 'wwc-shop'),
+                'description' => __('Visa, Mastercard, ou carte prépayée — paiement sécurisé', 'wwc-shop'),
+                'icon'        => 'credit-card',
             ],
         ];
     }

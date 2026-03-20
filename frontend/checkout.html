@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finaliser la commande - Wallah We Can</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wwc-primary: #1e3a5f;
+            --wwc-secondary: #ff6b35;
+            --wwc-accent: #f8b4c4;
+            --wwc-cta: #4a3728;
+            --wwc-text: #2c3e50;
+            --wwc-text-light: #6c757d;
+            --wwc-bg: #ffffff;
+            --wwc-bg-light: #f8f9fa;
+            --wwc-border: #dee2e6;
+            --wwc-success: #28a745;
+            --wwc-error: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--wwc-text);
+            background: var(--wwc-bg-light);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--wwc-primary);
+            color: white;
+            padding: 15px 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.9;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: var(--wwc-primary);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Checkout Layout */
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+        }
+
+        /* Form Sections */
+        .checkout-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .checkout-section h2 {
+            font-size: 18px;
+            color: var(--wwc-primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--wwc-text);
+        }
+
+        .form-group label .required {
+            color: var(--wwc-error);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--wwc-border);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--wwc-primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+        }
+
+        .form-group input.error,
+        .form-group select.error {
+            border-color: var(--wwc-error);
+        }
+
+        .form-group .error-message {
+            color: var(--wwc-error);
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* Payment Options */
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 16px 18px;
+            border: 2px solid var(--wwc-border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-option:hover {
+            border-color: var(--wwc-primary);
+            background: rgba(30, 58, 95, 0.02);
+        }
+
+        .payment-option.selected {
+            border-color: var(--wwc-primary);
+            background: rgba(30, 58, 95, 0.05);
+        }
+
+        .payment-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            accent-color: var(--wwc-primary);
+        }
+
+        .payment-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .payment-icon {
+            font-size: 24px;
+        }
+
+        .payment-info {
+            flex: 1;
+        }
+
+        .payment-info strong {
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .payment-info small {
+            color: var(--wwc-text-light);
+            font-size: 13px;
+        }
+
+        /* Order Summary */
+        .order-summary {
+            position: sticky;
+            top: 20px;
+        }
+
+        .summary-box {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-box h2 {
+            font-size: 18px;
+            color: var(--wwc-primary);
+            margin-bottom: 20px;
+        }
+
+        .summary-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--wwc-border);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item-image {
+            width: 60px;
+            height: 60px;
+            background: var(--wwc-bg-light);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .summary-item-details {
+            flex: 1;
+        }
+
+        .summary-item-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .summary-item-qty {
+            color: var(--wwc-text-light);
+            font-size: 13px;
+        }
+
+        .summary-item-price {
+            font-weight: 600;
+            color: var(--wwc-secondary);
+        }
+
+        .summary-totals {
+            border-top: 1px solid var(--wwc-border);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .summary-row.total {
+            font-size: 20px;
+            font-weight: 700;
+            padding-top: 15px;
+            margin-top: 10px;
+            border-top: 2px solid var(--wwc-border);
+        }
+
+        .impact-box {
+            background: var(--wwc-accent);
+            padding: 18px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid var(--wwc-secondary);
+        }
+
+        .impact-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 18px;
+            background: var(--wwc-secondary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-pay:hover:not(:disabled) {
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+
+        .btn-pay:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-pay .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .btn-pay.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn-pay.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .secure-notice {
+            text-align: center;
+            margin-top: 15px;
+            color: var(--wwc-text-light);
+            font-size: 13px;
+        }
+
+        .secure-notice span {
+            color: var(--wwc-success);
+        }
+
+        /* Empty Cart */
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .empty-cart-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .empty-cart h2 {
+            margin-bottom: 15px;
+            color: var(--wwc-primary);
+        }
+
+        .empty-cart a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--wwc-secondary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        /* Loading */
+        .loading-page {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--wwc-border);
+            border-top-color: var(--wwc-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--wwc-text);
+            color: white;
+            border-radius: 8px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            background: var(--wwc-success);
+        }
+
+        .notification.error {
+            background: var(--wwc-error);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--wwc-primary);
+            color: white;
+            padding: 30px 0;
+            margin-top: 60px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .checkout-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .order-summary {
+                position: static;
+                order: -1;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <a href="/shop/" class="logo">WALLAH WE CAN</a>
+            <a href="/shop/cart/" class="back-link">
+                ← Mon panier
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main" id="main-content">
+        <div class="loading-page">
+            <div class="loading-spinner"></div>
+            <p>Chargement de votre panier...</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p>Paiement sécurisé - Vos données sont protégées</p>
+            <p style="opacity: 0.7; margin-top: 10px; font-size: 14px;">
+                © 2026 Wallah We Can - Tous droits réservés
+            </p>
+        </div>
+    </footer>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // API Configuration
+        const API_URL = 'http://127.0.0.1:8000/api/v1';
+
+        // Stable session key for guest cart (shared with index.html via localStorage)
+        function getSessionKey() {
+            let key = localStorage.getItem('wwc_session_key');
+            if (!key) {
+                key = crypto.randomUUID();
+                localStorage.setItem('wwc_session_key', key);
+            }
+            return key;
+        }
+
+        function getCurrentCurrency() { return localStorage.getItem('wwc_currency') || 'TND'; }
+        function getCurrencySymbol() { return getCurrentCurrency() === 'EUR' ? '€' : 'DT'; }
+        function getGiftFee() { return getCurrentCurrency() === 'EUR' ? 2.00 : 5.00; }
+
+        function apiHeaders(extra) {
+            const h = { 'Content-Type': 'application/json', 'X-Session-Key': getSessionKey() };
+            const token = localStorage.getItem('wwc_access_token');
+            if (token) h['Authorization'] = `Bearer ${token}`;
+            return Object.assign(h, extra);
+        }
+
+        let cart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCart();
+        });
+
+        // Load cart
+        async function loadCart() {
+            try {
+                const response = await fetch(`${API_URL}/cart/`, {
+                    headers: apiHeaders()
+                });
+                cart = await response.json();
+
+                if (!cart.items || cart.items.length === 0) {
+                    renderEmptyCart();
+                } else {
+                    renderCheckoutPage();
+                }
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                document.getElementById('main-content').innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">⚠️</div>
+                        <h2>Erreur de connexion</h2>
+                        <p>Impossible de charger votre panier. Veuillez réessayer.</p>
+                        <a href="/shop/">Retour à la boutique</a>
+                    </div>
+                `;
+            }
+        }
+
+        // Render empty cart
+        function renderEmptyCart() {
+            document.getElementById('main-content').innerHTML = `
+                <div class="empty-cart">
+                    <div class="empty-cart-icon">🛒</div>
+                    <h2>Votre panier est vide</h2>
+                    <p>Ajoutez des produits avant de passer commande.</p>
+                    <a href="/shop/">Découvrir nos produits</a>
+                </div>
+            `;
+        }
+
+        // Order totals (set by renderCheckoutPage, used by updateTotal)
+        let _subtotal = 0;
+        let _shipping = 0;
+        let _discountAmount = 0;
+        let _appliedCoupon = '';
+
+        function updateTotal() {
+            const sym = getCurrencySymbol();
+            const giftChecked = document.getElementById('gift_packaging')?.checked;
+            const giftFee = giftChecked ? getGiftFee() : 0;
+            const newTotal = Math.max(0, _subtotal + _shipping + giftFee - _discountAmount);
+            const totalEl = document.getElementById('total-display');
+            const giftRow = document.getElementById('gift-row');
+            const giftFeeEl = document.getElementById('gift-fee-display');
+            const discountRow = document.getElementById('discount-row');
+            if (totalEl) totalEl.textContent = newTotal.toFixed(2) + ' ' + sym;
+            if (giftFeeEl) giftFeeEl.textContent = giftFee.toFixed(2) + ' ' + sym;
+            if (giftRow) giftRow.style.display = giftChecked ? '' : 'none';
+            if (discountRow) discountRow.style.display = _discountAmount > 0 ? '' : 'none';
+        }
+
+        async function applyCoupon() {
+            const code = document.getElementById('coupon-input')?.value.trim().toUpperCase();
+            const msgEl = document.getElementById('coupon-msg');
+            if (!code) return;
+
+            try {
+                const res = await fetch(`${API_URL}/coupons/apply/`, {
+                    method: 'POST',
+                    headers: apiHeaders(),
+                    body: JSON.stringify({ code, subtotal: _subtotal })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    msgEl.textContent = data.error || 'Code invalide.';
+                    msgEl.style.color = 'var(--wwc-error, #dc3545)';
+                    msgEl.style.display = '';
+                    _discountAmount = 0;
+                    _appliedCoupon = '';
+                } else {
+                    _discountAmount = parseFloat(data.discount_amount);
+                    _appliedCoupon = data.code;
+                    msgEl.textContent = `Code "${data.code}" appliqué : -${_discountAmount.toFixed(2)} ${getCurrencySymbol()}`;
+                    msgEl.style.color = 'green';
+                    msgEl.style.display = '';
+                    const label = document.getElementById('discount-code-label');
+                    const amountEl = document.getElementById('discount-amount-display');
+                    if (label) label.textContent = data.code;
+                    if (amountEl) amountEl.textContent = `-${_discountAmount.toFixed(2)} ${getCurrencySymbol()}`;
+                }
+            } catch {
+                msgEl.textContent = 'Erreur lors de la vérification.';
+                msgEl.style.color = 'var(--wwc-error, #dc3545)';
+                msgEl.style.display = '';
+            }
+            updateTotal();
+        }
+
+        // Render checkout page
+        function renderCheckoutPage() {
+            const subtotal = parseFloat(cart.total) || 0;
+            const shipping = getCurrentCurrency() === 'EUR' ? 15.00 : 7.00;
+            const total = subtotal + shipping;
+            _subtotal = subtotal;
+            _shipping = shipping;
+
+            // Build cart items HTML
+            const itemsHtml = cart.items.map(item => `
+                <div class="summary-item">
+                    <div class="summary-item-image">🧴</div>
+                    <div class="summary-item-details">
+                        <div class="summary-item-name">${item.product.name}</div>
+                        <div class="summary-item-qty">Quantité: ${item.quantity}</div>
+                    </div>
+                    <div class="summary-item-price">${item.subtotal} ${getCurrencySymbol()}</div>
+                </div>
+            `).join('');
+
+            // Build impact HTML
+            let impactHtml = '';
+            if (cart.total_impact && Object.keys(cart.total_impact).length > 0) {
+                impactHtml = `
+                    <div class="impact-box">
+                        <strong>💝 Votre impact solidaire</strong>
+                        ${Object.entries(cart.total_impact).map(([item, qty]) =>
+                            `<div>• ${qty} ${item} pour les élèves</div>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+
+            document.getElementById('main-content').innerHTML = `
+                <h1 class="page-title">🛒 Finaliser la commande</h1>
+
+                <div class="checkout-layout">
+                    <!-- Left: Form -->
+                    <div class="checkout-form">
+                        <form id="checkout-form" onsubmit="submitOrder(event)">
+                            <!-- Shipping Info -->
+                            <div class="checkout-section">
+                                <h2>📦 Informations de livraison</h2>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="shipping_first_name">Prénom <span class="required">*</span></label>
+                                        <input type="text" id="shipping_first_name" name="shipping_first_name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="shipping_last_name">Nom <span class="required">*</span></label>
+                                        <input type="text" id="shipping_last_name" name="shipping_last_name" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="email">Email <span class="required">*</span></label>
+                                        <input type="email" id="email" name="email" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="phone">Téléphone <span class="required">*</span></label>
+                                        <input type="tel" id="phone" name="phone" required placeholder="+216 XX XXX XXX">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="shipping_address_1">Adresse <span class="required">*</span></label>
+                                    <input type="text" id="shipping_address_1" name="shipping_address_1" required placeholder="Numéro et nom de rue">
+                                </div>
+                                <div class="form-group">
+                                    <label for="shipping_address_2">Complément d'adresse</label>
+                                    <input type="text" id="shipping_address_2" name="shipping_address_2" placeholder="Appartement, étage, etc. (optionnel)">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="shipping_city">Ville <span class="required">*</span></label>
+                                        <input type="text" id="shipping_city" name="shipping_city" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="shipping_postal_code">Code postal <span class="required">*</span></label>
+                                        <input type="text" id="shipping_postal_code" name="shipping_postal_code" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="shipping_country">Pays <span class="required">*</span></label>
+                                    <select id="shipping_country" name="shipping_country" required>
+                                        <option value="TN" selected>Tunisie</option>
+                                        <option value="FR">France</option>
+                                        <option value="BE">Belgique</option>
+                                        <option value="CH">Suisse</option>
+                                        <option value="DE">Allemagne</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Payment Method -->
+                            <div class="checkout-section">
+                                <h2>💳 Mode de paiement</h2>
+                                <div class="payment-options">
+                                    <label class="payment-option selected" onclick="selectPayment(this, 'stripe')">
+                                        <input type="radio" name="payment_method" value="stripe" checked>
+                                        <div class="payment-label">
+                                            <span class="payment-icon">💳</span>
+                                            <div class="payment-info">
+                                                <strong>Carte bancaire</strong>
+                                                <small>Paiement sécurisé via Stripe</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label class="payment-option" onclick="selectPayment(this, 'cash_on_delivery')">
+                                        <input type="radio" name="payment_method" value="cash_on_delivery">
+                                        <div class="payment-label">
+                                            <span class="payment-icon">💵</span>
+                                            <div class="payment-info">
+                                                <strong>Paiement à la livraison</strong>
+                                                <small>Payez en espèces à la réception</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="checkout-section">
+                                <h2>📝 Notes (optionnel)</h2>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <textarea id="customer_notes" name="customer_notes" rows="3" placeholder="Instructions spéciales pour la livraison..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Gift Packaging -->
+                            <div class="checkout-section">
+                                <h2>🎁 Emballage cadeau</h2>
+                                <label style="display:flex; align-items:center; gap:12px; cursor:pointer; padding:14px; background:#fffbf0; border:1px solid #f0c000; border-radius:10px;">
+                                    <input type="checkbox" id="gift_packaging" name="gift_packaging" onchange="updateTotal()" style="width:18px; height:18px; cursor:pointer; accent-color:var(--primary, #1e3a5f);">
+                                    <div>
+                                        <div style="font-weight:600; font-size:15px;">Ajouter un emballage cadeau</div>
+                                        <div style="font-size:13px; color:#6c757d; margin-top:2px;" id="gift-desc">Votre commande sera présentée dans un beau coffret cadeau (+${getGiftFee().toFixed(0)} ${getCurrencySymbol()})</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right: Summary -->
+                    <div class="order-summary">
+                        <div class="summary-box">
+                            <h2>📋 Récapitulatif</h2>
+
+                            <div class="summary-items">
+                                ${itemsHtml}
+                            </div>
+
+                            <!-- Coupon code -->
+                            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                                <input type="text" id="coupon-input" placeholder="Code promo"
+                                    style="flex:1;padding:9px 12px;border:1px solid var(--wwc-border);border-radius:8px;font-size:14px;font-family:inherit;text-transform:uppercase;">
+                                <button type="button" onclick="applyCoupon()"
+                                    style="padding:9px 16px;background:var(--wwc-primary);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Appliquer</button>
+                            </div>
+                            <div id="coupon-msg" style="font-size:13px;margin-bottom:12px;display:none;"></div>
+
+                            <div class="summary-totals">
+                                <div class="summary-row">
+                                    <span>Sous-total</span>
+                                    <span>${subtotal.toFixed(2)} ${getCurrencySymbol()}</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Livraison</span>
+                                    <span>${shipping.toFixed(2)} ${getCurrencySymbol()}</span>
+                                </div>
+                                <div class="summary-row" id="discount-row" style="display:none;color:green;">
+                                    <span>Remise (<span id="discount-code-label"></span>)</span>
+                                    <span id="discount-amount-display">-0.00 ${getCurrencySymbol()}</span>
+                                </div>
+                                <div class="summary-row" id="gift-row" style="display:none;">
+                                    <span>🎁 Emballage cadeau</span>
+                                    <span id="gift-fee-display">${getGiftFee().toFixed(2)} ${getCurrencySymbol()}</span>
+                                </div>
+                                <div class="summary-row total">
+                                    <span>Total</span>
+                                    <span id="total-display">${total.toFixed(2)} ${getCurrencySymbol()}</span>
+                                </div>
+                            </div>
+
+                            ${impactHtml}
+
+                            <button type="submit" class="btn-pay" id="btn-pay" onclick="submitOrder(event)">
+                                <span class="btn-text">Confirmer la commande</span>
+                                <span class="spinner"></span>
+                            </button>
+
+                            <p class="secure-notice">
+                                <span>🔒</span> Paiement 100% sécurisé
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Select payment method
+        function selectPayment(element, method) {
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            element.querySelector('input[type="radio"]').checked = true;
+
+            // Update button text based on payment method
+            const btnText = document.querySelector('.btn-pay .btn-text');
+            if (method === 'stripe') {
+                btnText.textContent = 'Payer maintenant';
+            } else {
+                btnText.textContent = 'Confirmer la commande';
+            }
+        }
+
+        // Submit order
+        async function submitOrder(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('checkout-form');
+            const formData = new FormData(form);
+            const btnPay = document.getElementById('btn-pay');
+
+            // Validate form
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Show loading
+            btnPay.classList.add('loading');
+            btnPay.disabled = true;
+
+            const checkoutData = {
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                shipping_first_name: formData.get('shipping_first_name'),
+                shipping_last_name: formData.get('shipping_last_name'),
+                shipping_address_1: formData.get('shipping_address_1'),
+                shipping_address_2: formData.get('shipping_address_2') || '',
+                shipping_city: formData.get('shipping_city'),
+                shipping_postal_code: formData.get('shipping_postal_code'),
+                shipping_country: formData.get('shipping_country'),
+                payment_method: formData.get('payment_method'),
+                customer_notes: formData.get('customer_notes') || '',
+                gift_packaging: document.getElementById('gift_packaging')?.checked || false,
+                coupon_code: _appliedCoupon || '',
+            };
+
+            try {
+                console.log('Creating order...', checkoutData);
+
+                // Step 1: Create order
+                const orderResponse = await fetch(`${API_URL}/checkout/`, {
+                    method: 'POST',
+                    headers: apiHeaders(),
+                    body: JSON.stringify(checkoutData)
+                });
+
+                const responseText = await orderResponse.text();
+                console.log('Order response:', responseText);
+
+                let orderData;
+                try {
+                    orderData = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Failed to parse response:', responseText);
+                    throw new Error('Erreur serveur. Veuillez réessayer.');
+                }
+
+                if (!orderResponse.ok) {
+                    throw new Error(orderData.error || orderData.detail || 'Erreur lors de la création de la commande');
+                }
+
+                console.log('Order created:', orderData);
+
+                // Step 2: Handle payment based on method
+                if (checkoutData.payment_method === 'stripe') {
+                    // Create Stripe checkout session
+                    console.log('Creating Stripe session...');
+                    const stripeResponse = await fetch(`${API_URL}/payments/create-session/`, {
+                        method: 'POST',
+                        headers: apiHeaders(),
+                        body: JSON.stringify({
+                            order_number: orderData.order_number,
+                            success_url: window.location.origin + '/shop/order-success/?order=' + orderData.order_number + '&method=stripe',
+                            cancel_url: window.location.origin + '/shop/checkout/?payment=cancelled'
+                        })
+                    });
+
+                    const stripeText = await stripeResponse.text();
+                    console.log('Stripe response:', stripeText);
+
+                    let stripeData;
+                    try {
+                        stripeData = JSON.parse(stripeText);
+                    } catch (e) {
+                        console.error('Failed to parse Stripe response:', stripeText);
+                        throw new Error('Erreur lors de la configuration du paiement');
+                    }
+
+                    if (!stripeResponse.ok) {
+                        throw new Error(stripeData.error || 'Erreur Stripe');
+                    }
+
+                    // Redirect to Stripe checkout
+                    if (stripeData.checkout_url) {
+                        showNotification('Redirection vers le paiement...', 'success');
+                        window.location.href = stripeData.checkout_url;
+                    } else {
+                        throw new Error('URL de paiement non reçue');
+                    }
+                } else {
+                    // Bank transfer or cash on delivery — redirect to success page
+                    window.location.href = `/shop/order-success/?order=${orderData.order_number}&method=${checkoutData.payment_method}`;
+                }
+
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showNotification(error.message || 'Erreur lors de la commande', 'error');
+
+                // Reset button
+                btnPay.classList.remove('loading');
+                btnPay.disabled = false;
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const el = document.getElementById('notification');
+            el.textContent = message;
+            el.className = `notification ${type} show`;
+            setTimeout(() => el.classList.remove('show'), 4000);
+        }
+
+        // Check for cancelled payment
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('payment') === 'cancelled') {
+                setTimeout(() => {
+                    showNotification('Paiement annulé. Vous pouvez réessayer.', 'error');
+                }, 500);
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        })();
+    </script>
+</body>
+</html>

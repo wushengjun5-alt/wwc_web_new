@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWC Admin - Produits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">W</span>
+                <span class="logo-text">WWC Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="products.html" class="nav-item active">
+                <span class="nav-icon">📦</span>
+                <span>Produits</span>
+            </a>
+            <a href="categories.html" class="nav-item">
+                <span class="nav-icon">📁</span>
+                <span>Catégories</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="nav-icon">🛒</span>
+                <span>Commandes</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Clients</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="../index.html" class="nav-item">
+                <span class="nav-icon">🏪</span>
+                <span>Voir la boutique</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connexion...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1>Produits</h1>
+            </div>
+            <div class="header-right">
+                <a href="product-edit.html" class="btn btn-primary">
+                    <span>➕</span> Nouveau Produit
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Filters -->
+            <section class="filters-section">
+                <form id="filtersForm" class="filters-form">
+                    <div class="filter-group">
+                        <input type="search" id="searchInput" placeholder="Rechercher produits..." class="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="published">Publiés</option>
+                            <option value="draft">Brouillons</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="categoryFilter" class="filter-select">
+                            <option value="">Toutes les catégories</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="stockFilter" class="filter-select">
+                            <option value="">Tout le stock</option>
+                            <option value="low">Stock faible (&lt;10)</option>
+                            <option value="out">Rupture de stock</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-sm">Filtrer</button>
+                        <button type="button" id="clearFilters" class="btn btn-sm btn-outline">Effacer</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Bulk Actions -->
+            <section class="bulk-actions" id="bulkActions" style="display: none;">
+                <span class="selected-count" id="selectedCount">0 sélectionné(s)</span>
+                <select id="bulkAction" class="filter-select">
+                    <option value="">Actions groupées</option>
+                    <option value="publish">Publier</option>
+                    <option value="unpublish">Dépublier</option>
+                    <option value="delete">Supprimer</option>
+                </select>
+                <button type="button" id="applyBulkAction" class="btn btn-sm btn-warning">Appliquer</button>
+            </section>
+
+            <!-- Products Table -->
+            <section class="section">
+                <div class="table-container">
+                    <table class="data-table" id="productsTable">
+                        <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th class="col-image">Image</th>
+                                <th class="col-name">Nom</th>
+                                <th class="col-sku">SKU</th>
+                                <th class="col-category">Catégorie</th>
+                                <th class="col-price">Prix</th>
+                                <th class="col-stock">Stock</th>
+                                <th class="col-langs">Langues</th>
+                                <th class="col-status">Statut</th>
+                                <th class="col-date">Date</th>
+                                <th class="col-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsBody">
+                            <tr>
+                                <td colspan="11" class="loading">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <!-- Filled by JS -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmer la suppression</h3>
+                <button class="modal-close" id="closeDeleteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce produit ?</p>
+                <p class="text-danger">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelDelete">Annuler</button>
+                <button class="btn btn-danger" id="confirmDelete">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin-config.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-products.js"></script>
+</body>
+</html>

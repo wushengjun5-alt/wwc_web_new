@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWC Admin - Commandes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+    <style>
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-pending    { background: #fff3cd; color: #856404; }
+        .status-paid       { background: #d4edda; color: #155724; }
+        .status-processing { background: #cce5ff; color: #004085; }
+        .status-shipped    { background: #e2d4f0; color: #6f42c1; }
+        .status-delivered  { background: #d1ecf1; color: #0c5460; }
+        .status-cancelled  { background: #f8d7da; color: #721c24; }
+        .status-refunded   { background: #e2e3e5; color: #383d41; }
+
+        .order-detail-panel {
+            position: fixed;
+            top: 0; right: 0;
+            width: 480px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+        }
+        .order-detail-panel.open { transform: translateX(0); }
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .panel-header h3 { font-size: 18px; color: var(--admin-primary); }
+        .panel-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--admin-text-light); }
+        .panel-body { flex: 1; overflow-y: auto; padding: 24px; }
+        .panel-footer { padding: 16px 24px; border-top: 1px solid var(--admin-border); }
+
+        .detail-section { margin-bottom: 20px; }
+        .detail-section h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--admin-text-light); margin-bottom: 10px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--admin-border); font-size: 14px; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-row strong { font-weight: 600; }
+
+        .form-inline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .form-inline select, .form-inline input { padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 6px; font-size: 14px; font-family: inherit; }
+        .form-inline select { flex: 1; }
+        .form-inline input { flex: 2; }
+
+        .items-mini { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .items-mini th, .items-mini td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--admin-border); }
+        .items-mini th { background: var(--admin-bg-light); font-size: 11px; text-transform: uppercase; color: var(--admin-text-light); }
+
+        .panel-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+            z-index: 199; display: none;
+        }
+        .panel-overlay.open { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">W</span>
+                <span class="logo-text">WWC Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="nav-icon">📦</span>
+                <span>Produits</span>
+            </a>
+            <a href="categories.html" class="nav-item">
+                <span class="nav-icon">📁</span>
+                <span>Catégories</span>
+            </a>
+            <a href="orders.html" class="nav-item active">
+                <span class="nav-icon">🛒</span>
+                <span>Commandes</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Clients</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="../index.html" class="nav-item">
+                <span class="nav-icon">🏪</span>
+                <span>Voir la boutique</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connexion...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1>Commandes</h1>
+            </div>
+            <div class="header-right">
+                <span id="orderCount" style="font-size:14px; color:var(--admin-text-light);"></span>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Filters -->
+            <section class="filters-section">
+                <form id="filtersForm" class="filters-form">
+                    <div class="filter-group">
+                        <input type="search" id="searchInput" placeholder="N° commande, email, téléphone..." class="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="pending">En attente</option>
+                            <option value="paid">Payée</option>
+                            <option value="processing">En traitement</option>
+                            <option value="shipped">Expédiée</option>
+                            <option value="delivered">Livrée</option>
+                            <option value="cancelled">Annulée</option>
+                            <option value="refunded">Remboursée</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-sm">Filtrer</button>
+                        <button type="button" id="clearFilters" class="btn btn-sm btn-outline">Effacer</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Orders Table -->
+            <section class="section">
+                <div class="table-container">
+                    <table class="data-table" id="ordersTable">
+                        <thead>
+                            <tr>
+                                <th>Commande</th>
+                                <th>Client</th>
+                                <th>Statut</th>
+                                <th>Total</th>
+                                <th>Paiement</th>
+                                <th>Suivi</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersBody">
+                            <tr><td colspan="8" class="loading">Chargement...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Order Detail Panel -->
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+    <aside class="order-detail-panel" id="orderPanel">
+        <div class="panel-header">
+            <h3 id="panelTitle">Commande</h3>
+            <button class="panel-close" onclick="closePanel()">&times;</button>
+        </div>
+        <div class="panel-body" id="panelBody">
+            <p>Chargement...</p>
+        </div>
+        <div class="panel-footer" id="panelFooter"></div>
+    </aside>
+
+    <script src="js/admin-config.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-orders.js"></script>
+</body>
+</html>

@@ -349,6 +349,53 @@ class OrderItem(models.Model):
         super().save(*args, **kwargs)
 
 
+class Coupon(models.Model):
+    """Discount coupon codes"""
+    DISCOUNT_TYPE_CHOICES = [
+        ('percent', _('Percentage')),
+        ('fixed', _('Fixed Amount')),
+    ]
+
+    code = models.CharField(_('Code'), max_length=50, unique=True, db_index=True)
+    discount_type = models.CharField(_('Discount Type'), max_length=10, choices=DISCOUNT_TYPE_CHOICES, default='percent')
+    discount_value = models.DecimalField(_('Discount Value'), max_digits=8, decimal_places=2)
+    min_order_amount = models.DecimalField(_('Minimum Order Amount'), max_digits=10, decimal_places=2, default=0)
+    max_uses = models.IntegerField(_('Max Uses'), default=0, help_text='0 = unlimited')
+    used_count = models.IntegerField(_('Used Count'), default=0)
+    is_active = models.BooleanField(_('Active'), default=True)
+    valid_from = models.DateTimeField(_('Valid From'), null=True, blank=True)
+    valid_until = models.DateTimeField(_('Valid Until'), null=True, blank=True)
+    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('Coupon')
+        verbose_name_plural = _('Coupons')
+
+    def __str__(self):
+        return f"{self.code} ({self.discount_value}{'%' if self.discount_type == 'percent' else ' DT'})"
+
+    def is_valid(self, order_amount=0):
+        """Check if coupon is valid"""
+        now = timezone.now()
+        if not self.is_active:
+            return False, 'Code promo inactif.'
+        if self.valid_from and now < self.valid_from:
+            return False, 'Code promo pas encore valide.'
+        if self.valid_until and now > self.valid_until:
+            return False, 'Code promo expiré.'
+        if self.max_uses > 0 and self.used_count >= self.max_uses:
+            return False, 'Code promo épuisé.'
+        if order_amount < self.min_order_amount:
+            return False, f'Commande minimum de {self.min_order_amount} DT requise.'
+        return True, 'ok'
+
+    def calculate_discount(self, subtotal):
+        """Calculate discount amount for given subtotal"""
+        if self.discount_type == 'percent':
+            return min(subtotal * self.discount_value / 100, subtotal)
+        return min(self.discount_value, subtotal)
+
+
 class ImpactEvent(models.Model):
     """
     Track real impact events funded by purchases.

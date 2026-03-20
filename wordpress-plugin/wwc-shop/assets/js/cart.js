@@ -43,6 +43,9 @@
             // Add to cart buttons
             $(document).on('click', '.wwc-add-to-cart, .wwc-quick-add', this.handleAddToCart.bind(this));
 
+            // Checkout form
+            $(document).on('submit', '#wwc-checkout-form', this.handleCheckout.bind(this));
+
             // Cart sidebar toggle
             $(document).on('click', '.wwc-cart-toggle, [data-action="open-cart"]', this.openSidebar.bind(this));
             $(document).on('click', '#wwc-cart-close, #wwc-cart-overlay', this.closeSidebar.bind(this));
@@ -212,6 +215,54 @@
                     } else {
                         this.showNotification(response.data.message || wwcShop.i18n.error, 'error');
                     }
+                }.bind(this)
+            });
+        },
+
+        /**
+         * Handle checkout form submission
+         */
+        handleCheckout: function(e) {
+            e.preventDefault();
+
+            const $form = $(e.currentTarget);
+            const $btn = $form.find('.wwc-btn-checkout');
+            const originalText = $btn.text();
+
+            // Collect all form fields
+            const data = {
+                action: 'wwc_checkout',
+                nonce: wwcShop.nonce
+            };
+            $form.serializeArray().forEach(function(field) {
+                data[field.name] = field.value;
+            });
+
+            $btn.prop('disabled', true).text('...');
+
+            $.ajax({
+                url: wwcShop.ajaxUrl,
+                type: 'POST',
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        if (response.data.redirect && response.data.checkout_url) {
+                            // Stripe hosted checkout
+                            window.location.href = response.data.checkout_url;
+                        } else if (response.data.redirect_url) {
+                            window.location.href = response.data.redirect_url;
+                        }
+                    } else {
+                        const msg = (response.data && response.data.message)
+                            ? response.data.message
+                            : wwcShop.i18n.error;
+                        this.showNotification(msg, 'error');
+                        $btn.prop('disabled', false).text(originalText);
+                    }
+                }.bind(this),
+                error: function() {
+                    this.showNotification(wwcShop.i18n.error, 'error');
+                    $btn.prop('disabled', false).text(originalText);
                 }.bind(this)
             });
         },

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWC Admin - Producteurs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">W</span>
+                <span class="logo-text">WWC Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="products.html" class="nav-item">
+                <span class="nav-icon">📦</span>
+                <span>Produits</span>
+            </a>
+            <a href="categories.html" class="nav-item">
+                <span class="nav-icon">📁</span>
+                <span>Catégories</span>
+            </a>
+            <a href="producers.html" class="nav-item active">
+                <span class="nav-icon">🏭</span>
+                <span>Producteurs</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="nav-icon">🛒</span>
+                <span>Commandes</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <span class="nav-icon">👥</span>
+                <span>Clients</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="../index.html" class="nav-item">
+                <span class="nav-icon">🏪</span>
+                <span>Voir la boutique</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connexion...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1>Producteurs</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" onclick="showAddProducerModal()">
+                    <span>➕</span> Nouveau Producteur
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Producers List -->
+            <section class="section">
+                <div class="table-container">
+                    <table class="data-table" id="producersTable">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Nom</th>
+                                <th>Localisation</th>
+                                <th>Produits</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="producersBody">
+                            <tr>
+                                <td colspan="6" class="loading">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Producer Modal -->
+    <div class="modal" id="producerModal">
+        <div class="modal-overlay" onclick="closeProducerModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="modalTitle">Nouveau Producteur</h3>
+                <button class="modal-close" onclick="closeProducerModal()">&times;</button>
+            </div>
+            <form id="producerForm" onsubmit="saveProducer(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="producerId">
+
+                    <div class="form-group">
+                        <label for="prodName">Nom <span class="required">*</span></label>
+                        <input type="text" id="prodName" required placeholder="Ex: Coopérative Femmes de Zaghouan">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prodLocation">Localisation</label>
+                        <input type="text" id="prodLocation" placeholder="Ex: Zaghouan, Tunisie">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prodSlug">Slug (URL)</label>
+                        <input type="text" id="prodSlug" placeholder="cooperative-zaghouan (auto-généré si vide)">
+                        <small style="color: var(--admin-text-light);">Laissez vide pour générer automatiquement à partir du nom</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prodBio">Biographie</label>
+                        <textarea id="prodBio" rows="4" placeholder="Histoire et description du producteur..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prodActive">Statut</label>
+                        <select id="prodActive">
+                            <option value="true">Actif</option>
+                            <option value="false">Inactif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeProducerModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ Confirmer la suppression</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce producteur ?</p>
+                <p class="text-danger" style="font-weight: bold;">
+                    ⚠️ ATTENTION: Tous les produits de ce producteur seront également supprimés !
+                </p>
+                <p id="deleteProductsCount" style="color: var(--admin-text-light);"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Supprimer tout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/admin-config.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-producers.js"></script>
+</body>
+</html>

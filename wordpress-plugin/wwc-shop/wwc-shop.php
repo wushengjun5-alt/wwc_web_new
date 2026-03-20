@@ -43,6 +43,11 @@ final class WWC_Shop {
     public $cart;
 
     /**
+     * Auth instance
+     */
+    public $auth;
+
+    /**
      * Get single instance of the class
      */
     public static function get_instance() {
@@ -70,10 +75,17 @@ final class WWC_Shop {
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-product.php';
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-checkout.php';
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-impact.php';
+        require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-auth.php';
+
+        // Admin classes (only in admin)
+        if (is_admin()) {
+            require_once WWC_SHOP_PLUGIN_DIR . 'admin/class-products-admin.php';
+        }
 
         // Initialize API client
-        $this->api = new WWC_API_Client();
+        $this->api  = new WWC_API_Client();
         $this->cart = new WWC_Cart($this->api);
+        $this->auth = new WWC_Auth($this->api);
     }
 
     /**
@@ -94,6 +106,9 @@ final class WWC_Shop {
 
         // Add cart sidebar to footer
         add_action('wp_footer', [$this, 'render_cart_sidebar']);
+
+        // Inject cart count badge into theme nav menus
+        add_filter('wp_nav_menu_items', [$this, 'add_cart_count_to_menu'], 10, 2);
 
         // Admin menu
         add_action('admin_menu', [$this, 'add_admin_menu']);
@@ -148,6 +163,15 @@ final class WWC_Shop {
             true
         );
 
+        // Auth JavaScript
+        wp_enqueue_script(
+            'wwc-shop-auth',
+            WWC_SHOP_PLUGIN_URL . 'assets/js/auth.js',
+            ['jquery', 'wwc-shop-cart'],
+            WWC_SHOP_VERSION,
+            true
+        );
+
         // Localize scripts
         wp_localize_script('wwc-shop-cart', 'wwcShop', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -183,8 +207,14 @@ final class WWC_Shop {
         add_shortcode('wwc_categories', [$this, 'categories_shortcode']);
         add_shortcode('wwc_cart', [$this, 'cart_shortcode']);
         add_shortcode('wwc_checkout', [$this, 'checkout_shortcode']);
+        add_shortcode('wwc_checkout_success', [$this, 'checkout_success_shortcode']);
         add_shortcode('wwc_customer_dashboard', [$this, 'dashboard_shortcode']);
         add_shortcode('wwc_impact', [$this, 'impact_shortcode']);
+        add_shortcode('wwc_order_detail', [$this, 'order_detail_shortcode']);
+        add_shortcode('wwc_login', [$this, 'login_shortcode']);
+        add_shortcode('wwc_register', [$this, 'register_shortcode']);
+        add_shortcode('wwc_forgot_password', [$this, 'forgot_password_shortcode']);
+        add_shortcode('wwc_reset_password', [$this, 'reset_password_shortcode']);
     }
 
     /**
@@ -194,25 +224,47 @@ final class WWC_Shop {
         $atts = shortcode_atts([
             'category' => '',
             'featured' => '',
-            'limit' => 12,
-            'columns' => 3,
+            'limit'    => 12,
+            'columns'  => 3,
+            'filters'  => 'false', // set to "true" to show filter sidebar
         ], $atts, 'wwc_products');
 
-        $params = ['page_size' => $atts['limit']];
+        // Build API params — merge shortcode atts with URL query params (user-applied filters)
+        $params = ['page_size' => intval($atts['limit'])];
 
         if (!empty($atts['category'])) {
-            $params['category'] = $atts['category'];
+            $params['category'] = sanitize_text_field($atts['category']);
         }
-
         if ($atts['featured'] === 'true') {
             $params['is_featured'] = 'true';
         }
 
-        $products = $this->api->get_products($params);
-
-        if (is_wp_error($products)) {
-            return '<p class="wwc-error">' . esc_html__('Unable to load products', 'wwc-shop') . '</p>';
+        // Allow URL query params to override/extend (search, filters, pagination)
+        $allowed_query_params = ['category', 'search', 'ordering', 'min_price', 'max_price',
+                                 'is_natural', 'is_organic', 'in_stock', 'page'];
+        foreach ($allowed_query_params as $qp) {
+            $val = sanitize_text_field($_GET[$qp] ?? '');
+            if ($val !== '') {
+                $params[$qp] = $val;
+            }
         }
+
+        $response  = $this->api->get_products($params, true);
+        $show_filters = $atts['filters'] === 'true';
+
+        if (is_wp_error($response)) {
+            return '<p class="wwc-error">' . esc_html__('Impossible de charger les produits.', 'wwc-shop') . '</p>';
+        }
+
+        $products   = $response['results'] ?? $response;
+        $total      = $response['count'] ?? count($products);
+        $page_size  = $params['page_size'];
+        $current_page = max(1, intval($_GET['page'] ?? 1));
+        $total_pages  = $page_size > 0 ? ceil($total / $page_size) : 1;
+
+        // Fetch categories for filter sidebar
+        $categories = $show_filters ? $this->api->get_categories() : [];
+        if (is_wp_error($categories)) $categories = [];
 
         ob_start();
         include WWC_SHOP_PLUGIN_DIR . 'templates/product-grid.php';
@@ -289,15 +341,68 @@ final class WWC_Shop {
     }
 
     /**
+     * Checkout success / order confirmation shortcode
+     */
+    public function checkout_success_shortcode($atts) {
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/checkout-success.php';
+        return ob_get_clean();
+    }
+
+    /**
      * Customer dashboard shortcode
      */
     public function dashboard_shortcode($atts) {
-        if (!is_user_logged_in()) {
-            return '<p>' . esc_html__('Please log in to view your dashboard.', 'wwc-shop') . '</p>';
-        }
-
         ob_start();
         include WWC_SHOP_PLUGIN_DIR . 'templates/customer-dashboard.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Login shortcode
+     */
+    public function login_shortcode($atts) {
+        if ($this->api->is_authenticated()) {
+            return '<p>' . sprintf(
+                __('You are already logged in. <a href="%s">Go to your account</a>.', 'wwc-shop'),
+                esc_url(home_url('/mon-compte/'))
+            ) . '</p>';
+        }
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/auth-login.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Register shortcode
+     */
+    public function register_shortcode($atts) {
+        if ($this->api->is_authenticated()) {
+            return '<p>' . sprintf(
+                __('You are already logged in. <a href="%s">Go to your account</a>.', 'wwc-shop'),
+                esc_url(home_url('/mon-compte/'))
+            ) . '</p>';
+        }
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/auth-register.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Forgot password shortcode
+     */
+    public function forgot_password_shortcode($atts) {
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/auth-forgot-password.php';
+        return ob_get_clean();
+    }
+
+    /**
+     * Reset password confirm shortcode
+     */
+    public function reset_password_shortcode($atts) {
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/auth-reset-password.php';
         return ob_get_clean();
     }
 
@@ -324,7 +429,7 @@ final class WWC_Shop {
      * Register AJAX handlers
      */
     private function register_ajax_handlers() {
-        $ajax_actions = [
+        $cart_actions = [
             'wwc_add_to_cart',
             'wwc_update_cart',
             'wwc_remove_from_cart',
@@ -334,9 +439,23 @@ final class WWC_Shop {
             'wwc_checkout',
         ];
 
-        foreach ($ajax_actions as $action) {
+        foreach ($cart_actions as $action) {
             add_action("wp_ajax_{$action}", [$this->cart, str_replace('wwc_', 'ajax_', $action)]);
             add_action("wp_ajax_nopriv_{$action}", [$this->cart, str_replace('wwc_', 'ajax_', $action)]);
+        }
+
+        // Auth AJAX actions (available to both logged-in and guests)
+        $auth_actions = [
+            'wwc_register'               => 'ajax_register',
+            'wwc_login'                  => 'ajax_login',
+            'wwc_logout'                 => 'ajax_logout',
+            'wwc_password_reset_request' => 'ajax_password_reset_request',
+            'wwc_password_reset_confirm' => 'ajax_password_reset_confirm',
+        ];
+
+        foreach ($auth_actions as $action => $method) {
+            add_action("wp_ajax_{$action}",        [$this->auth, $method]);
+            add_action("wp_ajax_nopriv_{$action}", [$this->auth, $method]);
         }
     }
 
@@ -391,6 +510,7 @@ final class WWC_Shop {
     public function register_settings() {
         register_setting('wwc_shop_settings', 'wwc_api_url');
         register_setting('wwc_shop_settings', 'wwc_api_key');
+        register_setting('wwc_shop_settings', 'wwc_admin_api_key');
         register_setting('wwc_shop_settings', 'wwc_default_currency');
         register_setting('wwc_shop_settings', 'wwc_stripe_public_key');
         register_setting('wwc_shop_settings', 'wwc_stripe_secret_key');
@@ -409,6 +529,18 @@ final class WWC_Shop {
             'wwc-shop-settings',
             'wwc_api_settings',
             ['field' => 'wwc_api_url', 'default' => 'https://api.wallahwecan.org']
+        );
+
+        add_settings_field(
+            'wwc_admin_api_key',
+            __('Admin API Key', 'wwc-shop'),
+            [$this, 'render_password_field'],
+            'wwc-shop-settings',
+            'wwc_api_settings',
+            [
+                'field' => 'wwc_admin_api_key',
+                'description' => __('Secret key for admin product management. Must match ADMIN_API_KEY in Django settings.', 'wwc-shop')
+            ]
         );
 
         add_settings_field(
@@ -434,6 +566,59 @@ final class WWC_Shop {
             esc_attr($args['field']),
             esc_attr($value)
         );
+        if (!empty($args['description'])) {
+            printf('<p class="description">%s</p>', esc_html($args['description']));
+        }
+    }
+
+    /**
+     * Render password field
+     */
+    public function render_password_field($args) {
+        $value = get_option($args['field'], '');
+        printf(
+            '<input type="password" name="%s" value="%s" class="regular-text" autocomplete="new-password">',
+            esc_attr($args['field']),
+            esc_attr($value)
+        );
+        if (!empty($args['description'])) {
+            printf('<p class="description">%s</p>', esc_html($args['description']));
+        }
+    }
+
+    /**
+     * Append cart count badge to nav menu
+     */
+    public function add_cart_count_to_menu($items, $args) {
+        $cart_link = sprintf(
+            '<li class="wwc-cart-nav-item"><a href="%s" class="wwc-cart-toggle" data-action="open-cart" aria-label="%s">%s <span class="wwc-cart-count">0</span></a></li>',
+            esc_url(home_url('/cart/')),
+            esc_attr__('Panier', 'wwc-shop'),
+            esc_html__('Panier', 'wwc-shop')
+        );
+        return $items . $cart_link;
+    }
+
+    /**
+     * Order detail shortcode
+     */
+    public function order_detail_shortcode($atts) {
+        if (!$this->api->is_authenticated()) {
+            $login_url = add_query_arg('redirect', urlencode(get_permalink()), home_url('/connexion/'));
+            return '<p>' . sprintf(
+                __('Veuillez <a href="%s">vous connecter</a> pour voir cette commande.', 'wwc-shop'),
+                esc_url($login_url)
+            ) . '</p>';
+        }
+
+        $order_number = sanitize_text_field($_GET['order'] ?? '');
+        if (empty($order_number)) {
+            return '<p class="wwc-error">' . esc_html__('Numéro de commande manquant.', 'wwc-shop') . '</p>';
+        }
+
+        ob_start();
+        include WWC_SHOP_PLUGIN_DIR . 'templates/order-detail.php';
+        return ob_get_clean();
     }
 
     /**

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWC Admin - Édition Produit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">W</span>
+                <span class="logo-text">WWC Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="products.html" class="nav-item active">
+                <span class="nav-icon">📦</span>
+                <span>Produits</span>
+            </a>
+            <a href="categories.html" class="nav-item">
+                <span class="nav-icon">📁</span>
+                <span>Catégories</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <span class="nav-icon">🛒</span>
+                <span>Commandes</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a href="../index.html" class="nav-item">
+                <span class="nav-icon">🏪</span>
+                <span>Voir la boutique</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connexion...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <a href="products.html" class="back-link">← Retour aux produits</a>
+                <h1 id="pageTitle">Nouveau Produit</h1>
+            </div>
+            <div class="header-right">
+                <button type="button" class="btn btn-outline" id="previewBtn" style="display: none;">
+                    👁️ Aperçu
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <form id="productForm" class="product-form">
+                <input type="hidden" id="productId" name="product_id" value="">
+
+                <div class="form-layout">
+                    <!-- Main Column -->
+                    <div class="form-main">
+                        <!-- Basic Info Section -->
+                        <section class="form-section">
+                            <h2 class="section-title">Informations de base</h2>
+
+                            <!-- Language Tabs -->
+                            <div class="lang-tabs">
+                                <button type="button" class="lang-tab active" data-lang="fr">🇫🇷 Français</button>
+                                <button type="button" class="lang-tab" data-lang="en">🇬🇧 English</button>
+                                <button type="button" class="lang-tab" data-lang="ar">🇸🇦 العربية</button>
+                            </div>
+
+                            <!-- French Content -->
+                            <div class="lang-content active" data-lang="fr">
+                                <div class="form-group">
+                                    <label for="name">Nom du produit <span class="required">*</span></label>
+                                    <input type="text" id="name" name="name" required placeholder="Ex: Panier Artisanal">
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description" rows="5" placeholder="Décrivez le produit..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="short_description">Description courte</label>
+                                    <textarea id="short_description" name="short_description" rows="2" placeholder="Courte description pour les listes..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- English Content -->
+                            <div class="lang-content" data-lang="en">
+                                <div class="form-group">
+                                    <label for="name_en">Product Name</label>
+                                    <input type="text" id="name_en" name="name_en" placeholder="Ex: Artisan Basket">
+                                </div>
+                                <div class="form-group">
+                                    <label for="description_en">Description</label>
+                                    <textarea id="description_en" name="description_en" rows="5" placeholder="Describe the product..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="short_description_en">Short Description</label>
+                                    <textarea id="short_description_en" name="short_description_en" rows="2" placeholder="Short description for lists..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Arabic Content -->
+                            <div class="lang-content" data-lang="ar" dir="rtl">
+                                <div class="form-group">
+                                    <label for="name_ar">اسم المنتج</label>
+                                    <input type="text" id="name_ar" name="name_ar" placeholder="مثال: سلة حرفية">
+                                </div>
+                                <div class="form-group">
+                                    <label for="description_ar">الوصف</label>
+                                    <textarea id="description_ar" name="description_ar" rows="5" placeholder="وصف المنتج..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="short_description_ar">وصف قصير</label>
+                                    <textarea id="short_description_ar" name="short_description_ar" rows="2" placeholder="وصف قصير للقوائم..."></textarea>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Pricing Section -->
+                        <section class="form-section">
+                            <h2 class="section-title">Prix</h2>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="price_tnd">Prix TND <span class="required">*</span></label>
+                                    <div class="input-group">
+                                        <input type="number" id="price_tnd" name="price_tnd" step="0.01" min="0" required placeholder="0.00">
+                                        <span class="input-suffix">DT</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="price_eur">Prix EUR</label>
+                                    <div class="input-group">
+                                        <input type="number" id="price_eur" name="price_eur" step="0.01" min="0" placeholder="0.00">
+                                        <span class="input-suffix">€</span>
+                                    </div>
+                                    <span class="form-hint">Optionnel - Prix européen</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="compare_at_price">Prix barré (ancien prix)</label>
+                                    <div class="input-group">
+                                        <input type="number" id="compare_at_price" name="compare_at_price" step="0.01" min="0" placeholder="0.00">
+                                        <span class="input-suffix">DT</span>
+                                    </div>
+                                    <span class="form-hint">Affiche un prix barré si rempli</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cost_price">Prix d'achat (coût)</label>
+                                    <div class="input-group">
+                                        <input type="number" id="cost_price" name="cost_price" step="0.01" min="0" placeholder="0.00">
+                                        <span class="input-suffix">DT</span>
+                                    </div>
+                                    <span class="form-hint">Pour calculer la marge</span>
+                                </div>
+                            </div>
+
+                            <!-- B2B Pricing -->
+                            <div class="subsection">
+                                <h3 class="subsection-title">
+                                    <label class="toggle-label">
+                                        <input type="checkbox" id="has_b2b_pricing" name="has_b2b_pricing">
+                                        <span>Prix B2B (Entreprises)</span>
+                                    </label>
+                                </h3>
+                                <div class="b2b-fields" id="b2bFields" style="display: none;">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="b2b_price_tnd">Prix B2B TND</label>
+                                            <div class="input-group">
+                                                <input type="number" id="b2b_price_tnd" name="b2b_price_tnd" step="0.01" min="0" placeholder="0.00">
+                                                <span class="input-suffix">DT</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="b2b_min_quantity">Qté minimale B2B</label>
+                                            <input type="number" id="b2b_min_quantity" name="b2b_min_quantity" min="1" placeholder="10">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Images Section -->
+                        <section class="form-section">
+                            <h2 class="section-title">Images</h2>
+                            <div class="images-container">
+                                <div class="images-grid" id="imagesGrid">
+                                    <!-- Images will be loaded here -->
+                                </div>
+                                <div class="upload-area" id="uploadArea">
+                                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                                    <div class="upload-content">
+                                        <span class="upload-icon">📷</span>
+                                        <p>Glissez vos images ici ou <button type="button" class="link-btn" id="selectImagesBtn">sélectionnez des fichiers</button></p>
+                                        <span class="upload-hint">PNG, JPG jusqu'à 5MB</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="form-hint" id="imagesHint" style="display: none;">Sauvegardez le produit d'abord pour ajouter des images.</p>
+                        </section>
+
+                        <!-- Impact Section -->
+                        <section class="form-section impact-section">
+                            <h2 class="section-title">💝 Impact Social</h2>
+                            <p class="section-description">Décrivez l'impact solidaire de ce produit</p>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="impact_quantity">Quantité</label>
+                                    <input type="number" id="impact_quantity" name="impact_quantity" min="1" placeholder="Ex: 5">
+                                </div>
+                                <div class="form-group form-group-wide">
+                                    <label for="impact_item">Élément donné</label>
+                                    <input type="text" id="impact_item" name="impact_item" placeholder="Ex: cahiers, stylos, repas...">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="impact_school">École bénéficiaire</label>
+                                <input type="text" id="impact_school" name="impact_school" placeholder="Ex: École Primaire Sidi Bou Saïd">
+                            </div>
+
+                            <!-- Impact Preview -->
+                            <div class="impact-preview" id="impactPreview">
+                                <strong>Aperçu:</strong>
+                                <p id="impactPreviewText">Remplissez les champs ci-dessus pour voir l'aperçu</p>
+                            </div>
+                        </section>
+
+                        <!-- SEO Section -->
+                        <section class="form-section collapsible">
+                            <h2 class="section-title section-toggle" data-target="seoFields">
+                                🔍 SEO & Métadonnées
+                                <span class="toggle-icon">▼</span>
+                            </h2>
+                            <div class="section-content" id="seoFields" style="display: none;">
+                                <div class="form-group">
+                                    <label for="meta_title">Meta Title</label>
+                                    <input type="text" id="meta_title" name="meta_title" maxlength="60" placeholder="Titre pour les moteurs de recherche">
+                                    <span class="char-count"><span id="metaTitleCount">0</span>/60</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="meta_description">Meta Description</label>
+                                    <textarea id="meta_description" name="meta_description" rows="2" maxlength="160" placeholder="Description pour les moteurs de recherche"></textarea>
+                                    <span class="char-count"><span id="metaDescCount">0</span>/160</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="form-sidebar">
+                        <!-- Publish Box -->
+                        <div class="sidebar-box publish-box">
+                            <h3>Publier</h3>
+                            <div class="sidebar-content">
+                                <div class="form-group">
+                                    <label for="is_active">Statut</label>
+                                    <select id="is_active" name="is_active">
+                                        <option value="true">Publié</option>
+                                        <option value="false">Brouillon</option>
+                                    </select>
+                                </div>
+                                <div class="publish-info" id="publishInfo" style="display: none;">
+                                    <p><strong>Créé:</strong> <span id="createdAt">-</span></p>
+                                    <p><strong>Modifié:</strong> <span id="updatedAt">-</span></p>
+                                </div>
+                            </div>
+                            <div class="sidebar-actions">
+                                <button type="button" class="btn btn-outline btn-block" id="saveDraftBtn">Sauvegarder brouillon</button>
+                                <button type="submit" class="btn btn-primary btn-block" id="saveBtn">
+                                    <span class="btn-text">Publier</span>
+                                    <span class="btn-loading" style="display: none;">⏳ Sauvegarde...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="sidebar-box">
+                            <h3>Catégorie <span class="required">*</span></h3>
+                            <div class="sidebar-content">
+                                <select id="category" name="category" required>
+                                    <option value="">Sélectionner...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Producer -->
+                        <div class="sidebar-box">
+                            <h3>Producteur</h3>
+                            <div class="sidebar-content">
+                                <select id="producer" name="producer">
+                                    <option value="">Aucun producteur</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Inventory -->
+                        <div class="sidebar-box">
+                            <h3>Inventaire</h3>
+                            <div class="sidebar-content">
+                                <div class="form-group">
+                                    <label for="sku">SKU</label>
+                                    <input type="text" id="sku" name="sku" placeholder="WWC-001">
+                                </div>
+                                <div class="form-group">
+                                    <label for="stock_quantity">Stock</label>
+                                    <input type="number" id="stock_quantity" name="stock_quantity" min="0" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="track_inventory" name="track_inventory" checked>
+                                        <span>Suivre le stock</span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="weight">Poids (g)</label>
+                                    <input type="number" id="weight" name="weight" min="0" step="1" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Badges -->
+                        <div class="sidebar-box">
+                            <h3>Badges</h3>
+                            <div class="sidebar-content badges-grid">
+                                <label class="badge-option">
+                                    <input type="checkbox" id="is_featured" name="is_featured">
+                                    <span>⭐ Mis en avant</span>
+                                </label>
+                                <label class="badge-option">
+                                    <input type="checkbox" id="is_natural" name="is_natural">
+                                    <span>🌿 100% Naturel</span>
+                                </label>
+                                <label class="badge-option">
+                                    <input type="checkbox" id="is_organic" name="is_organic">
+                                    <span>🌱 Bio/Organic</span>
+                                </label>
+                                <label class="badge-option">
+                                    <input type="checkbox" id="is_handmade" name="is_handmade">
+                                    <span>✋ Fait main</span>
+                                </label>
+                                <label class="badge-option">
+                                    <input type="checkbox" id="is_vegan" name="is_vegan">
+                                    <span>🥬 Vegan</span>
+                                </label>
+                                <label class="badge-option">
+                                    <input type="checkbox" id="is_cruelty_free" name="is_cruelty_free">
+                                    <span>🐰 Cruelty Free</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/admin-config.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script src="js/admin-product-edit.js"></script>
+</body>
+</html>
