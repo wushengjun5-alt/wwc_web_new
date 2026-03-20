@@ -4,7 +4,7 @@ Management command to populate sample data for testing the WWC Shop.
 from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from products.models import ProductCategory, Producer, Product, Review
+from products.models import ProductCategory, Producer, Product, ProductImage, Review
 
 User = get_user_model()
 
@@ -417,6 +417,27 @@ class Command(BaseCommand):
             },
         ]
 
+        # Stable picsum placeholder image IDs (short URLs fit varchar(100))
+        # Each ID maps to a consistent themed photo from picsum.photos
+        product_images = {
+            'huile-argan-pure':          'https://picsum.photos/id/225/600',
+            'savon-lait-chevre':         'https://picsum.photos/id/292/600',
+            'creme-hydratante-olive':    'https://picsum.photos/id/177/600',
+            'miel-foret-bio':            'https://picsum.photos/id/312/600',
+            'dattes-deglet-nour':        'https://picsum.photos/id/488/600',
+            'huile-olive-extra-vierge':  'https://picsum.photos/id/429/600',
+            'harissa-traditionnelle':    'https://picsum.photos/id/102/600',
+            'encens-romarin':            'https://picsum.photos/id/106/600',
+            'huile-essentielle-lavande': 'https://picsum.photos/id/399/600',
+            'tisane-detox':              'https://picsum.photos/id/431/600',
+            'bougie-fleur-oranger':      'https://picsum.photos/id/365/600',
+            'panier-tresse':             'https://picsum.photos/id/280/600',
+            'savon-menager-eco':         'https://picsum.photos/id/145/600',
+            'coffret-decouverte-soins':  'https://picsum.photos/id/219/600',
+            'coffret-saveurs-tunisie':   'https://picsum.photos/id/493/600',
+            'coffret-bien-etre':         'https://picsum.photos/id/326/600',
+        }
+
         for prod_data in products_data:
             product, created = Product.objects.update_or_create(
                 slug=prod_data['slug'],
@@ -424,6 +445,17 @@ class Command(BaseCommand):
             )
             status = 'Created' if created else 'Updated'
             self.stdout.write(f'  {status}: {product.name} - {product.price_tnd} DT')
+
+            # Add primary placeholder image if none exists yet
+            img_url = product_images.get(prod_data['slug'])
+            if img_url and not product.images.exists():
+                ProductImage.objects.create(
+                    product=product,
+                    image=img_url,
+                    alt_text=product.name,
+                    is_primary=True,
+                    order=0,
+                )
 
         # Create sample users for reviews
         self.stdout.write('\nCreating sample users for reviews...')
