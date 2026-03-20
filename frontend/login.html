@@ -304,6 +304,15 @@
             btn.querySelector('.spinner-sm').style.display = loading ? 'inline-block' : 'none';
         }
 
+        function getSessionKey() {
+            let key = localStorage.getItem('wwc_session_key');
+            if (!key) {
+                key = crypto.randomUUID();
+                localStorage.setItem('wwc_session_key', key);
+            }
+            return key;
+        }
+
         async function handleLogin(e) {
             e.preventDefault();
             const form = e.target;
@@ -314,7 +323,10 @@
             try {
                 const res = await fetch(`${API_URL}/auth/login/`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-Key': getSessionKey(),
+                    },
                     credentials: 'include',
                     body: JSON.stringify({
                         email: form.email.value,
@@ -353,7 +365,10 @@
             try {
                 const res = await fetch(`${API_URL}/auth/register/`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-Key': getSessionKey(),
+                    },
                     credentials: 'include',
                     body: JSON.stringify(data)
                 });
