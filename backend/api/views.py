@@ -485,8 +485,8 @@ class CheckoutView(APIView):
         # Clear cart
         cart.clear()
 
-        # Send confirmation email for non-Stripe orders immediately
-        if order.payment_method in ('bank_transfer', 'cash_on_delivery'):
+        # Send confirmation email for COD orders immediately
+        if order.payment_method == 'cash_on_delivery':
             from .payments import _send_order_confirmation_email
             _send_order_confirmation_email(order)
 
@@ -498,17 +498,6 @@ class CheckoutView(APIView):
             'status': order.status,
             'payment_method': order.payment_method,
         }
-
-        # For bank transfer, include instructions directly in response
-        if order.payment_method == 'bank_transfer':
-            response_data['bank_transfer'] = {
-                'bank_name': 'Banque de Tunisie',
-                'account_holder': 'Wallah We Can',
-                'iban': 'TN59 XXXX XXXX XXXX XXXX XXXX',
-                'reference': order.order_number,
-                'amount': str(order.total),
-                'currency': order.currency,
-            }
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 

@@ -69,6 +69,4 @@ urlpatterns = [
     path('payments/webhook/', payments.StripeWebhookView.as_view(), name='stripe-webhook'),
     path('payments/status/<str:order_number>/', payments.PaymentStatusView.as_view(), name='payment-status'),
 
-    # Payments - Bank transfer (TND only)
-    path('payments/bank-transfer/<str:order_number>/', payments.BankTransferInstructionsView.as_view(), name='bank-transfer-instructions'),
 ]

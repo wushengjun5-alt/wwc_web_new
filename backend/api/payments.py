@@ -1,9 +1,9 @@
 """
 Payment integration for WWC Shop.
 
-Payment routing by currency (Option B):
-- TND orders: bank_transfer only (Stripe does not support TND)
-- EUR orders: Stripe card payment
+Supported payment methods:
+- stripe: card payment (EUR or TND via customer's bank conversion)
+- cash_on_delivery: pay on delivery
 """
 
 import stripe
@@ -61,14 +61,6 @@ def _send_order_confirmation_email(order):
             "L'équipe WWC",
         ]
 
-        if order.payment_method == 'bank_transfer':
-            message_lines += [
-                "",
-                "--- Informations de virement ---",
-                "Veuillez effectuer votre virement avec la référence : " + order.order_number,
-                "Nous traiterons votre commande dès réception du paiement.",
-            ]
-
         send_mail(
             subject=subject,
             message="\n".join(message_lines),
@@ -83,7 +75,7 @@ def _send_order_confirmation_email(order):
 class CreateCheckoutSessionView(APIView):
     """
     Create Stripe Checkout Session for EUR orders.
-    TND orders must use bank_transfer — this endpoint rejects them.
+    Creates a Stripe Checkout Session for the given order.
     """
     permission_classes = [AllowAny]
 
@@ -177,43 +169,6 @@ class CreateCheckoutSessionView(APIView):
         except Exception as e:
             logger.error("Unexpected error creating Stripe session for order %s: %s", order_number, e, exc_info=True)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class BankTransferInstructionsView(APIView):
-    """
-    Return bank transfer instructions for TND orders.
-    Called after order is created when payment_method=bank_transfer.
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request, order_number):
-        try:
-            order = Order.objects.get(order_number=order_number)
-        except Order.DoesNotExist:
-            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if order.currency != 'TND':
-            return Response(
-                {'error': 'Bank transfer instructions are only for TND orders.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return Response({
-            'order_number': order.order_number,
-            'total': str(order.total),
-            'currency': order.currency,
-            'instructions': {
-                'bank_name': 'Banque de Tunisie',
-                'account_holder': 'Wallah We Can',
-                'iban': 'TN59 XXXX XXXX XXXX XXXX XXXX',
-                'reference': order.order_number,
-                'note': (
-                    f"Veuillez effectuer un virement de {order.total} TND "
-                    f"avec la référence {order.order_number}. "
-                    "Votre commande sera traitée dès réception du paiement."
-                ),
-            }
-        })
 
 
 class StripeWebhookView(APIView):

@@ -90,7 +90,7 @@
     </main>
 
     <script>
-        const API_URL = 'http://127.0.0.1:8000/api/v1';
+        const API_URL = '/api/v1';
 
         function getToken() { return localStorage.getItem('wwc_access_token'); }
         function escHtml(str) {
@@ -131,21 +131,6 @@
                     <div style="font-weight:600;">${item.subtotal} ${symbol}</div>
                 </div>`).join('');
 
-            const bankHtml = method === 'bank_transfer' ? `
-                <div class="bank-card">
-                    <h2>Instructions de virement bancaire</h2>
-                    <p style="font-size:14px; color:var(--wwc-text-light); margin-bottom:14px;">
-                        Votre commande est en attente de paiement. Veuillez effectuer le virement avec les informations suivantes :
-                    </p>
-                    <table class="bank-table">
-                        <tr><td>Bénéficiaire</td><td>Wallah We Can</td></tr>
-                        <tr><td>Banque</td><td>Banque de Tunisie</td></tr>
-                        <tr><td>IBAN</td><td>TN59 XXXX XXXX XXXX XXXX XXXX</td></tr>
-                        <tr class="highlight"><td>Référence (obligatoire)</td><td>${escHtml(order.order_number)}</td></tr>
-                        <tr class="highlight"><td>Montant</td><td>${order.total} ${symbol}</td></tr>
-                    </table>
-                    <p class="bank-note">Votre commande sera traitée dès réception du virement. Pensez à indiquer le numéro de commande comme référence.</p>
-                </div>` : '';
 
             const impactHtml = (() => {
                 const impact = order.impact_summary || {};
@@ -195,26 +180,11 @@
                     </div>
                 </div>
 
-                ${bankHtml}
                 ${impactHtml}
             `;
         }
 
         function renderGenericSuccess(orderNumber, method) {
-            const bankHtml = method === 'bank_transfer' ? `
-                <div class="bank-card">
-                    <h2>Instructions de virement bancaire</h2>
-                    <p style="font-size:14px;color:var(--wwc-text-light);margin-bottom:14px;">
-                        Votre commande est en attente de paiement. Veuillez effectuer le virement avec les informations suivantes :
-                    </p>
-                    <table class="bank-table">
-                        <tr><td>Bénéficiaire</td><td>Wallah We Can</td></tr>
-                        <tr><td>Banque</td><td>Banque de Tunisie</td></tr>
-                        <tr><td>IBAN</td><td>TN59 XXXX XXXX XXXX XXXX XXXX</td></tr>
-                        <tr class="highlight"><td>Référence (obligatoire)</td><td>${escHtml(orderNumber)}</td></tr>
-                    </table>
-                    <p class="bank-note">Votre commande sera traitée dès réception du virement. N'oubliez pas d'indiquer le numéro de commande comme référence.</p>
-                </div>` : '';
 
             document.getElementById('main').innerHTML = `
                 <div class="card">
@@ -231,7 +201,6 @@
                             : '<a href="/shop/login/" class="btn btn-outline">Se connecter</a>'}
                     </div>
                 </div>
-                ${bankHtml}
             `;
         }
 
