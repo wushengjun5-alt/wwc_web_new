@@ -417,24 +417,24 @@ class Command(BaseCommand):
             },
         ]
 
-        # Themed Unsplash source URLs — relevant keywords per product
+        # Stable picsum.photos seed URLs — consistent image per product, verified working
         product_images = {
-            'huile-argan-pure':          'https://source.unsplash.com/600x600/?argan,oil,beauty',
-            'savon-lait-chevre':         'https://source.unsplash.com/600x600/?handmade,soap',
-            'creme-hydratante-olive':    'https://source.unsplash.com/600x600/?face,cream,olive',
-            'miel-foret-bio':            'https://source.unsplash.com/600x600/?honey,jar,organic',
-            'dattes-deglet-nour':        'https://source.unsplash.com/600x600/?dates,fruit,tunisia',
-            'huile-olive-extra-vierge':  'https://source.unsplash.com/600x600/?olive,oil,bottle',
-            'harissa-traditionnelle':    'https://source.unsplash.com/600x600/?chili,sauce,spicy',
-            'encens-romarin':            'https://source.unsplash.com/600x600/?incense,aromatherapy',
-            'huile-essentielle-lavande': 'https://source.unsplash.com/600x600/?lavender,essential,oil',
-            'tisane-detox':              'https://source.unsplash.com/600x600/?herbal,tea,detox',
-            'bougie-fleur-oranger':      'https://source.unsplash.com/600x600/?candle,orange,blossom',
-            'panier-tresse':             'https://source.unsplash.com/600x600/?woven,basket,handmade',
-            'savon-menager-eco':         'https://source.unsplash.com/600x600/?eco,cleaning,natural',
-            'coffret-decouverte-soins':  'https://source.unsplash.com/600x600/?skincare,gift,set',
-            'coffret-saveurs-tunisie':   'https://source.unsplash.com/600x600/?food,gift,basket',
-            'coffret-bien-etre':         'https://source.unsplash.com/600x600/?wellness,spa,gift',
+            'huile-argan-pure':          'https://picsum.photos/seed/argan/600/600',
+            'savon-lait-chevre':         'https://picsum.photos/seed/soap/600/600',
+            'creme-hydratante-olive':    'https://picsum.photos/seed/cream/600/600',
+            'miel-foret-bio':            'https://picsum.photos/seed/honey/600/600',
+            'dattes-deglet-nour':        'https://picsum.photos/seed/dates/600/600',
+            'huile-olive-extra-vierge':  'https://picsum.photos/seed/olive/600/600',
+            'harissa-traditionnelle':    'https://picsum.photos/seed/spice/600/600',
+            'encens-romarin':            'https://picsum.photos/seed/incense/600/600',
+            'huile-essentielle-lavande': 'https://picsum.photos/seed/lavender/600/600',
+            'tisane-detox':              'https://picsum.photos/seed/herbal/600/600',
+            'bougie-fleur-oranger':      'https://picsum.photos/seed/candle/600/600',
+            'panier-tresse':             'https://picsum.photos/seed/basket/600/600',
+            'savon-menager-eco':         'https://picsum.photos/seed/clean/600/600',
+            'coffret-decouverte-soins':  'https://picsum.photos/seed/skincare/600/600',
+            'coffret-saveurs-tunisie':   'https://picsum.photos/seed/giftfood/600/600',
+            'coffret-bien-etre':         'https://picsum.photos/seed/wellness/600/600',
         }
 
         for prod_data in products_data:
