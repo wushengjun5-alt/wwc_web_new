@@ -107,14 +107,18 @@ class CreateCheckoutSessionView(APIView):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
-        # Stripe does not natively support TND, so we charge in EUR.
-        # The amount is converted at a fixed rate; the customer's bank
-        # handles the final currency conversion on their end.
+        # Always charge in EUR via Stripe.
+        # If order is in TND, convert at fixed rate; EUR orders charge directly.
         stripe_currency = 'eur'
         tnd_to_eur = float(getattr(settings, 'TND_TO_EUR_RATE', 0.30))
 
-        def to_stripe_amount(tnd_amount):
-            return int(float(tnd_amount) * tnd_to_eur * 100)
+        def to_cents(amount, currency):
+            """Convert an amount to Stripe cents (EUR). Always >= 1 cent."""
+            if currency == 'EUR':
+                cents = int(round(float(amount) * 100))
+            else:
+                cents = int(round(float(amount) * tnd_to_eur * 100))
+            return max(cents, 1)
 
         line_items = []
         for item in order.items.all():
@@ -125,7 +129,7 @@ class CreateCheckoutSessionView(APIView):
                         'name': item.product_name,
                         'description': f"Impact: {item.impact_quantity} {item.impact_item}",
                     },
-                    'unit_amount': to_stripe_amount(item.unit_price),
+                    'unit_amount': to_cents(item.unit_price, order.currency),
                 },
                 'quantity': item.quantity,
             })
@@ -135,7 +139,7 @@ class CreateCheckoutSessionView(APIView):
                 'price_data': {
                     'currency': stripe_currency,
                     'product_data': {'name': 'Livraison'},
-                    'unit_amount': to_stripe_amount(order.shipping_cost),
+                    'unit_amount': to_cents(order.shipping_cost, order.currency),
                 },
                 'quantity': 1,
             })

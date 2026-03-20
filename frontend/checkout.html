@@ -952,7 +952,7 @@
                     }
 
                     if (!stripeResponse.ok) {
-                        throw new Error(stripeData.error || 'Erreur Stripe');
+                        throw new Error(stripeData.error || stripeData.detail || `Erreur Stripe (${stripeResponse.status})`);
                     }
 
                     // Redirect to Stripe checkout
