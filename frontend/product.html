@@ -709,8 +709,7 @@
                     🛒
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
-                <a href="/shop/" class="btn btn-shop">🛒 SHOP</a>
-                <a href="#" class="btn btn-don">🎁 DON</a>
+                <div id="auth-nav" style="display:flex; align-items:center; gap:10px;"></div>
             </div>
         </div>
     </header>
@@ -718,13 +717,7 @@
     <!-- Categories Navigation -->
     <nav class="categories-nav">
         <div class="categories-container" id="categories">
-            <a href="/shop/" class="category-link">SOINS</a>
-            <a href="/shop/" class="category-link">NUTRITION</a>
-            <a href="/shop/" class="category-link">BIEN-ÊTRE</a>
-            <a href="/shop/" class="category-link">MAISON</a>
-            <a href="/shop/" class="category-link">COFFRETS</a>
-            <a href="/shop/" class="category-link">CADEAUX D'ENTREPRISE</a>
-            <a href="/shop/" class="category-link">COMPOSER MA BOX</a>
+            <a href="/shop/" class="category-link">Tous les produits</a>
         </div>
     </nav>
 
@@ -802,8 +795,38 @@
             return urlParams.get('slug');
         }
 
+        function renderAuthNav() {
+            const nav = document.getElementById('auth-nav');
+            if (getToken()) {
+                nav.innerHTML = `
+                    <a href="/shop/account/" style="color:white; text-decoration:none; font-weight:600; opacity:0.9;">👤 Mon compte</a>
+                    <button onclick="logout()" style="background:transparent; border:2px solid rgba(255,255,255,0.6); color:white; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;">Déconnexion</button>`;
+            } else {
+                nav.innerHTML = `<a href="/shop/login/" style="color:white; text-decoration:none; font-weight:600; opacity:0.9;">Connexion</a>`;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('wwc_access_token');
+            localStorage.removeItem('wwc_refresh_token');
+            renderAuthNav();
+        }
+
+        async function loadCategories() {
+            try {
+                const res = await fetch(`${API_URL}/categories/`);
+                const data = await res.json();
+                const cats = (data.results || data).filter(c => c.is_active && !c.parent);
+                const container = document.getElementById('categories');
+                container.innerHTML = `<a href="/shop/" class="category-link">Tous les produits</a>`
+                    + cats.map(c => `<a href="/shop/?category=${c.slug}" class="category-link">${c.name.toUpperCase()}</a>`).join('');
+            } catch { /* keep default */ }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            renderAuthNav();
+            loadCategories();
             const slug = getProductSlug();
             if (slug) {
                 loadProduct(slug);
@@ -811,8 +834,7 @@
                 document.getElementById('main-content').innerHTML = `
                     <div class="loading">
                         <p>Produit non trouvé. <a href="/shop/">Retour à la boutique</a></p>
-                    </div>
-                `;
+                    </div>`;
             }
             loadCart();
         });
@@ -1112,6 +1134,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                     body: JSON.stringify({
+                        product: currentProduct.id,
                         rating: selectedRatingForm,
                         title: document.getElementById('review-title').value.trim(),
                         comment,
@@ -1228,10 +1251,12 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                     body: JSON.stringify({ product_id: currentProduct.id })
                 });
-                if (res.ok || res.status === 201) {
+                if (res.status === 201) {
                     showNotification('Ajouté aux favoris !', 'success');
                 } else if (res.status === 200) {
                     showNotification('Déjà dans vos favoris.', 'info');
+                } else {
+                    throw new Error();
                 }
             } catch {
                 showNotification('Erreur lors de l\'ajout aux favoris.', 'error');
