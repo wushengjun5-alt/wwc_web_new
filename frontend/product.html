@@ -363,6 +363,24 @@
             font-weight: 500;
         }
 
+        .price-was {
+            font-size: 20px;
+            color: var(--wwc-text-light);
+            text-decoration: line-through;
+            margin-right: 8px;
+        }
+
+        .badge-sale {
+            background: #ff6b35;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+
         .product-impact {
             background: var(--wwc-accent);
             padding: 18px 20px;
@@ -893,7 +911,15 @@
                                 <input type="number" id="product-quantity" value="1" min="1" max="99">
                                 <button type="button" onclick="changeQuantity(1)">+</button>
                             </div>
-                            <div class="product-price">${getCurrentCurrency() === 'EUR' && product.price_eur ? product.price_eur + ' <small>€</small>' : product.price_tnd + ' <small>DT</small>'}</div>
+                            <div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:8px;">
+                                ${product.discount_percentage && product.compare_at_price_tnd
+                                    ? `<span class="price-was">${getCurrentCurrency() === 'EUR' && product.price_eur
+                                        ? (parseFloat(product.compare_at_price_tnd) * 0.30).toFixed(2) + ' €'
+                                        : product.compare_at_price_tnd + ' DT'}</span>`
+                                    : ''}
+                                <div class="product-price">${getCurrentCurrency() === 'EUR' && product.price_eur ? product.price_eur + ' <small>€</small>' : product.price_tnd + ' <small>DT</small>'}</div>
+                                ${product.discount_percentage ? `<span class="badge-sale">-${product.discount_percentage}%</span>` : ''}
+                            </div>
                         </div>
 
                         <div class="product-impact">

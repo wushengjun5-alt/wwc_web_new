@@ -260,6 +260,22 @@
             color: #1565c0;
         }
 
+        .badge-sale {
+            background: #ff6b35;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .price-was {
+            font-size: 14px;
+            color: var(--wwc-text-light);
+            text-decoration: line-through;
+            margin-right: 6px;
+        }
+
         .product-price {
             font-size: 24px;
             font-weight: 700;
@@ -1398,8 +1414,16 @@
                             <div class="product-badges">
                                 ${product.is_natural ? '<span class="badge badge-natural">NATUREL</span>' : ''}
                                 ${product.is_organic ? '<span class="badge badge-organic">BIO</span>' : ''}
+                                ${product.discount_percentage ? `<span class="badge badge-sale">-${product.discount_percentage}%</span>` : ''}
                             </div>
-                            <div class="product-price">${getCurrentCurrency() === 'EUR' && product.price_eur ? product.price_eur + ' €' : product.price_tnd + ' DT'}</div>
+                            <div class="product-price">
+                                ${product.discount_percentage && product.compare_at_price_tnd
+                                    ? `<span class="price-was">${getCurrentCurrency() === 'EUR' && product.price_eur
+                                        ? (parseFloat(product.compare_at_price_tnd) * 0.30).toFixed(2) + ' €'
+                                        : product.compare_at_price_tnd + ' DT'}</span>`
+                                    : ''}
+                                ${getCurrentCurrency() === 'EUR' && product.price_eur ? product.price_eur + ' €' : product.price_tnd + ' DT'}
+                            </div>
                             <div class="product-impact">💝 ${product.impact_quantity} ${escHtml(product.impact_item)} pour ${escHtml(product.impact_school)}</div>
                             <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${product.id})">
                                 ${product.is_in_stock === false ? 'Rupture de stock' : 'Ajouter au panier'}
@@ -1547,9 +1571,17 @@
                 // Populate modal with product data
                 document.getElementById('product-detail-name').textContent = currentProduct.name;
                 const isEur = getCurrentCurrency() === 'EUR' && currentProduct.price_eur;
-                document.getElementById('product-detail-price').innerHTML = isEur
-                    ? `${currentProduct.price_eur} <small>€</small>`
-                    : `${currentProduct.price_tnd} <small>DT</small>`;
+                const wasPrice = currentProduct.discount_percentage && currentProduct.compare_at_price_tnd
+                    ? `<span class="price-was">${isEur
+                        ? (parseFloat(currentProduct.compare_at_price_tnd) * 0.30).toFixed(2) + ' €'
+                        : currentProduct.compare_at_price_tnd + ' DT'}</span> `
+                    : '';
+                const discBadge = currentProduct.discount_percentage
+                    ? ` <span class="badge badge-sale">-${currentProduct.discount_percentage}%</span>`
+                    : '';
+                document.getElementById('product-detail-price').innerHTML = wasPrice
+                    + (isEur ? `${currentProduct.price_eur} <small>€</small>` : `${currentProduct.price_tnd} <small>DT</small>`)
+                    + discBadge;
 
                 // Rating
                 const ratingHtml = currentProduct.review_count > 0
