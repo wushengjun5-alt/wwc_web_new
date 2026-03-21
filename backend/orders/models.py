@@ -91,6 +91,8 @@ class CartItem(models.Model):
     )
     product = models.ForeignKey(
         Product,
+        null=True,
+        blank=True,
         on_delete=models.CASCADE,
         verbose_name=_('Product')
     )
@@ -120,10 +122,17 @@ class CartItem(models.Model):
         unique_together = ['cart', 'product', 'composable_box']
 
     def __str__(self):
+        if self.composable_box:
+            return f"Box: {self.composable_box.name}"
         return f"{self.quantity}x {self.product.name}"
 
     def get_subtotal(self, currency='TND'):
         """Calculate subtotal for this item"""
+        if self.composable_box:
+            # Composable box: flat box price
+            if currency == 'EUR' and self.composable_box.price_eur:
+                return self.composable_box.price_eur * self.quantity
+            return self.composable_box.price_tnd * self.quantity
         is_b2b = (
             self.cart.user and
             hasattr(self.cart.user, 'customer') and
@@ -134,6 +143,12 @@ class CartItem(models.Model):
 
     def get_impact(self):
         """Get impact for this cart item"""
+        if self.composable_box:
+            return {
+                'item': 'produits artisanaux',
+                'quantity': len(self.box_items) * self.quantity,
+                'school': 'GreenSchool',
+            }
         return {
             'item': self.product.impact_item,
             'quantity': self.product.impact_quantity * self.quantity,

@@ -31,6 +31,7 @@ from .serializers import (
     ProductListSerializer, ProductDetailSerializer,
     ComposableBoxSerializer, ReviewSerializer, ReviewCreateSerializer,
     CartSerializer, CartItemSerializer, AddToCartSerializer, UpdateCartItemSerializer,
+    AddBoxToCartSerializer,
     OrderListSerializer, OrderDetailSerializer, CheckoutSerializer,
     CustomerSerializer, CustomerAddressSerializer, WishlistSerializer,
     CustomerDashboardSerializer, ImpactEventSerializer,
@@ -298,6 +299,35 @@ class CartViewSet(viewsets.ViewSet):
         cart = self.get_cart(request)
         cart.clear()
         return Response({'message': 'Cart cleared'})
+
+    @action(detail=False, methods=['post'], url_path='add-box')
+    def add_box(self, request):
+        """Add a composable box to cart"""
+        serializer = AddBoxToCartSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        cart = self.get_cart(request)
+        box = serializer.validated_data['box']
+        product_ids = serializer.validated_data['product_ids']
+        quantity = serializer.validated_data['quantity']
+
+        # Remove any existing box item for this box in cart, then create fresh
+        CartItem.objects.filter(cart=cart, composable_box=box).delete()
+
+        CartItem.objects.create(
+            cart=cart,
+            product=None,
+            composable_box=box,
+            box_items=product_ids,
+            quantity=quantity,
+        )
+
+        cart.refresh_from_db()
+        return Response({
+            'message': 'Box added to cart',
+            'cart': CartSerializer(cart, context={'currency': cart.currency}).data
+        }, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'])
     def impact(self, request):

@@ -159,14 +159,25 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
 class CartItemSerializer(serializers.ModelSerializer):
     """Serializer for cart items"""
     product = ProductListSerializer(read_only=True)
-    product_id = serializers.IntegerField(write_only=True)
+    product_id = serializers.IntegerField(write_only=True, required=False)
     subtotal = serializers.SerializerMethodField()
     impact = serializers.SerializerMethodField()
+    composable_box_name = serializers.CharField(source='composable_box.name', read_only=True)
+    composable_box_slug = serializers.CharField(source='composable_box.slug', read_only=True)
+    composable_box_image = serializers.SerializerMethodField()
+    composable_box_price_tnd = serializers.DecimalField(
+        source='composable_box.price_tnd', max_digits=10, decimal_places=2, read_only=True
+    )
+    composable_box_price_eur = serializers.DecimalField(
+        source='composable_box.price_eur', max_digits=10, decimal_places=2, read_only=True
+    )
 
     class Meta:
         model = CartItem
         fields = [
             'id', 'product', 'product_id', 'quantity',
+            'composable_box_name', 'composable_box_slug', 'composable_box_image',
+            'composable_box_price_tnd', 'composable_box_price_eur', 'box_items',
             'subtotal', 'impact', 'added_at'
         ]
 
@@ -176,6 +187,17 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_impact(self, obj):
         return obj.get_impact()
+
+    def get_composable_box_image(self, obj):
+        if not obj.composable_box or not obj.composable_box.image:
+            return None
+        val = str(obj.composable_box.image)
+        if val.startswith('http://') or val.startswith('https://'):
+            return val
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.composable_box.image.url)
+        return obj.composable_box.image.url
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -220,6 +242,40 @@ class AddToCartSerializer(serializers.Serializer):
 class UpdateCartItemSerializer(serializers.Serializer):
     """Serializer for updating cart item quantity"""
     quantity = serializers.IntegerField(min_value=0)
+
+
+class AddBoxToCartSerializer(serializers.Serializer):
+    """Serializer for adding a composable box to cart"""
+    box_slug = serializers.SlugField()
+    product_ids = serializers.ListField(child=serializers.IntegerField(), min_length=1)
+    quantity = serializers.IntegerField(min_value=1, default=1)
+
+    def validate(self, data):
+        from products.models import ComposableBox, Product
+        try:
+            box = ComposableBox.objects.get(slug=data['box_slug'], is_active=True)
+        except ComposableBox.DoesNotExist:
+            raise serializers.ValidationError({'box_slug': 'Box not found'})
+
+        product_ids = data['product_ids']
+        if len(product_ids) < box.min_items:
+            raise serializers.ValidationError(
+                f'Minimum {box.min_items} items required for this box'
+            )
+        if len(product_ids) > box.max_items:
+            raise serializers.ValidationError(
+                f'Maximum {box.max_items} items allowed for this box'
+            )
+
+        eligible_ids = set(box.eligible_products.values_list('id', flat=True))
+        invalid = [pid for pid in product_ids if pid not in eligible_ids]
+        if invalid:
+            raise serializers.ValidationError(
+                f'Products {invalid} are not eligible for this box'
+            )
+
+        data['box'] = box
+        return data
 
 
 # ============================================

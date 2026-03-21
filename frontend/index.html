@@ -645,6 +645,7 @@
                 <a href="/shop/">Boutique</a>
                 <a href="/shop/impact/">Notre Impact</a>
                 <a href="/shop/donate/">Faire un don</a>
+                <a href="/shop/box-builder/">Composer ma box</a>
             </nav>
             <div class="header-actions">
                 <div id="currency-switcher" style="display:flex;background:var(--wwc-bg-light);border-radius:8px;overflow:hidden;border:1px solid var(--wwc-border);">
@@ -1349,6 +1350,7 @@
                     ${categories.map(cat => `
                         <a href="#" class="category-link" onclick="filterByCategory('${cat.slug}')">${cat.icon || ''} ${cat.name.toUpperCase()}</a>
                     `).join('')}
+                    <a href="/shop/box-builder/" class="category-link" style="color:var(--wwc-primary); font-weight:700;">🎁 COMPOSER MA BOX</a>
                 `;
             } catch (error) {
                 console.error('Error loading categories:', error);
