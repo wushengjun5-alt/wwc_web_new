@@ -145,7 +145,6 @@ function closePanel() {
 
 function renderOrderPanel(order) {
     const symbol = order.currency === 'EUR' ? '€' : 'DT';
-    const addr = order.shipping_address || {};
 
     const itemsRows = (order.items || []).map(item => `
         <tr>
@@ -155,13 +154,28 @@ function renderOrderPanel(order) {
             <td style="text-align:right;font-weight:600;">${item.subtotal} ${symbol}</td>
         </tr>`).join('');
 
-    const addrHtml = addr.address_line1
-        ? `${escHtml((addr.first_name || '') + ' ' + (addr.last_name || ''))}<br>
-           ${escHtml(addr.address_line1)}<br>
-           ${addr.address_line2 ? escHtml(addr.address_line2) + '<br>' : ''}
-           ${escHtml((addr.city || '') + ' ' + (addr.postal_code || ''))}<br>
-           ${escHtml(addr.country || '')}`
+    const addrLines = [
+        `${order.shipping_first_name || ''} ${order.shipping_last_name || ''}`.trim(),
+        order.shipping_company || '',
+        order.shipping_address_1 || '',
+        order.shipping_address_2 || '',
+        `${order.shipping_postal_code || ''} ${order.shipping_city || ''}`.trim(),
+        order.shipping_state || '',
+        order.shipping_country || '',
+    ].filter(Boolean);
+    const addrHtml = addrLines.length
+        ? addrLines.map(l => escHtml(l)).join('<br>')
         : '<em style="color:var(--admin-text-light);">Non renseignée</em>';
+
+    const impactEntries = Object.entries(order.impact_summary || {}).filter(([,v]) => v > 0);
+    const impactHtml = impactEntries.length
+        ? `<div class="detail-section">
+            <h4>Impact GreenSchool</h4>
+            ${impactEntries.map(([type, qty]) =>
+                `<div class="detail-row"><span>${escHtml(type)}</span><strong>${qty} fournis</strong></div>`
+            ).join('')}
+           </div>`
+        : '';
 
     document.getElementById('panelBody').innerHTML = `
         <!-- Info -->
@@ -169,9 +183,13 @@ function renderOrderPanel(order) {
             <h4>Informations</h4>
             <div class="detail-row"><span>Client</span><strong>${escHtml(order.email)}</strong></div>
             <div class="detail-row"><span>Téléphone</span><span>${escHtml(order.phone || '—')}</span></div>
-            <div class="detail-row"><span>Date</span><span>${AdminConfig.formatDate(order.created_at)}</span></div>
+            <div class="detail-row"><span>Commandé le</span><span>${AdminConfig.formatDate(order.created_at)}</span></div>
+            ${order.paid_at ? `<div class="detail-row"><span>Payé le</span><span>${AdminConfig.formatDate(order.paid_at)}</span></div>` : ''}
+            ${order.shipped_at ? `<div class="detail-row"><span>Expédié le</span><span>${AdminConfig.formatDate(order.shipped_at)}</span></div>` : ''}
+            ${order.delivered_at ? `<div class="detail-row"><span>Livré le</span><span>${AdminConfig.formatDate(order.delivered_at)}</span></div>` : ''}
             <div class="detail-row"><span>Paiement</span><span>${PAYMENT_LABELS[order.payment_method] || order.payment_method || '—'}</span></div>
             <div class="detail-row"><span>Devise</span><span>${order.currency}</span></div>
+            ${order.customer_notes ? `<div class="detail-row"><span>Notes client</span><span style="font-style:italic;">${escHtml(order.customer_notes)}</span></div>` : ''}
         </div>
 
         <!-- Items -->
@@ -185,7 +203,11 @@ function renderOrderPanel(order) {
                 <div>Sous-total : <strong>${order.subtotal} ${symbol}</strong></div>
                 ${parseFloat(order.shipping_cost) > 0
                     ? `<div>Livraison : <strong>${order.shipping_cost} ${symbol}</strong></div>` : ''}
-                <div style="font-size:16px; margin-top:6px;">Total : <strong>${order.total} ${symbol}</strong></div>
+                ${parseFloat(order.discount_amount) > 0
+                    ? `<div style="color:green;">Remise${order.coupon_code ? ` (${escHtml(order.coupon_code)})` : ''} : <strong>-${order.discount_amount} ${symbol}</strong></div>` : ''}
+                ${parseFloat(order.tax_amount) > 0
+                    ? `<div>Emballage cadeau : <strong>${order.tax_amount} ${symbol}</strong></div>` : ''}
+                <div style="font-size:16px; margin-top:6px; border-top:1px solid var(--admin-border); padding-top:6px;">Total : <strong>${order.total} ${symbol}</strong></div>
             </div>
         </div>
 
@@ -195,9 +217,11 @@ function renderOrderPanel(order) {
             <address style="font-style:normal; font-size:14px; line-height:1.8;">${addrHtml}</address>
         </div>
 
+        ${impactHtml}
+
         <!-- Update form -->
         <div class="detail-section">
-            <h4>Mise a jour</h4>
+            <h4>Mise à jour</h4>
             <div style="margin-bottom:12px;">
                 <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px;">Statut</label>
                 <select id="newStatus" style="width:100%;padding:8px 12px;border:1px solid var(--admin-border);border-radius:6px;font-size:14px;font-family:inherit;">

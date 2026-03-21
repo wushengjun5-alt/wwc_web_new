@@ -43,10 +43,21 @@ class ProductCategorySerializer(serializers.ModelSerializer):
 
 class ProductImageSerializer(serializers.ModelSerializer):
     """Serializer for product images"""
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductImage
         fields = ['id', 'image', 'alt_text', 'is_primary', 'order']
+
+    def get_image(self, obj):
+        # If stored value is already an absolute URL (e.g. placeholder), return as-is
+        val = str(obj.image)
+        if val.startswith('http://') or val.startswith('https://'):
+            return val
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.image.url)
+        return obj.image.url
 
 
 class ProductListSerializer(serializers.ModelSerializer):
@@ -282,7 +293,7 @@ class CheckoutSerializer(serializers.Serializer):
 
     # Payment — Stripe for all currencies; customer's bank handles conversion
     payment_method = serializers.ChoiceField(
-        choices=['stripe', 'bank_transfer', 'cash_on_delivery'],
+        choices=['stripe', 'cash_on_delivery'],
         default='stripe'
     )
 

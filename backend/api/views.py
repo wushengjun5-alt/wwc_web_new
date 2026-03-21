@@ -485,8 +485,12 @@ class CheckoutView(APIView):
         # Clear cart
         cart.clear()
 
-        # Send confirmation email for non-Stripe orders immediately
-        if order.payment_method in ('bank_transfer', 'cash_on_delivery'):
+        # For COD orders: mark as paid immediately and update customer impact
+        if order.payment_method == 'cash_on_delivery':
+            order.status = 'paid'
+            order.save(update_fields=['status'])
+            if order.user:
+                order.user.customer.update_impact_stats()
             from .payments import _send_order_confirmation_email
             _send_order_confirmation_email(order)
 
@@ -498,17 +502,6 @@ class CheckoutView(APIView):
             'status': order.status,
             'payment_method': order.payment_method,
         }
-
-        # For bank transfer, include instructions directly in response
-        if order.payment_method == 'bank_transfer':
-            response_data['bank_transfer'] = {
-                'bank_name': 'Banque de Tunisie',
-                'account_holder': 'Wallah We Can',
-                'iban': 'TN59 XXXX XXXX XXXX XXXX XXXX',
-                'reference': order.order_number,
-                'amount': str(order.total),
-                'currency': order.currency,
-            }
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
@@ -527,12 +520,12 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         return OrderListSerializer
 
     def get_object(self):
-        """Allow lookup by order_number or id"""
+        """Allow lookup by order_number"""
         lookup = self.kwargs.get('pk')
         if lookup:
             return get_object_or_404(
                 Order,
-                Q(order_number=lookup) | Q(id=lookup),
+                order_number=lookup,
                 user=self.request.user
             )
         return super().get_object()
@@ -847,3 +840,186 @@ class PasswordResetConfirmView(APIView):
         user.save()
 
         return Response({'message': 'Mot de passe réinitialisé avec succès'})
+
+
+# ============================================
+# Donation Views
+# ============================================
+
+from donations.models import Country, DonationProject, Donation as DonationModel
+
+class DonationCountryListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        countries = Country.objects.filter(is_active=True)
+        data = [{
+            'id': c.id,
+            'name': c.name,
+            'name_en': c.name_en,
+            'slug': c.slug,
+            'flag_emoji': c.flag_emoji,
+            'description': c.description,
+            'project_count': c.projects.filter(is_active=True).count(),
+        } for c in countries]
+        return Response(data)
+
+
+class DonationProjectListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        queryset = DonationProject.objects.filter(is_active=True).select_related('country')
+        country_slug = request.query_params.get('country', '')
+        if country_slug:
+            queryset = queryset.filter(country__slug=country_slug)
+        data = [{
+            'id': p.id,
+            'title': p.title,
+            'title_en': p.title_en,
+            'description': p.description,
+            'school': p.school,
+            'category': p.category,
+            'goal_amount': str(p.goal_amount),
+            'raised_amount': str(p.raised_amount),
+            'progress_percent': p.progress_percent,
+            'donor_count': p.donor_count,
+            'currency': p.currency,
+            'deadline': p.deadline.isoformat() if p.deadline else None,
+            'image': request.build_absolute_uri(p.image.url) if p.image else None,
+            'is_featured': p.is_featured,
+            'country': {'name': p.country.name, 'slug': p.country.slug, 'flag_emoji': p.country.flag_emoji},
+        } for p in queryset]
+        return Response(data)
+
+
+class DonationProjectDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        p = get_object_or_404(DonationProject, pk=pk, is_active=True)
+        recent_donors = []
+        for d in p.donations.filter(status='completed').order_by('-created_at')[:5]:
+            recent_donors.append({
+                'name': 'Anonyme' if d.is_anonymous else (d.donor_name or 'Donateur'),
+                'amount': str(d.amount),
+                'currency': d.currency,
+                'message': d.message if not d.is_anonymous else '',
+                'created_at': d.created_at.isoformat(),
+            })
+        return Response({
+            'id': p.id,
+            'title': p.title,
+            'title_en': p.title_en,
+            'description': p.description,
+            'description_en': p.description_en,
+            'school': p.school,
+            'category': p.category,
+            'goal_amount': str(p.goal_amount),
+            'raised_amount': str(p.raised_amount),
+            'progress_percent': p.progress_percent,
+            'donor_count': p.donor_count,
+            'currency': p.currency,
+            'deadline': p.deadline.isoformat() if p.deadline else None,
+            'image': request.build_absolute_uri(p.image.url) if p.image else None,
+            'is_featured': p.is_featured,
+            'country': {'name': p.country.name, 'slug': p.country.slug, 'flag_emoji': p.country.flag_emoji},
+            'recent_donors': recent_donors,
+        })
+
+
+class DonationCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        data = request.data
+        project_id = data.get('project_id')
+        if not project_id:
+            return Response({'error': 'project_id requis.'}, status=status.HTTP_400_BAD_REQUEST)
+        project = get_object_or_404(DonationProject, pk=project_id, is_active=True)
+
+        try:
+            amount = float(data.get('amount', 0))
+        except (TypeError, ValueError):
+            return Response({'error': 'Montant invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+        if amount <= 0:
+            return Response({'error': 'Le montant doit être supérieur à 0.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        payment_method = data.get('payment_method', 'bank_transfer')
+        currency = data.get('currency', project.currency)
+        is_anonymous = bool(data.get('is_anonymous', False))
+
+        donation = DonationModel.objects.create(
+            project=project,
+            donor_name='' if is_anonymous else data.get('donor_name', ''),
+            donor_email='' if is_anonymous else data.get('donor_email', ''),
+            amount=amount,
+            currency=currency,
+            payment_method=payment_method,
+            message=data.get('message', ''),
+            is_anonymous=is_anonymous,
+            status='pending',
+        )
+
+        # Bank transfer: stays pending, admin confirms
+        if payment_method == 'bank_transfer':
+            return Response({
+                'donation_id': donation.id,
+                'status': 'pending',
+                'payment_method': 'bank_transfer',
+                'message': 'Votre intention de don a été enregistrée. Veuillez effectuer le virement bancaire avec la référence ci-dessous.',
+                'reference': f'DON-{donation.id:06d}',
+                'bank_details': {
+                    'beneficiary': 'Wallah We Can',
+                    'iban': 'TN59 1234 5678 9012 3456 7890',
+                    'bic': 'BIATTNTT',
+                    'reference': f'DON-{donation.id:06d}',
+                },
+            }, status=status.HTTP_201_CREATED)
+
+        # Stripe: create Checkout session (redirect flow, same as shop)
+        if payment_method == 'stripe':
+            try:
+                from api.payments import _get_stripe
+                from django.conf import settings as django_settings
+                _stripe = _get_stripe()
+                tnd_to_eur = float(getattr(django_settings, 'TND_TO_EUR_RATE', 0.30))
+                if currency == 'EUR':
+                    amount_cents = max(int(round(amount * 100)), 1)
+                else:
+                    amount_cents = max(int(round(amount * tnd_to_eur * 100)), 1)
+                origin = request.build_absolute_uri('/').rstrip('/')
+                session = _stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'eur',
+                            'product_data': {
+                                'name': f'Don — {project.title}',
+                                'description': f'École : {project.school}' if project.school else project.title,
+                            },
+                            'unit_amount': amount_cents,
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='payment',
+                    customer_email=donation.donor_email or None,
+                    success_url=f"{origin}/shop/donate/success/?donation_id={donation.id}",
+                    cancel_url=f"{origin}/shop/donate/?project={project.id}",
+                    metadata={
+                        'donation_id': str(donation.id),
+                        'project_id': str(project.id),
+                    },
+                )
+                donation.payment_id = session.id
+                donation.save(update_fields=['payment_id'])
+                return Response({
+                    'donation_id': donation.id,
+                    'checkout_url': session.url,
+                    'payment_method': 'stripe',
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                donation.delete()
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'error': 'Méthode de paiement invalide.'}, status=status.HTTP_400_BAD_REQUEST)

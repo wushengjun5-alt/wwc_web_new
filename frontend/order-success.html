@@ -4,24 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Commande confirmée - Wallah We Can</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --wwc-primary: #1e3a5f;
-            --wwc-secondary: #ff6b35;
-            --wwc-accent: #f8b4c4;
-            --wwc-text: #2c3e50;
-            --wwc-text-light: #6c757d;
+            --wwc-primary: #e04403;
+            --wwc-secondary: #1c345e;
+            --wwc-dark: #191919;
+            --wwc-text: #404040;
+            --wwc-text-light: #888888;
             --wwc-bg: #ffffff;
-            --wwc-bg-light: #f8f9fa;
-            --wwc-border: #dee2e6;
+            --wwc-bg-light: #f5f5f5;
+            --wwc-border: #ececec;
+            --wwc-success: #28a745;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
+        body { font-family: 'Noto Sans', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
 
-        .header { background: var(--wwc-primary); padding: 15px 0; }
-        .header-container { max-width: 700px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; }
-        .logo { font-size: 22px; font-weight: 700; color: white; text-decoration: none; }
+        .header { background: #ffffff; border-bottom: 1px solid #ececec; padding: 0; height: 70px; }
+        .header-container { max-width: 700px; margin: 0 auto; padding: 0 20px; height: 70px; display: flex; align-items: center; }
+        .logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: #1c345e; text-decoration: none; }
 
         .main { max-width: 700px; margin: 48px auto; padding: 0 20px 60px; }
 
@@ -30,13 +31,13 @@
         /* Success header */
         .success-icon { width: 72px; height: 72px; background: #d4edda; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px; margin: 0 auto 20px; }
         .success-header { text-align: center; padding-bottom: 24px; border-bottom: 1px solid var(--wwc-border); margin-bottom: 24px; }
-        .success-header h1 { font-size: 26px; color: var(--wwc-primary); margin-bottom: 6px; }
+        .success-header h1 { font-family: 'Montserrat', sans-serif; font-size: 26px; color: var(--wwc-secondary); margin-bottom: 6px; }
         .success-header .order-num { font-size: 15px; color: var(--wwc-text-light); }
-        .success-header .order-num strong { color: var(--wwc-primary); }
+        .success-header .order-num strong { color: var(--wwc-secondary); }
 
         /* Bank transfer */
         .bank-card { background: #fffbf0; border: 1px solid #f0c000; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-        .bank-card h2 { font-size: 18px; color: var(--wwc-primary); margin-bottom: 12px; }
+        .bank-card h2 { font-family: 'Montserrat', sans-serif; font-size: 18px; color: var(--wwc-secondary); margin-bottom: 12px; }
         .bank-table { width: 100%; border-collapse: collapse; }
         .bank-table tr td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #e8d980; }
         .bank-table tr:last-child td { border-bottom: none; }
@@ -46,34 +47,34 @@
         .bank-note { font-size: 13px; color: var(--wwc-text-light); margin-top: 14px; line-height: 1.6; }
 
         /* Order summary */
-        .section-title { font-size: 16px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 14px; }
+        .section-title { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; color: var(--wwc-secondary); margin-bottom: 14px; }
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--wwc-border); font-size: 14px; }
         .item-row:last-of-type { border-bottom: none; }
         .item-name { font-weight: 500; }
         .item-qty { color: var(--wwc-text-light); font-size: 13px; }
         .totals { margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--wwc-border); }
         .total-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
-        .total-row.grand { font-size: 20px; font-weight: 700; color: var(--wwc-primary); margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--wwc-border); }
+        .total-row.grand { font-size: 20px; font-weight: 700; color: var(--wwc-secondary); margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--wwc-border); }
 
         /* Impact */
-        .impact-card { background: linear-gradient(135deg, var(--wwc-accent) 0%, #fce8ed 100%); border-radius: 12px; padding: 24px; }
-        .impact-card h2 { font-size: 18px; color: var(--wwc-primary); margin-bottom: 10px; }
-        .impact-card p { font-size: 14px; color: var(--wwc-text); margin-bottom: 12px; }
+        .impact-card { background: linear-gradient(135deg, #1c345e 0%, #e04403 100%); border-radius: 12px; padding: 24px; }
+        .impact-card h2 { font-family: 'Montserrat', sans-serif; font-size: 18px; color: white; margin-bottom: 10px; }
+        .impact-card p { font-size: 14px; color: rgba(255,255,255,0.9); margin-bottom: 12px; }
         .impact-list { list-style: none; }
-        .impact-list li { font-size: 14px; padding: 6px 0; border-bottom: 1px solid rgba(30,58,95,0.1); }
+        .impact-list li { font-size: 14px; color: white; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
         .impact-list li:last-child { border-bottom: none; }
-        .impact-list strong { color: var(--wwc-primary); font-size: 18px; }
+        .impact-list strong { color: white; font-size: 18px; }
 
         /* Actions */
         .actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; border: none; transition: all 0.18s; }
-        .btn-primary { background: var(--wwc-secondary); color: white; }
-        .btn-primary:hover { background: #e55a2b; }
-        .btn-outline { background: transparent; color: var(--wwc-primary); border: 2px solid var(--wwc-primary); }
-        .btn-outline:hover { background: var(--wwc-primary); color: white; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 36px; border-radius: 30px; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; text-decoration: none; border: none; transition: all 0.2s; }
+        .btn-primary { background: #e04403; color: white; }
+        .btn-primary:hover { background: #1c345e; }
+        .btn-outline { background: transparent; color: #e04403; border: 2px solid #e04403; }
+        .btn-outline:hover { background: #e04403; color: white; }
 
         /* Loading */
-        .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid var(--wwc-border); border-top-color: var(--wwc-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid var(--wwc-border); border-top-color: #e04403; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-state { text-align: center; padding: 80px 0; }
     </style>
@@ -90,7 +91,7 @@
     </main>
 
     <script>
-        const API_URL = 'http://127.0.0.1:8000/api/v1';
+        const API_URL = '/api/v1';
 
         function getToken() { return localStorage.getItem('wwc_access_token'); }
         function escHtml(str) {
@@ -104,6 +105,49 @@
         document.addEventListener('DOMContentLoaded', async () => {
             if (!orderNumber) { renderNoOrder(); return; }
 
+            // For Stripe orders, poll until paid (webhook may take a few seconds)
+            if (method === 'stripe') {
+                await pollPaymentStatus(orderNumber);
+            } else {
+                await loadAndRender(orderNumber);
+            }
+        });
+
+        async function pollPaymentStatus(orderNumber) {
+            const MAX_ATTEMPTS = 8;
+            const INTERVAL_MS  = 2000;
+
+            for (let i = 0; i < MAX_ATTEMPTS; i++) {
+                try {
+                    const res = await fetch(`${API_URL}/payments/status/${orderNumber}/`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.paid) {
+                            // Payment confirmed — load full order detail
+                            await loadAndRender(orderNumber);
+                            return;
+                        }
+                    }
+                } catch { /* ignore, keep polling */ }
+
+                if (i < MAX_ATTEMPTS - 1) {
+                    // Show a waiting message on first iteration
+                    if (i === 0) {
+                        document.getElementById('main').innerHTML = `
+                            <div class="loading-state">
+                                <div class="spinner"></div>
+                                <p style="margin-top:16px; color:var(--wwc-text-light); font-size:14px;">Confirmation du paiement en cours…</p>
+                            </div>`;
+                    }
+                    await new Promise(r => setTimeout(r, INTERVAL_MS));
+                }
+            }
+
+            // Timed out — still show success (webhook may arrive later)
+            await loadAndRender(orderNumber);
+        }
+
+        async function loadAndRender(orderNumber) {
             try {
                 const headers = { 'Content-Type': 'application/json' };
                 if (getToken()) headers['Authorization'] = `Bearer ${getToken()}`;
@@ -116,7 +160,7 @@
                 // Order not accessible (no auth or not found) — show generic success
                 renderGenericSuccess(orderNumber, method);
             }
-        });
+        }
 
         function renderSuccess(order, method) {
             const symbol = order.currency === 'EUR' ? '€' : 'DT';
@@ -131,21 +175,6 @@
                     <div style="font-weight:600;">${item.subtotal} ${symbol}</div>
                 </div>`).join('');
 
-            const bankHtml = method === 'bank_transfer' ? `
-                <div class="bank-card">
-                    <h2>Instructions de virement bancaire</h2>
-                    <p style="font-size:14px; color:var(--wwc-text-light); margin-bottom:14px;">
-                        Votre commande est en attente de paiement. Veuillez effectuer le virement avec les informations suivantes :
-                    </p>
-                    <table class="bank-table">
-                        <tr><td>Bénéficiaire</td><td>Wallah We Can</td></tr>
-                        <tr><td>Banque</td><td>Banque de Tunisie</td></tr>
-                        <tr><td>IBAN</td><td>TN59 XXXX XXXX XXXX XXXX XXXX</td></tr>
-                        <tr class="highlight"><td>Référence (obligatoire)</td><td>${escHtml(order.order_number)}</td></tr>
-                        <tr class="highlight"><td>Montant</td><td>${order.total} ${symbol}</td></tr>
-                    </table>
-                    <p class="bank-note">Votre commande sera traitée dès réception du virement. Pensez à indiquer le numéro de commande comme référence.</p>
-                </div>` : '';
 
             const impactHtml = (() => {
                 const impact = order.impact_summary || {};
@@ -195,26 +224,11 @@
                     </div>
                 </div>
 
-                ${bankHtml}
                 ${impactHtml}
             `;
         }
 
         function renderGenericSuccess(orderNumber, method) {
-            const bankHtml = method === 'bank_transfer' ? `
-                <div class="bank-card">
-                    <h2>Instructions de virement bancaire</h2>
-                    <p style="font-size:14px;color:var(--wwc-text-light);margin-bottom:14px;">
-                        Votre commande est en attente de paiement. Veuillez effectuer le virement avec les informations suivantes :
-                    </p>
-                    <table class="bank-table">
-                        <tr><td>Bénéficiaire</td><td>Wallah We Can</td></tr>
-                        <tr><td>Banque</td><td>Banque de Tunisie</td></tr>
-                        <tr><td>IBAN</td><td>TN59 XXXX XXXX XXXX XXXX XXXX</td></tr>
-                        <tr class="highlight"><td>Référence (obligatoire)</td><td>${escHtml(orderNumber)}</td></tr>
-                    </table>
-                    <p class="bank-note">Votre commande sera traitée dès réception du virement. N'oubliez pas d'indiquer le numéro de commande comme référence.</p>
-                </div>` : '';
 
             document.getElementById('main').innerHTML = `
                 <div class="card">
@@ -231,7 +245,6 @@
                             : '<a href="/shop/login/" class="btn btn-outline">Se connecter</a>'}
                     </div>
                 </div>
-                ${bankHtml}
             `;
         }
 

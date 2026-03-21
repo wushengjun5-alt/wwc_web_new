@@ -38,6 +38,10 @@ async function loadStats() {
         document.getElementById('statPendingOrders').textContent = stats.pending_orders || 0;
         document.getElementById('statTotalCustomers').textContent = stats.total_customers || 0;
         document.getElementById('statRevenue').textContent = parseFloat(stats.total_revenue || 0).toFixed(0);
+        if (document.getElementById('statActiveCoupons'))
+            document.getElementById('statActiveCoupons').textContent = stats.active_coupons || 0;
+        if (document.getElementById('statImpactItems'))
+            document.getElementById('statImpactItems').textContent = (stats.total_items_delivered || 0).toLocaleString('fr-FR');
 
     } catch (error) {
         console.error('Error loading stats:', error);

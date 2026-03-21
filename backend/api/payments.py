@@ -1,9 +1,9 @@
 """
 Payment integration for WWC Shop.
 
-Payment routing by currency (Option B):
-- TND orders: bank_transfer only (Stripe does not support TND)
-- EUR orders: Stripe card payment
+Supported payment methods:
+- stripe: card payment (EUR or TND via customer's bank conversion)
+- cash_on_delivery: pay on delivery
 """
 
 import stripe
@@ -16,6 +16,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from api.views import CsrfExemptSessionAuthentication
 
 from orders.models import Order
 
@@ -61,14 +63,6 @@ def _send_order_confirmation_email(order):
             "L'équipe WWC",
         ]
 
-        if order.payment_method == 'bank_transfer':
-            message_lines += [
-                "",
-                "--- Informations de virement ---",
-                "Veuillez effectuer votre virement avec la référence : " + order.order_number,
-                "Nous traiterons votre commande dès réception du paiement.",
-            ]
-
         send_mail(
             subject=subject,
             message="\n".join(message_lines),
@@ -83,8 +77,9 @@ def _send_order_confirmation_email(order):
 class CreateCheckoutSessionView(APIView):
     """
     Create Stripe Checkout Session for EUR orders.
-    TND orders must use bank_transfer — this endpoint rejects them.
+    Creates a Stripe Checkout Session for the given order.
     """
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -115,14 +110,18 @@ class CreateCheckoutSessionView(APIView):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
-        # Stripe does not natively support TND, so we charge in EUR.
-        # The amount is converted at a fixed rate; the customer's bank
-        # handles the final currency conversion on their end.
+        # Always charge in EUR via Stripe.
+        # If order is in TND, convert at fixed rate; EUR orders charge directly.
         stripe_currency = 'eur'
         tnd_to_eur = float(getattr(settings, 'TND_TO_EUR_RATE', 0.30))
 
-        def to_stripe_amount(tnd_amount):
-            return int(float(tnd_amount) * tnd_to_eur * 100)
+        def to_cents(amount, currency):
+            """Convert an amount to Stripe cents (EUR). Always >= 1 cent."""
+            if currency == 'EUR':
+                cents = int(round(float(amount) * 100))
+            else:
+                cents = int(round(float(amount) * tnd_to_eur * 100))
+            return max(cents, 1)
 
         line_items = []
         for item in order.items.all():
@@ -133,7 +132,7 @@ class CreateCheckoutSessionView(APIView):
                         'name': item.product_name,
                         'description': f"Impact: {item.impact_quantity} {item.impact_item}",
                     },
-                    'unit_amount': to_stripe_amount(item.unit_price),
+                    'unit_amount': to_cents(item.unit_price, order.currency),
                 },
                 'quantity': item.quantity,
             })
@@ -143,7 +142,7 @@ class CreateCheckoutSessionView(APIView):
                 'price_data': {
                     'currency': stripe_currency,
                     'product_data': {'name': 'Livraison'},
-                    'unit_amount': to_stripe_amount(order.shipping_cost),
+                    'unit_amount': to_cents(order.shipping_cost, order.currency),
                 },
                 'quantity': 1,
             })
@@ -179,45 +178,9 @@ class CreateCheckoutSessionView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class BankTransferInstructionsView(APIView):
-    """
-    Return bank transfer instructions for TND orders.
-    Called after order is created when payment_method=bank_transfer.
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request, order_number):
-        try:
-            order = Order.objects.get(order_number=order_number)
-        except Order.DoesNotExist:
-            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if order.currency != 'TND':
-            return Response(
-                {'error': 'Bank transfer instructions are only for TND orders.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return Response({
-            'order_number': order.order_number,
-            'total': str(order.total),
-            'currency': order.currency,
-            'instructions': {
-                'bank_name': 'Banque de Tunisie',
-                'account_holder': 'Wallah We Can',
-                'iban': 'TN59 XXXX XXXX XXXX XXXX XXXX',
-                'reference': order.order_number,
-                'note': (
-                    f"Veuillez effectuer un virement de {order.total} TND "
-                    f"avec la référence {order.order_number}. "
-                    "Votre commande sera traitée dès réception du paiement."
-                ),
-            }
-        })
-
-
 class StripeWebhookView(APIView):
     """Handle Stripe webhooks for EUR payments."""
+    authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -305,6 +268,7 @@ class StripeWebhookView(APIView):
 
 class PaymentStatusView(APIView):
     """Check payment status for an order."""
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request, order_number):

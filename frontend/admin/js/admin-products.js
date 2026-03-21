@@ -6,6 +6,7 @@ let currentPage = 1;
 let totalPages = 1;
 let selectedProducts = new Set();
 let deleteProductId = null;
+let langCompleteFilter = '';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // Check API connection
@@ -96,6 +97,7 @@ function applyUrlFilters() {
     if (params.get('low_stock')) {
         document.getElementById('stockFilter').value = 'low';
     }
+    langCompleteFilter = params.get('lang_complete') || '';
 }
 
 async function loadCategories() {
@@ -135,8 +137,10 @@ async function loadProducts() {
         if (category) params.category = category;
 
         const stock = document.getElementById('stockFilter').value;
-        if (stock === 'low') params.stock_quantity__lt = 10;
-        if (stock === 'out') params.stock_quantity = 0;
+        if (stock === 'low') params.low_stock = 'true';
+        if (stock === 'out') params.out_of_stock = 'true';
+
+        if (langCompleteFilter) params.lang_complete = langCompleteFilter;
 
         const response = await AdminAPI.getProducts(params);
         const products = response.results || response;
