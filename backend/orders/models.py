@@ -59,6 +59,11 @@ class Cart(models.Model):
         """Calculate total impact from all cart items"""
         total_impact = {}
         for item in self.items.all():
+            if not item.product:
+                # Composable box item — count number of selected products
+                impact_qty = len(item.box_items) * item.quantity
+                total_impact['produits artisanaux'] = total_impact.get('produits artisanaux', 0) + impact_qty
+                continue
             impact_item = item.product.impact_item
             impact_qty = item.product.impact_quantity * item.quantity
             total_impact[impact_item] = total_impact.get(impact_item, 0) + impact_qty
@@ -67,7 +72,10 @@ class Cart(models.Model):
     def merge_with(self, other_cart):
         """Merge another cart into this one (used when guest logs in)"""
         for item in other_cart.items.all():
-            existing_item = self.items.filter(product=item.product).first()
+            if item.composable_box:
+                existing_item = self.items.filter(composable_box=item.composable_box).first()
+            else:
+                existing_item = self.items.filter(product=item.product).first()
             if existing_item:
                 existing_item.quantity += item.quantity
                 existing_item.save()

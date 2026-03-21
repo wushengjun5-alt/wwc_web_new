@@ -185,9 +185,9 @@ class ComposableBoxViewSet(viewsets.ReadOnlyModelViewSet):
 class CartViewSet(viewsets.ViewSet):
     """ViewSet for shopping cart operations"""
     permission_classes = [AllowAny]
-    # Disable SessionAuthentication so CSRF is not enforced on POST requests
-    # from the WordPress plugin. Cart identity uses X-Session-Key header instead.
-    authentication_classes = []
+    # Use JWT authentication so Bearer tokens work, but not SessionAuthentication
+    # (which enforces CSRF). Cart identity also accepts X-Session-Key header.
+    authentication_classes = [JWTAuthentication]
 
     def get_cart(self, request):
         """Get or create cart for user/session.
@@ -963,7 +963,7 @@ class DonationCreateView(APIView):
 
     def post(self, request):
         data = request.data
-        project_id = data.get('project_id')
+        project_id = data.get('project_id') or data.get('project')
         if not project_id:
             return Response({'error': 'project_id requis.'}, status=status.HTTP_400_BAD_REQUEST)
         project = get_object_or_404(DonationProject, pk=project_id, is_active=True)
