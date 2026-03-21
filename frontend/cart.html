@@ -4,32 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon panier - Wallah We Can</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --wwc-primary: #1e3a5f;
-            --wwc-secondary: #ff6b35;
-            --wwc-accent: #f8b4c4;
-            --wwc-text: #2c3e50;
-            --wwc-text-light: #6c757d;
+            --wwc-primary: #e04403;
+            --wwc-secondary: #1c345e;
+            --wwc-dark: #191919;
+            --wwc-text: #404040;
+            --wwc-text-light: #888888;
             --wwc-bg: #ffffff;
-            --wwc-bg-light: #f8f9fa;
-            --wwc-border: #dee2e6;
+            --wwc-bg-light: #f5f5f5;
+            --wwc-border: #ececec;
+            --wwc-success: #28a745;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
+        body { font-family: 'Noto Sans', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
 
-        .header { background: var(--wwc-primary); padding: 15px 0; }
-        .header-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
-        .logo { font-size: 22px; font-weight: 700; color: white; text-decoration: none; }
-        .back-link { color: white; text-decoration: none; font-size: 14px; font-weight: 600; opacity: 0.9; }
-        .back-link:hover { opacity: 1; }
+        .header { background: #ffffff; border-bottom: 1px solid #ececec; padding: 0; height: 70px; }
+        .header-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; height: 70px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: #1c345e; text-decoration: none; }
+        .back-link { color: #191919; text-decoration: none; font-size: 14px; font-weight: 600; }
+        .back-link:hover { color: #e04403; }
 
         .main { max-width: 1100px; margin: 0 auto; padding: 40px 20px; display: grid; grid-template-columns: 1fr 340px; gap: 28px; align-items: start; }
         @media (max-width: 820px) { .main { grid-template-columns: 1fr; } }
 
         .card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-        .card-title { font-size: 22px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: var(--wwc-secondary); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
         .item-count { font-size: 14px; font-weight: 400; color: var(--wwc-text-light); }
 
         /* Cart table */
@@ -46,39 +47,39 @@
 
         .qty-control { display: flex; align-items: center; gap: 8px; }
         .qty-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--wwc-border); background: white; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--wwc-text); }
-        .qty-btn:hover { border-color: var(--wwc-primary); color: var(--wwc-primary); }
+        .qty-btn:hover { border-color: #e04403; color: #e04403; }
         .qty-val { width: 32px; text-align: center; font-weight: 600; font-size: 15px; }
 
         .remove-btn { background: none; border: none; color: var(--wwc-text-light); cursor: pointer; font-size: 18px; padding: 4px; border-radius: 6px; }
         .remove-btn:hover { color: #dc3545; background: #fff5f5; }
 
-        .price-cell { font-weight: 700; font-size: 15px; color: var(--wwc-primary); white-space: nowrap; }
+        .price-cell { font-weight: 700; font-size: 15px; color: #e04403; white-space: nowrap; }
 
         /* Empty */
         .cart-empty { text-align: center; padding: 60px 20px; }
         .cart-empty-icon { font-size: 56px; margin-bottom: 16px; }
-        .cart-empty h2 { font-size: 22px; color: var(--wwc-primary); margin-bottom: 8px; }
+        .cart-empty h2 { font-family: 'Montserrat', sans-serif; font-size: 22px; color: var(--wwc-secondary); margin-bottom: 8px; }
         .cart-empty p { color: var(--wwc-text-light); margin-bottom: 24px; }
 
         /* Summary */
         .summary-card { position: sticky; top: 20px; }
         .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--wwc-border); font-size: 14px; }
         .summary-row:last-of-type { border-bottom: none; }
-        .summary-row.total { font-size: 20px; font-weight: 700; color: var(--wwc-primary); padding-top: 14px; margin-top: 4px; }
+        .summary-row.total { font-size: 20px; font-weight: 700; color: var(--wwc-secondary); padding-top: 14px; margin-top: 4px; }
 
-        .impact-box { background: linear-gradient(135deg, var(--wwc-accent) 0%, #fce8ed 100%); border-radius: 12px; padding: 16px; margin: 20px 0; }
-        .impact-box h4 { font-size: 14px; color: var(--wwc-primary); margin-bottom: 8px; }
+        .impact-box { background: var(--wwc-bg-light); border-radius: 12px; padding: 16px; margin: 20px 0; }
+        .impact-box h4 { font-size: 14px; color: var(--wwc-secondary); margin-bottom: 8px; }
         .impact-box ul { padding-left: 16px; }
         .impact-box li { font-size: 13px; color: var(--wwc-text); margin-bottom: 4px; }
 
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 14px 22px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; border: none; width: 100%; transition: all 0.18s; margin-top: 10px; }
-        .btn-primary { background: var(--wwc-secondary); color: white; }
-        .btn-primary:hover { background: #e55a2b; }
-        .btn-outline { background: transparent; color: var(--wwc-primary); border: 2px solid var(--wwc-primary); margin-top: 8px; }
-        .btn-outline:hover { background: var(--wwc-primary); color: white; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 14px 36px; border-radius: 30px; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; text-decoration: none; border: none; width: 100%; transition: all 0.2s; margin-top: 10px; }
+        .btn-primary { background: #e04403; color: white; }
+        .btn-primary:hover { background: #1c345e; }
+        .btn-outline { background: transparent; color: #e04403; border: 2px solid #e04403; margin-top: 8px; }
+        .btn-outline:hover { background: #e04403; color: white; }
 
         /* Spinner */
-        .spinner { display: inline-block; width: 36px; height: 36px; border: 3px solid var(--wwc-border); border-top-color: var(--wwc-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .spinner { display: inline-block; width: 36px; height: 36px; border: 3px solid var(--wwc-border); border-top-color: #e04403; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-state { text-align: center; padding: 60px 0; }
 

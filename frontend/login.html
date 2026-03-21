@@ -4,28 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - Wallah We Can</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --wwc-primary: #1e3a5f;
-            --wwc-secondary: #ff6b35;
-            --wwc-accent: #f8b4c4;
-            --wwc-text: #2c3e50;
-            --wwc-text-light: #6c757d;
+            --wwc-primary: #e04403;
+            --wwc-secondary: #1c345e;
+            --wwc-dark: #191919;
+            --wwc-text: #404040;
+            --wwc-text-light: #888888;
             --wwc-bg: #ffffff;
-            --wwc-bg-light: #f8f9fa;
-            --wwc-border: #dee2e6;
+            --wwc-bg-light: #f5f5f5;
+            --wwc-border: #ececec;
             --wwc-success: #28a745;
             --wwc-error: #dc3545;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
+        body { font-family: 'Noto Sans', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
 
-        .header { background: var(--wwc-primary); padding: 15px 0; }
-        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
-        .logo { font-size: 24px; font-weight: 700; color: white; text-decoration: none; }
-        .back-link { color: white; text-decoration: none; opacity: 0.9; }
-        .back-link:hover { opacity: 1; }
+        .header { background: #ffffff; border-bottom: 1px solid #ececec; padding: 0; height: 70px; }
+        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; height: 70px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: #1c345e; text-decoration: none; }
+        .back-link { color: #191919; text-decoration: none; font-size: 14px; }
+        .back-link:hover { color: #e04403; }
 
         .main { max-width: 480px; margin: 60px auto; padding: 0 20px; }
 
@@ -53,8 +53,8 @@
             transition: all 0.2s;
         }
         .tab-btn.active {
-            color: var(--wwc-primary);
-            border-bottom-color: var(--wwc-primary);
+            color: #e04403;
+            border-bottom-color: #e04403;
         }
 
         .tab-content { padding: 30px; display: none; }
@@ -69,29 +69,30 @@
             font-family: inherit; transition: border-color 0.2s;
         }
         .form-group input:focus, .form-group select:focus {
-            outline: none; border-color: var(--wwc-primary);
-            box-shadow: 0 0 0 3px rgba(30,58,95,0.08);
+            outline: none; border-color: #e04403;
+            box-shadow: 0 0 0 3px rgba(224,68,3,0.08);
         }
 
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .btn-primary {
-            width: 100%; padding: 14px;
-            background: var(--wwc-secondary); color: white;
-            border: none; border-radius: 8px;
-            font-size: 16px; font-weight: 600;
+            width: 100%; padding: 14px 36px;
+            background: #e04403; color: white;
+            border: none; border-radius: 30px;
+            font-size: 14px; font-weight: 700;
+            text-transform: uppercase;
             cursor: pointer; transition: background 0.2s;
             display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .btn-primary:hover { background: #e55a2b; }
+        .btn-primary:hover { background: #1c345e; }
         .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
 
         .forgot-link { text-align: right; margin-bottom: 16px; }
         .forgot-link a { font-size: 13px; color: var(--wwc-text-light); text-decoration: none; }
-        .forgot-link a:hover { color: var(--wwc-primary); }
+        .forgot-link a:hover { color: #e04403; }
 
         .switch-msg { text-align: center; margin-top: 20px; font-size: 14px; color: var(--wwc-text-light); }
-        .switch-msg a { color: var(--wwc-primary); font-weight: 600; cursor: pointer; text-decoration: none; }
+        .switch-msg a { color: #e04403; font-weight: 600; cursor: pointer; text-decoration: none; }
 
         .alert {
             padding: 12px 16px; border-radius: 8px;
@@ -113,9 +114,9 @@
         /* Forgot password inline section */
         .forgot-section { display: none; padding: 30px; }
         .forgot-section.active { display: block; }
-        .back-to-login { background: none; border: none; color: var(--wwc-primary); font-weight: 600; cursor: pointer; margin-bottom: 20px; font-size: 14px; }
+        .back-to-login { background: none; border: none; color: #e04403; font-weight: 600; cursor: pointer; margin-bottom: 20px; font-size: 14px; }
 
-        .footer { background: var(--wwc-primary); color: white; padding: 20px 0; margin-top: 60px; text-align: center; font-size: 14px; opacity: 0.9; }
+        .footer { background: #191919; color: white; padding: 20px 0; margin-top: 60px; text-align: center; font-size: 14px; opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -216,7 +217,7 @@
             <!-- Forgot Password Section (replaces login tab content) -->
             <div class="forgot-section" id="forgot-section">
                 <button class="back-to-login" onclick="hideForgot()">← Retour à la connexion</button>
-                <h3 style="margin-bottom:8px; color: var(--wwc-primary);">Mot de passe oublié</h3>
+                <h3 style="margin-bottom:8px; color: #1c345e;">Mot de passe oublié</h3>
                 <p style="font-size:14px; color: var(--wwc-text-light); margin-bottom:20px;">
                     Entrez votre e-mail et nous vous enverrons un lien de réinitialisation.
                 </p>

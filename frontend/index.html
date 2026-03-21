@@ -6,18 +6,18 @@
     <title>Wallah We Can - Shop</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --wwc-primary: #1e3a5f;
-            --wwc-secondary: #ff6b35;
-            --wwc-accent: #f8b4c4;
-            --wwc-cta: #4a3728;
-            --wwc-text: #2c3e50;
-            --wwc-text-light: #6c757d;
+            --wwc-primary: #e04403;
+            --wwc-secondary: #1c345e;
+            --wwc-dark: #191919;
+            --wwc-text: #404040;
+            --wwc-text-light: #888888;
             --wwc-bg: #ffffff;
-            --wwc-bg-light: #f8f9fa;
-            --wwc-border: #dee2e6;
+            --wwc-bg-light: #f5f5f5;
+            --wwc-border: #ececec;
+            --wwc-success: #28a745;
         }
 
         * {
@@ -27,7 +27,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Noto Sans', sans-serif;
             color: var(--wwc-text);
             background: var(--wwc-bg-light);
             line-height: 1.6;
@@ -35,9 +35,10 @@
 
         /* Header */
         .header {
-            background: var(--wwc-primary);
-            color: white;
-            padding: 15px 0;
+            background: #ffffff;
+            border-bottom: 1px solid #ececec;
+            padding: 0;
+            height: 70px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -47,15 +48,17 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .logo {
-            font-size: 24px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
             font-weight: 700;
-            color: white;
+            color: #1c345e;
             text-decoration: none;
         }
 
@@ -65,15 +68,17 @@
         }
 
         .nav a {
-            color: white;
+            color: #191919;
             text-decoration: none;
-            font-weight: 500;
-            opacity: 0.9;
-            transition: opacity 0.3s;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: color 0.2s;
         }
 
-        .nav a:hover {
-            opacity: 1;
+        .nav a:hover,
+        .nav a.active {
+            color: #e04403;
         }
 
         .header-actions {
@@ -84,35 +89,41 @@
 
         .btn {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 14px 36px;
             border: none;
-            border-radius: 8px;
+            border-radius: 30px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .btn-shop {
-            background: var(--wwc-secondary);
+            background: #e04403;
             color: white;
         }
 
         .btn-shop:hover {
-            background: #e55a2b;
+            background: #1c345e;
         }
 
         .btn-don {
             background: transparent;
+            color: #e04403;
+            border: 2px solid #e04403;
+        }
+
+        .btn-don:hover {
+            background: #e04403;
             color: white;
-            border: 2px solid white;
         }
 
         .cart-icon {
             background: none;
             border: none;
-            color: white;
+            color: #e04403;
             font-size: 20px;
             cursor: pointer;
             position: relative;
@@ -122,7 +133,7 @@
             position: absolute;
             top: -8px;
             right: -8px;
-            background: var(--wwc-secondary);
+            background: #e04403;
             color: white;
             font-size: 12px;
             width: 20px;
@@ -163,8 +174,8 @@
 
         .category-link:hover,
         .category-link.active {
-            color: var(--wwc-secondary);
-            background: rgba(255, 107, 53, 0.1);
+            color: #e04403;
+            background: rgba(224, 68, 3, 0.1);
         }
 
         /* Main Content */
@@ -175,9 +186,10 @@
         }
 
         .page-title {
+            font-family: 'Montserrat', sans-serif;
             font-size: 32px;
             margin-bottom: 30px;
-            color: var(--wwc-primary);
+            color: var(--wwc-secondary);
         }
 
         /* Product Grid */
@@ -191,12 +203,13 @@
             background: white;
             border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
             transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .product-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         }
 
         .product-image {
@@ -244,7 +257,7 @@
 
         .badge {
             padding: 4px 10px;
-            border-radius: 4px;
+            border-radius: 30px;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
@@ -261,12 +274,12 @@
         }
 
         .badge-sale {
-            background: #ff6b35;
+            background: #e04403;
             color: white;
             font-size: 12px;
             font-weight: 700;
             padding: 3px 8px;
-            border-radius: 6px;
+            border-radius: 30px;
         }
 
         .price-was {
@@ -277,14 +290,15 @@
         }
 
         .product-price {
+            font-family: 'Montserrat', sans-serif;
             font-size: 24px;
             font-weight: 700;
-            color: var(--wwc-secondary);
+            color: #e04403;
             margin-bottom: 12px;
         }
 
         .product-impact {
-            background: var(--wwc-accent);
+            background: var(--wwc-bg-light);
             padding: 10px 15px;
             border-radius: 8px;
             font-size: 13px;
@@ -293,11 +307,13 @@
 
         .btn-add-cart {
             width: 100%;
-            padding: 12px;
-            background: var(--wwc-cta);
+            padding: 14px 36px;
+            background: #e04403;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 30px;
+            text-transform: uppercase;
+            font-weight: 700;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -305,7 +321,7 @@
         }
 
         .btn-add-cart:hover {
-            background: #3a2818;
+            background: #1c345e;
         }
 
         /* Cart Sidebar */
@@ -401,7 +417,7 @@
         }
 
         .cart-item-price {
-            color: var(--wwc-secondary);
+            color: #e04403;
             font-weight: 600;
         }
 
@@ -441,7 +457,7 @@
         }
 
         .cart-impact-summary {
-            background: var(--wwc-accent);
+            background: var(--wwc-bg-light);
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 15px;
@@ -471,18 +487,19 @@
         }
 
         .btn-checkout {
-            background: var(--wwc-cta);
+            background: #e04403;
             color: white;
-            padding: 15px;
+            padding: 14px 36px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
             cursor: pointer;
         }
 
         .btn-checkout:hover {
-            background: #3a2818;
+            background: #1c345e;
         }
 
         .cart-empty {
@@ -497,7 +514,7 @@
 
         /* Footer */
         .footer {
-            background: var(--wwc-primary);
+            background: #191919;
             color: white;
             padding: 40px 0 20px;
             margin-top: 60px;
@@ -623,16 +640,16 @@
     <!-- Header -->
     <header class="header">
         <div class="header-container">
-            <a href="#" class="logo">WALLAH WE CAN</a>
+            <a href="/shop/" class="logo">WALLAH WE CAN</a>
             <nav class="nav">
                 <a href="/shop/">Boutique</a>
                 <a href="/shop/impact/">Notre Impact</a>
                 <a href="/shop/donate/">Faire un don</a>
             </nav>
             <div class="header-actions">
-                <div id="currency-switcher" style="display:flex;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;">
-                    <button id="btn-tnd" onclick="switchCurrency('TND')" style="padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:white;color:var(--wwc-primary);">DT</button>
-                    <button id="btn-eur" onclick="switchCurrency('EUR')" style="padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:transparent;color:white;">€</button>
+                <div id="currency-switcher" style="display:flex;background:var(--wwc-bg-light);border-radius:8px;overflow:hidden;border:1px solid var(--wwc-border);">
+                    <button id="btn-tnd" onclick="switchCurrency('TND')" style="padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:#1c345e;color:white;">DT</button>
+                    <button id="btn-eur" onclick="switchCurrency('EUR')" style="padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:transparent;color:#191919;">€</button>
                 </div>
                 <button class="cart-icon" onclick="toggleCart()" title="Voir le panier">
                     🛒

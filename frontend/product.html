@@ -6,18 +6,18 @@
     <title>Produit - Wallah We Can</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --wwc-primary: #1e3a5f;
-            --wwc-secondary: #ff6b35;
-            --wwc-accent: #f8b4c4;
-            --wwc-cta: #4a3728;
-            --wwc-text: #2c3e50;
-            --wwc-text-light: #6c757d;
+            --wwc-primary: #e04403;
+            --wwc-secondary: #1c345e;
+            --wwc-dark: #191919;
+            --wwc-text: #404040;
+            --wwc-text-light: #888888;
             --wwc-bg: #ffffff;
-            --wwc-bg-light: #f8f9fa;
-            --wwc-border: #dee2e6;
+            --wwc-bg-light: #f5f5f5;
+            --wwc-border: #ececec;
+            --wwc-success: #28a745;
         }
 
         * {
@@ -27,7 +27,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Noto Sans', sans-serif;
             color: var(--wwc-text);
             background: var(--wwc-bg);
             line-height: 1.6;
@@ -35,9 +35,10 @@
 
         /* Header */
         .header {
-            background: var(--wwc-primary);
-            color: white;
-            padding: 15px 0;
+            background: #ffffff;
+            border-bottom: 1px solid #ececec;
+            padding: 0;
+            height: 70px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -47,15 +48,17 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .logo {
-            font-size: 24px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
             font-weight: 700;
-            color: white;
+            color: #1c345e;
             text-decoration: none;
         }
 
@@ -65,15 +68,17 @@
         }
 
         .nav a {
-            color: white;
+            color: #191919;
             text-decoration: none;
-            font-weight: 500;
-            opacity: 0.9;
-            transition: opacity 0.3s;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: color 0.2s;
         }
 
-        .nav a:hover {
-            opacity: 1;
+        .nav a:hover,
+        .nav a.active {
+            color: #e04403;
         }
 
         .header-actions {
@@ -84,31 +89,41 @@
 
         .btn {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 14px 36px;
             border: none;
-            border-radius: 8px;
+            border-radius: 30px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
         .btn-shop {
-            background: var(--wwc-secondary);
+            background: #e04403;
             color: white;
+        }
+
+        .btn-shop:hover {
+            background: #1c345e;
         }
 
         .btn-don {
             background: transparent;
+            color: #e04403;
+            border: 2px solid #e04403;
+        }
+
+        .btn-don:hover {
+            background: #e04403;
             color: white;
-            border: 2px solid white;
         }
 
         .cart-icon {
             background: none;
             border: none;
-            color: white;
+            color: #e04403;
             font-size: 20px;
             cursor: pointer;
             position: relative;
@@ -118,7 +133,7 @@
             position: absolute;
             top: -8px;
             right: -8px;
-            background: var(--wwc-secondary);
+            background: #e04403;
             color: white;
             font-size: 12px;
             width: 20px;
@@ -158,8 +173,8 @@
         }
 
         .category-link:hover {
-            color: var(--wwc-secondary);
-            background: rgba(255, 107, 53, 0.1);
+            color: #e04403;
+            background: rgba(224, 68, 3, 0.1);
         }
 
         /* Main Content */
@@ -182,7 +197,7 @@
         }
 
         .breadcrumb a:hover {
-            color: var(--wwc-primary);
+            color: #e04403;
         }
 
         /* Product Layout */
@@ -220,7 +235,7 @@
         }
 
         .thumbnail.active {
-            border-color: var(--wwc-primary);
+            border-color: #e04403;
         }
 
         .thumbnail img {
@@ -253,9 +268,10 @@
         }
 
         .product-title {
+            font-family: 'Montserrat', sans-serif;
             font-size: 32px;
             font-weight: 700;
-            color: var(--wwc-primary);
+            color: #191919;
             margin-bottom: 15px;
         }
 
@@ -285,7 +301,7 @@
 
         .badge {
             padding: 6px 14px;
-            border-radius: 4px;
+            border-radius: 30px;
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
@@ -308,7 +324,7 @@
         }
 
         .read-more {
-            color: var(--wwc-secondary);
+            color: #e04403;
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
@@ -353,9 +369,10 @@
         }
 
         .product-price {
+            font-family: 'Montserrat', sans-serif;
             font-size: 42px;
             font-weight: 700;
-            color: var(--wwc-text);
+            color: #e04403;
         }
 
         .product-price small {
@@ -371,41 +388,42 @@
         }
 
         .badge-sale {
-            background: #ff6b35;
+            background: #e04403;
             color: white;
             font-size: 14px;
             font-weight: 700;
             padding: 4px 10px;
-            border-radius: 8px;
+            border-radius: 30px;
             vertical-align: middle;
             margin-left: 8px;
         }
 
         .product-impact {
-            background: var(--wwc-accent);
+            background: var(--wwc-bg-light);
             padding: 18px 20px;
             border-radius: 8px;
             margin-bottom: 20px;
-            border-left: 4px solid var(--wwc-secondary);
+            border-left: 4px solid #e04403;
             font-size: 15px;
         }
 
         .btn-add-cart {
             width: 100%;
-            padding: 18px;
-            background: var(--wwc-cta);
+            padding: 14px 36px;
+            background: #e04403;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.2s;
             margin-bottom: 20px;
         }
 
         .btn-add-cart:hover {
-            background: #3a2818;
+            background: #1c345e;
         }
 
         .product-share {
@@ -452,7 +470,7 @@
         }
 
         .accordion-header:hover {
-            color: var(--wwc-primary);
+            color: #e04403;
         }
 
         .accordion-icon {
@@ -489,8 +507,9 @@
         }
 
         .reviews-header h2 {
+            font-family: 'Montserrat', sans-serif;
             font-size: 24px;
-            color: var(--wwc-primary);
+            color: #191919;
         }
 
         .reviews-summary {
@@ -504,9 +523,10 @@
         }
 
         .reviews-average .big-rating {
+            font-family: 'Montserrat', sans-serif;
             font-size: 48px;
             font-weight: 700;
-            color: var(--wwc-primary);
+            color: #e04403;
         }
 
         .reviews-average .stars {
@@ -541,7 +561,7 @@
             background: #e8f5e9;
             color: #2e7d32;
             padding: 4px 10px;
-            border-radius: 4px;
+            border-radius: 30px;
             font-size: 12px;
             margin-left: 10px;
         }
@@ -578,7 +598,7 @@
 
         /* Footer */
         .footer {
-            background: var(--wwc-primary);
+            background: #191919;
             color: white;
             padding: 40px 0 20px;
             margin-top: 60px;
