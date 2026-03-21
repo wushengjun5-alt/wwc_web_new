@@ -74,6 +74,52 @@ def _send_order_confirmation_email(order):
         logger.error("Failed to send order confirmation email for %s: %s", order.order_number, e)
 
 
+def _send_shipping_confirmation_email(order):
+    """Send shipping confirmation email to customer when order is marked as shipped."""
+    try:
+        tracking = order.tracking_number
+        subject = f"Votre commande {order.order_number} est en route ! - Wallah We Can"
+
+        message_lines = [
+            f"Bonjour {order.shipping_first_name},",
+            "",
+            f"Bonne nouvelle ! Votre commande {order.order_number} vient d'être expédiée.",
+            "",
+        ]
+        if tracking:
+            message_lines += [
+                f"Numéro de suivi : {tracking}",
+                "",
+            ]
+        message_lines += [
+            "--- Articles expédiés ---",
+        ]
+        for item in order.items.all():
+            message_lines.append(
+                f"  {item.quantity}x {item.product_name}"
+            )
+        message_lines += [
+            "",
+            f"Adresse de livraison :",
+            f"  {order.shipping_first_name} {order.shipping_last_name}",
+            f"  {order.shipping_address}",
+            f"  {order.shipping_city}, {order.shipping_country}",
+            "",
+            "Merci de soutenir l'initiative GreenSchool de Wallah We Can.",
+            "L'équipe WWC",
+        ]
+
+        send_mail(
+            subject=subject,
+            message="\n".join(message_lines),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[order.email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        logger.error("Failed to send shipping confirmation email for %s: %s", order.order_number, e)
+
+
 class CreateCheckoutSessionView(APIView):
     """
     Create Stripe Checkout Session for EUR orders.

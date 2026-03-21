@@ -725,6 +725,11 @@
                 <a href="#">Événements</a>
             </nav>
             <div class="header-actions">
+                <div id="lang-switcher" style="display:flex;background:var(--wwc-bg-light,#f5f5f5);border-radius:8px;overflow:hidden;border:1px solid var(--wwc-border,#ececec);padding:2px;gap:2px;">
+                    <button data-lang="fr" onclick="switchLang('fr')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">FR</button>
+                    <button data-lang="en" onclick="switchLang('en')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">EN</button>
+                    <button data-lang="ar" onclick="switchLang('ar')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">ع</button>
+                </div>
                 <button class="cart-icon" onclick="window.location.href='/shop/cart/'">
                     🛒
                     <span class="cart-count" id="cart-count">0</span>
@@ -794,6 +799,36 @@
         // API Configuration
         const API_URL = '/api/v1';
 
+        // ── Language / i18n ───────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        function tObj(obj, field) {
+            if (!obj) return '';
+            const lang = getLang();
+            if (lang === 'fr') return obj[field] || '';
+            const loc = obj[`${field}_${lang}`];
+            return (loc && loc.trim()) ? loc : (obj[field] || '');
+        }
+        function renderLangSwitcher() {
+            const lang = getLang();
+            document.querySelectorAll('#lang-switcher button[data-lang]').forEach(btn => {
+                const active = btn.dataset.lang === lang;
+                btn.style.background = active ? '#1c345e' : 'transparent';
+                btn.style.color = active ? 'white' : '#191919';
+            });
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        }
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            renderLangSwitcher();
+            const slug = getProductSlug();
+            if (slug) loadProduct(slug);
+        }
+
         function getSessionKey() {
             let key = localStorage.getItem('wwc_session_key');
             if (!key) { key = crypto.randomUUID(); localStorage.setItem('wwc_session_key', key); }
@@ -839,13 +874,14 @@
                 const cats = (data.results || data).filter(c => c.is_active && !c.parent);
                 const container = document.getElementById('categories');
                 container.innerHTML = `<a href="/shop/" class="category-link">Tous les produits</a>`
-                    + cats.map(c => `<a href="/shop/?category=${c.slug}" class="category-link">${c.name.toUpperCase()}</a>`).join('');
+                    + cats.map(c => `<a href="/shop/?category=${c.slug}" class="category-link">${tObj(c,'name').toUpperCase()}</a>`).join('');
             } catch { /* keep default */ }
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             renderAuthNav();
+            renderLangSwitcher();
             loadCategories();
             const slug = getProductSlug();
             if (slug) {
@@ -881,7 +917,9 @@
 
         // Render product
         function renderProduct(product) {
-            document.title = `${product.name} - Wallah We Can`;
+            const pName = tObj(product, 'name');
+            const pDesc = tObj(product, 'description');
+            document.title = `${pName} - Wallah We Can`;
 
             // Build badges HTML
             let badgesHtml = '';
@@ -902,10 +940,10 @@
 
             if (product.images && product.images.length > 0) {
                 const primaryImg = product.images.find(img => img.is_primary) || product.images[0];
-                mainImageHtml = `<img src="${primaryImg.image}" alt="${product.name}">`;
+                mainImageHtml = `<img src="${primaryImg.image}" alt="${pName}">`;
                 thumbnailsHtml = product.images.map((img, i) => `
                     <div class="thumbnail ${i === 0 ? 'active' : ''}" onclick="selectImage('${img.image}', this)">
-                        <img src="${img.image}" alt="${img.alt_text || product.name}">
+                        <img src="${img.image}" alt="${img.alt_text || pName}">
                     </div>
                 `).join('');
             }
@@ -914,8 +952,8 @@
                 <!-- Breadcrumb -->
                 <div class="breadcrumb">
                     <a href="/shop/">Accueil</a> /
-                    <a href="/shop/?category=${product.category?.slug || ''}">${product.category?.name || 'Produits'}</a> /
-                    ${product.name}
+                    <a href="/shop/?category=${product.category?.slug || ''}">${tObj(product.category,'name') || 'Produits'}</a> /
+                    ${pName}
                 </div>
 
                 <!-- Product Layout -->
@@ -932,7 +970,7 @@
 
                     <!-- Product Info -->
                     <div class="product-info">
-                        <h1 class="product-title">${product.name}</h1>
+                        <h1 class="product-title">${pName}</h1>
 
                         <div class="product-rating">
                             ${ratingHtml}
@@ -943,8 +981,8 @@
                         </div>
 
                         <div class="product-description" id="product-description">
-                            <p>${product.description || 'Aucune description disponible.'}</p>
-                            ${product.description && product.description.length > 200 ? '<a class="read-more" onclick="toggleDescription()">Lire plus</a>' : ''}
+                            <p>${pDesc || 'Aucune description disponible.'}</p>
+                            ${pDesc && pDesc.length > 200 ? '<a class="read-more" onclick="toggleDescription()">Lire plus</a>' : ''}
                         </div>
 
                         <div class="product-actions">
@@ -967,6 +1005,18 @@
                         <div class="product-impact">
                             💝 Grâce à cet achat, ${product.impact_quantity} ${product.impact_item} peuvent être fournis à des enfants de ${product.impact_school}.
                         </div>
+
+                        ${product.producer ? `
+                        <div style="margin:16px 0;padding:14px 18px;background:var(--wwc-bg-light);border-radius:10px;border:1px solid var(--wwc-border);display:flex;align-items:center;gap:12px;">
+                            ${product.producer.photo ? `<img src="${product.producer.photo}" alt="${product.producer.name}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<span style="font-size:28px;">👩‍🌾</span>'}
+                            <div>
+                                <div style="font-size:12px;color:var(--wwc-text-light);text-transform:uppercase;letter-spacing:0.5px;">Produit par</div>
+                                <a href="/shop/producers/${product.producer.slug}/" style="font-weight:700;font-size:15px;color:var(--wwc-secondary);text-decoration:none;">
+                                    ${product.producer.name}
+                                </a>
+                                ${product.producer.location ? `<div style="font-size:12px;color:var(--wwc-text-light);">📍 ${product.producer.location}</div>` : ''}
+                            </div>
+                        </div>` : ''}
 
                         <button class="btn-add-cart" onclick="addToCart()">
                             Ajouter au panier

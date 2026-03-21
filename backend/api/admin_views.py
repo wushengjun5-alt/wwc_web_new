@@ -579,6 +579,7 @@ class AdminOrderDetailView(APIView):
     def patch(self, request, order_number):
         order = get_object_or_404(Order, order_number=order_number)
         updated_fields = []
+        send_shipping_email = False
 
         new_status = request.data.get('status')
         if new_status is not None:
@@ -594,6 +595,7 @@ class AdminOrderDetailView(APIView):
             if new_status == 'shipped' and not order.shipped_at:
                 order.shipped_at = timezone.now()
                 updated_fields.append('shipped_at')
+                send_shipping_email = True
             elif new_status == 'delivered' and not order.delivered_at:
                 order.delivered_at = timezone.now()
                 updated_fields.append('delivered_at')
@@ -607,6 +609,14 @@ class AdminOrderDetailView(APIView):
             return Response({'error': 'Aucun champ à mettre à jour.'}, status=status.HTTP_400_BAD_REQUEST)
 
         order.save(update_fields=updated_fields)
+
+        # Send shipping notification email after save
+        if send_shipping_email:
+            try:
+                from .payments import _send_shipping_confirmation_email
+                _send_shipping_confirmation_email(order)
+            except Exception:
+                pass  # Non-blocking — email failure should not fail the API response
 
         return Response({
             'order_number': order.order_number,

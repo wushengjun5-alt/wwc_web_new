@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWC Admin - Dons</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+    <style>
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:300; align-items:center; justify-content:center; }
+        .modal-overlay.open { display:flex; }
+        .modal { background:white; border-radius:12px; width:600px; max-width:95vw; max-height:90vh; overflow-y:auto; padding:32px; box-shadow:0 8px 40px rgba(0,0,0,0.18); }
+        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+        .modal-header h2 { font-size:20px; color:var(--admin-primary); }
+        .modal-close { background:none; border:none; font-size:22px; cursor:pointer; color:var(--admin-text-light); }
+        .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .form-grid .full { grid-column:1/-1; }
+        .form-group { display:flex; flex-direction:column; gap:6px; }
+        .form-group label { font-size:13px; font-weight:600; color:var(--admin-text); }
+        .form-group input, .form-group select, .form-group textarea { padding:9px 12px; border:1px solid var(--admin-border); border-radius:8px; font-size:14px; font-family:inherit; }
+        .form-group textarea { resize:vertical; }
+        .form-actions { display:flex; gap:12px; margin-top:24px; justify-content:flex-end; }
+        .tab-nav { display:flex; gap:0; border-bottom:2px solid var(--admin-border); margin-bottom:20px; }
+        .tab-btn { padding:10px 20px; background:none; border:none; font-size:14px; font-weight:600; cursor:pointer; color:var(--admin-text-light); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .2s; }
+        .tab-btn.active { color:var(--admin-primary); border-bottom-color:var(--admin-primary); }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+        .status-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+        .status-pending   { background:#fff3cd; color:#856404; }
+        .status-completed { background:#d4edda; color:#155724; }
+        .status-failed    { background:#f8d7da; color:#721c24; }
+        .badge-stripe { background:#cce5ff; color:#004085; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+        .badge-bank   { background:#e2d4f0; color:#6f42c1; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+        .progress-bar { background:#e9ecef; border-radius:4px; height:6px; overflow:hidden; min-width:80px; }
+        .progress-fill { height:100%; background:var(--admin-secondary); border-radius:4px; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">W</span>
+                <span class="logo-text">WWC Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item"><span class="nav-icon">📊</span><span>Dashboard</span></a>
+            <a href="products.html" class="nav-item"><span class="nav-icon">📦</span><span>Produits</span></a>
+            <a href="categories.html" class="nav-item"><span class="nav-icon">📁</span><span>Catégories</span></a>
+            <a href="orders.html" class="nav-item"><span class="nav-icon">🛒</span><span>Commandes</span></a>
+            <a href="customers.html" class="nav-item"><span class="nav-icon">👥</span><span>Clients</span></a>
+            <a href="producers.html" class="nav-item"><span class="nav-icon">🌿</span><span>Producteurs</span></a>
+            <a href="coupons.html" class="nav-item"><span class="nav-icon">🎟️</span><span>Coupons</span></a>
+            <a href="impact.html" class="nav-item"><span class="nav-icon">💝</span><span>Impact</span></a>
+            <a href="donations.html" class="nav-item active"><span class="nav-icon">🤲</span><span>Dons</span></a>
+            <div class="nav-divider"></div>
+            <a href="../index.html" class="nav-item"><span class="nav-icon">🏪</span><span>Voir la boutique</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connexion...</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1>Dons &amp; Projets</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="btnNewProject" onclick="openProjectModal()">➕ Nouveau projet</button>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Tabs -->
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('donations')">📋 Dons reçus</button>
+                <button class="tab-btn" onclick="switchTab('projects')">🎯 Projets</button>
+                <button class="tab-btn" onclick="switchTab('countries')">🌍 Pays</button>
+            </div>
+
+            <!-- TAB: DONATIONS -->
+            <div class="tab-panel active" id="tab-donations">
+                <section class="filters-section">
+                    <form class="filters-form" onsubmit="return false;">
+                        <div class="filter-group">
+                            <select id="donStatusFilter" class="filter-select" onchange="loadDonations()">
+                                <option value="">Tous les statuts</option>
+                                <option value="pending">En attente</option>
+                                <option value="completed">Complétés</option>
+                                <option value="failed">Échoués</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <select id="donMethodFilter" class="filter-select" onchange="loadDonations()">
+                                <option value="">Tous les paiements</option>
+                                <option value="stripe">Stripe</option>
+                                <option value="bank_transfer">Virement</option>
+                            </select>
+                        </div>
+                    </form>
+                </section>
+                <section class="section">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Réf.</th>
+                                    <th>Donateur</th>
+                                    <th>Projet</th>
+                                    <th>Montant</th>
+                                    <th>Paiement</th>
+                                    <th>Statut</th>
+                                    <th>Message</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="donationsBody">
+                                <tr><td colspan="9" class="loading">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="donPagination"></div>
+                </section>
+            </div>
+
+            <!-- TAB: PROJECTS -->
+            <div class="tab-panel" id="tab-projects">
+                <section class="filters-section">
+                    <form class="filters-form" onsubmit="return false;">
+                        <div class="filter-group">
+                            <select id="projCountryFilter" class="filter-select" onchange="loadProjects()">
+                                <option value="">Tous les pays</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <select id="projStatusFilter" class="filter-select" onchange="loadProjects()">
+                                <option value="">Tous les statuts</option>
+                                <option value="true">Actifs</option>
+                                <option value="false">Inactifs</option>
+                            </select>
+                        </div>
+                    </form>
+                </section>
+                <section class="section">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Pays</th>
+                                    <th>Catégorie</th>
+                                    <th>Objectif</th>
+                                    <th>Collecté</th>
+                                    <th>Progression</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsBody">
+                                <tr><td colspan="8" class="loading">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="projPagination"></div>
+                </section>
+            </div>
+
+            <!-- TAB: COUNTRIES -->
+            <div class="tab-panel" id="tab-countries">
+                <div class="header-right" style="margin-bottom:16px;">
+                    <button class="btn btn-primary" onclick="openCountryModal()">➕ Nouveau pays</button>
+                </div>
+                <section class="section">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Drapeau</th>
+                                    <th>Nom</th>
+                                    <th>Slug</th>
+                                    <th>Projets</th>
+                                    <th>Ordre</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="countriesBody">
+                                <tr><td colspan="7" class="loading">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Project Modal -->
+    <div class="modal-overlay" id="projectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="projectModalTitle">Nouveau projet</h2>
+                <button class="modal-close" onclick="closeProjectModal()">✕</button>
+            </div>
+            <form id="projectForm" onsubmit="saveProject(event)">
+                <input type="hidden" id="projId">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Titre (FR) *</label>
+                        <input type="text" id="projTitle" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Titre (EN)</label>
+                        <input type="text" id="projTitleEn">
+                    </div>
+                    <div class="form-group full">
+                        <label>Description</label>
+                        <textarea id="projDesc" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Pays *</label>
+                        <select id="projCountry" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Catégorie *</label>
+                        <select id="projCategory">
+                            <option value="food">Alimentation</option>
+                            <option value="infrastructure">Infrastructure</option>
+                            <option value="sports">Sport</option>
+                            <option value="education">Éducation</option>
+                            <option value="health">Santé</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>École / Bénéficiaire</label>
+                        <input type="text" id="projSchool">
+                    </div>
+                    <div class="form-group">
+                        <label>Objectif (montant) *</label>
+                        <input type="number" id="projGoal" min="1" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Devise</label>
+                        <select id="projCurrency">
+                            <option value="TND">TND</option>
+                            <option value="EUR">EUR</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date limite</label>
+                        <input type="date" id="projDeadline">
+                    </div>
+                    <div class="form-group" style="flex-direction:row; align-items:center; gap:10px; margin-top:4px;">
+                        <input type="checkbox" id="projActive" checked style="width:18px;height:18px;">
+                        <label for="projActive" style="margin:0; cursor:pointer;">Actif</label>
+                    </div>
+                    <div class="form-group" style="flex-direction:row; align-items:center; gap:10px; margin-top:4px;">
+                        <input type="checkbox" id="projFeatured" style="width:18px;height:18px;">
+                        <label for="projFeatured" style="margin:0; cursor:pointer;">⭐ Prioritaire</label>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeProjectModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="projSaveBtn">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Country Modal -->
+    <div class="modal-overlay" id="countryModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="countryModalTitle">Nouveau pays</h2>
+                <button class="modal-close" onclick="closeCountryModal()">✕</button>
+            </div>
+            <form id="countryForm" onsubmit="saveCountry(event)">
+                <input type="hidden" id="countryId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nom (FR) *</label>
+                        <input type="text" id="cName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom (EN)</label>
+                        <input type="text" id="cNameEn">
+                    </div>
+                    <div class="form-group">
+                        <label>Slug *</label>
+                        <input type="text" id="cSlug" required placeholder="ex: tunisie">
+                    </div>
+                    <div class="form-group">
+                        <label>Drapeau emoji</label>
+                        <input type="text" id="cFlag" placeholder="🇹🇳" maxlength="4">
+                    </div>
+                    <div class="form-group full">
+                        <label>Description</label>
+                        <textarea id="cDesc" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Ordre d'affichage</label>
+                        <input type="number" id="cOrder" value="0" min="0">
+                    </div>
+                    <div class="form-group" style="flex-direction:row; align-items:center; gap:10px; margin-top:4px;">
+                        <input type="checkbox" id="cActive" checked style="width:18px;height:18px;">
+                        <label for="cActive" style="margin:0; cursor:pointer;">Actif</label>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeCountryModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="countrySaveBtn">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Donation status modal -->
+    <div class="modal-overlay" id="donStatusModal">
+        <div class="modal" style="max-width:380px;">
+            <div class="modal-header">
+                <h2>Changer le statut</h2>
+                <button class="modal-close" onclick="document.getElementById('donStatusModal').classList.remove('open')">✕</button>
+            </div>
+            <input type="hidden" id="donStatusId">
+            <div class="form-group" style="margin-bottom:20px;">
+                <label>Nouveau statut</label>
+                <select id="donNewStatus" style="padding:9px 12px; border:1px solid var(--admin-border); border-radius:8px; font-size:14px; font-family:inherit; width:100%;">
+                    <option value="pending">En attente</option>
+                    <option value="completed">Complété</option>
+                    <option value="failed">Échoué</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-outline" onclick="document.getElementById('donStatusModal').classList.remove('open')">Annuler</button>
+                <button class="btn btn-primary" onclick="saveDonStatus()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin-config.js"></script>
+    <script src="js/admin-api.js"></script>
+    <script>
+    const CATEGORY_LABELS = { food:'Alimentation', infrastructure:'Infrastructure', sports:'Sport', education:'Éducation', health:'Santé', other:'Autre' };
+    const PAYMENT_LABELS  = { stripe:'Stripe', bank_transfer:'Virement bancaire' };
+
+    let donPage = 1, projPage = 1;
+    let allCountries = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadCountriesForFilters();
+        loadDonations();
+    });
+
+    // ── Tabs ──────────────────────────────────────────────────────
+    function switchTab(name) {
+        document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['donations','projects','countries'][i] === name));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(`tab-${name}`).classList.add('active');
+        if (name === 'donations' && document.getElementById('donationsBody').innerHTML.includes('Chargement')) loadDonations();
+        if (name === 'projects')  loadProjects();
+        if (name === 'countries') loadCountries();
+    }
+
+    // ── Countries for filters ─────────────────────────────────────
+    async function loadCountriesForFilters() {
+        try {
+            const data = await AdminAPI.get('/admin/donations/countries/');
+            allCountries = data;
+            const sel1 = document.getElementById('projCountryFilter');
+            const sel2 = document.getElementById('projCountry');
+            allCountries.forEach(c => {
+                sel1.innerHTML += `<option value="${c.id}">${c.flag_emoji} ${escHtml(c.name)}</option>`;
+                sel2.innerHTML += `<option value="${c.id}">${c.flag_emoji} ${escHtml(c.name)}</option>`;
+            });
+        } catch(e) {}
+    }
+
+    // ── Donations ─────────────────────────────────────────────────
+    async function loadDonations() {
+        const tbody = document.getElementById('donationsBody');
+        tbody.innerHTML = '<tr><td colspan="9" class="loading">Chargement...</td></tr>';
+        const params = new URLSearchParams({ page: donPage, page_size: 20 });
+        const st = document.getElementById('donStatusFilter').value;
+        const pm = document.getElementById('donMethodFilter').value;
+        if (st) params.set('status', st);
+        if (pm) params.set('payment_method', pm);
+        try {
+            const data = await AdminAPI.get(`/admin/donations/?${params}`);
+            const items = data.results || [];
+            if (!items.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#999;">Aucun don trouvé.</td></tr>';
+                document.getElementById('donPagination').innerHTML = '';
+                return;
+            }
+            tbody.innerHTML = items.map(d => `
+                <tr>
+                    <td><strong style="font-family:monospace;">${escHtml(d.reference)}</strong></td>
+                    <td>
+                        <div>${escHtml(d.donor_name)}${d.is_anonymous ? ' <span style="font-size:11px;color:#888;">(anonyme)</span>' : ''}</div>
+                        <div style="font-size:12px;color:#888;">${escHtml(d.donor_email || '')}</div>
+                    </td>
+                    <td style="font-size:13px;">${escHtml(d.project?.title || '—')}</td>
+                    <td><strong>${d.amount} ${d.currency}</strong></td>
+                    <td><span class="badge-${d.payment_method === 'stripe' ? 'stripe' : 'bank'}">${PAYMENT_LABELS[d.payment_method] || d.payment_method}</span></td>
+                    <td><span class="status-badge status-${d.status}">${{pending:'En attente',completed:'Complété',failed:'Échoué'}[d.status]||d.status}</span></td>
+                    <td style="font-size:12px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(d.message||'')}">${escHtml(d.message || '—')}</td>
+                    <td style="font-size:13px;">${AdminConfig.formatDate(d.created_at)}</td>
+                    <td>
+                        <a href="#" onclick="openDonStatus(${d.id},'${d.status}');return false;">Statut</a>
+                    </td>
+                </tr>`).join('');
+            renderPagination('don', data.count, 20, donPage);
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="9" style="color:red;padding:20px;">${e.message}</td></tr>`;
+        }
+    }
+
+    function openDonStatus(id, current) {
+        document.getElementById('donStatusId').value = id;
+        document.getElementById('donNewStatus').value = current;
+        document.getElementById('donStatusModal').classList.add('open');
+    }
+
+    async function saveDonStatus() {
+        const id = document.getElementById('donStatusId').value;
+        const newStatus = document.getElementById('donNewStatus').value;
+        try {
+            await AdminAPI.patch(`/admin/donations/${id}/`, { status: newStatus });
+            AdminConfig.showToast('Statut mis à jour.', 'success');
+            document.getElementById('donStatusModal').classList.remove('open');
+            loadDonations();
+        } catch(e) { AdminConfig.showToast(e.message, 'error'); }
+    }
+
+    // ── Projects ──────────────────────────────────────────────────
+    async function loadProjects() {
+        const tbody = document.getElementById('projectsBody');
+        tbody.innerHTML = '<tr><td colspan="8" class="loading">Chargement...</td></tr>';
+        const params = new URLSearchParams({ page: projPage, page_size: 20 });
+        const cid = document.getElementById('projCountryFilter').value;
+        const st  = document.getElementById('projStatusFilter').value;
+        if (cid) params.set('country_id', cid);
+        if (st)  params.set('is_active', st);
+        try {
+            const data = await AdminAPI.get(`/admin/donations/projects/?${params}`);
+            const items = data.results || [];
+            if (!items.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#999;">Aucun projet trouvé.</td></tr>';
+                document.getElementById('projPagination').innerHTML = '';
+                return;
+            }
+            tbody.innerHTML = items.map(p => {
+                const pct = p.progress_percent || 0;
+                return `<tr>
+                    <td>
+                        <div style="font-weight:600;">${escHtml(p.title)}</div>
+                        ${p.school ? `<div style="font-size:12px;color:#888;">🏫 ${escHtml(p.school)}</div>` : ''}
+                        ${p.is_featured ? '<span style="font-size:11px;color:#f59e0b;">⭐ Prioritaire</span>' : ''}
+                    </td>
+                    <td>${escHtml(p.country?.flag_emoji||'')} ${escHtml(p.country?.name||'—')}</td>
+                    <td>${CATEGORY_LABELS[p.category]||p.category}</td>
+                    <td>${p.goal_amount} ${p.currency}</td>
+                    <td>${p.raised_amount} ${p.currency}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:${pct}%"></div></div>
+                            <span style="font-size:12px;color:#888;">${pct}%</span>
+                        </div>
+                        <div style="font-size:11px;color:#888;">${p.donor_count} donateur${p.donor_count!==1?'s':''}</div>
+                    </td>
+                    <td><span class="status-badge ${p.is_active?'status-paid':'status-cancelled'}">${p.is_active?'Actif':'Inactif'}</span></td>
+                    <td>
+                        <div class="row-actions">
+                            <a href="#" onclick="editProject(${p.id});return false;">Modifier</a>
+                            <span>|</span>
+                            <a href="#" onclick="toggleProject(${p.id},${!p.is_active});return false;" style="color:${p.is_active?'#dc3545':'#28a745'}">
+                                ${p.is_active?'Désactiver':'Activer'}
+                            </a>
+                            <span>|</span>
+                            <a href="#" onclick="deleteProject(${p.id},'${escHtml(p.title)}');return false;" style="color:#dc3545;">Supprimer</a>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+            renderPagination('proj', data.count, 20, projPage);
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="8" style="color:red;padding:20px;">${e.message}</td></tr>`;
+        }
+    }
+
+    function openProjectModal() {
+        document.getElementById('projId').value = '';
+        document.getElementById('projectForm').reset();
+        document.getElementById('projActive').checked = true;
+        document.getElementById('projectModalTitle').textContent = 'Nouveau projet';
+        document.getElementById('projSaveBtn').textContent = 'Créer';
+        document.getElementById('projectModal').classList.add('open');
+    }
+
+    async function editProject(id) {
+        try {
+            const p = await AdminAPI.get(`/admin/donations/projects/${id}/`);
+            document.getElementById('projId').value = p.id;
+            document.getElementById('projTitle').value = p.title;
+            document.getElementById('projTitleEn').value = p.title_en || '';
+            document.getElementById('projDesc').value = p.description || '';
+            document.getElementById('projCountry').value = p.country_id;
+            document.getElementById('projCategory').value = p.category;
+            document.getElementById('projSchool').value = p.school || '';
+            document.getElementById('projGoal').value = p.goal_amount;
+            document.getElementById('projCurrency').value = p.currency;
+            document.getElementById('projDeadline').value = p.deadline ? p.deadline.slice(0,10) : '';
+            document.getElementById('projActive').checked = p.is_active;
+            document.getElementById('projFeatured').checked = p.is_featured;
+            document.getElementById('projectModalTitle').textContent = `Modifier : ${p.title}`;
+            document.getElementById('projSaveBtn').textContent = 'Sauvegarder';
+            document.getElementById('projectModal').classList.add('open');
+        } catch(e) { AdminConfig.showToast(e.message, 'error'); }
+    }
+
+    async function saveProject(e) {
+        e.preventDefault();
+        const id = document.getElementById('projId').value;
+        const payload = {
+            title: document.getElementById('projTitle').value.trim(),
+            title_en: document.getElementById('projTitleEn').value.trim(),
+            description: document.getElementById('projDesc').value.trim(),
+            country_id: document.getElementById('projCountry').value,
+            category: document.getElementById('projCategory').value,
+            school: document.getElementById('projSchool').value.trim(),
+            goal_amount: document.getElementById('projGoal').value,
+            currency: document.getElementById('projCurrency').value,
+            deadline: document.getElementById('projDeadline').value || null,
+            is_active: document.getElementById('projActive').checked,
+            is_featured: document.getElementById('projFeatured').checked,
+        };
+        try {
+            if (id) {
+                await AdminAPI.patch(`/admin/donations/projects/${id}/`, payload);
+                AdminConfig.showToast('Projet mis à jour.', 'success');
+            } else {
+                await AdminAPI.post('/admin/donations/projects/', payload);
+                AdminConfig.showToast('Projet créé.', 'success');
+            }
+            closeProjectModal();
+            loadProjects();
+        } catch(e) { AdminConfig.showToast('Erreur : ' + e.message, 'error'); }
+    }
+
+    function closeProjectModal() { document.getElementById('projectModal').classList.remove('open'); }
+
+    async function toggleProject(id, active) {
+        try {
+            await AdminAPI.patch(`/admin/donations/projects/${id}/`, { is_active: active });
+            AdminConfig.showToast(active ? 'Projet activé.' : 'Projet désactivé.', 'success');
+            loadProjects();
+        } catch(e) { AdminConfig.showToast(e.message, 'error'); }
+    }
+
+    async function deleteProject(id, title) {
+        if (!confirm(`Supprimer le projet "${title}" ?`)) return;
+        try {
+            await AdminAPI.delete(`/admin/donations/projects/${id}/`);
+            AdminConfig.showToast('Projet supprimé.', 'success');
+            loadProjects();
+        } catch(e) { AdminConfig.showToast(e.message, 'error'); }
+    }
+
+    // ── Countries ─────────────────────────────────────────────────
+    async function loadCountries() {
+        const tbody = document.getElementById('countriesBody');
+        tbody.innerHTML = '<tr><td colspan="7" class="loading">Chargement...</td></tr>';
+        try {
+            const data = await AdminAPI.get('/admin/donations/countries/');
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#999;">Aucun pays.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(c => `<tr>
+                <td style="font-size:24px;">${escHtml(c.flag_emoji)}</td>
+                <td><strong>${escHtml(c.name)}</strong>${c.name_en ? `<div style="font-size:12px;color:#888;">${escHtml(c.name_en)}</div>` : ''}</td>
+                <td><code style="font-size:12px;">${escHtml(c.slug)}</code></td>
+                <td>${c.project_count}</td>
+                <td>${c.order}</td>
+                <td><span class="status-badge ${c.is_active?'status-paid':'status-cancelled'}">${c.is_active?'Actif':'Inactif'}</span></td>
+                <td>
+                    <div class="row-actions">
+                        <a href="#" onclick="editCountry(${c.id});return false;">Modifier</a>
+                        <span>|</span>
+                        <a href="#" onclick="deleteCountry(${c.id},'${escHtml(c.name)}');return false;" style="color:#dc3545;">Supprimer</a>
+                    </div>
+                </td>
+            </tr>`).join('');
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="7" style="color:red;padding:20px;">${e.message}</td></tr>`;
+        }
+    }
+
+    function openCountryModal() {
+        document.getElementById('countryId').value = '';
+        document.getElementById('countryForm').reset();
+        document.getElementById('cActive').checked = true;
+        document.getElementById('countryModalTitle').textContent = 'Nouveau pays';
+        document.getElementById('countrySaveBtn').textContent = 'Créer';
+        document.getElementById('countryModal').classList.add('open');
+    }
+
+    async function editCountry(id) {
+        const c = allCountries.find(x => x.id === id);
+        if (!c) return;
+        document.getElementById('countryId').value = c.id;
+        document.getElementById('cName').value = c.name;
+        document.getElementById('cNameEn').value = c.name_en || '';
+        document.getElementById('cSlug').value = c.slug;
+        document.getElementById('cFlag').value = c.flag_emoji || '';
+        document.getElementById('cDesc').value = c.description || '';
+        document.getElementById('cOrder').value = c.order || 0;
+        document.getElementById('cActive').checked = c.is_active;
+        document.getElementById('countryModalTitle').textContent = `Modifier : ${c.name}`;
+        document.getElementById('countrySaveBtn').textContent = 'Sauvegarder';
+        document.getElementById('countryModal').classList.add('open');
+    }
+
+    async function saveCountry(e) {
+        e.preventDefault();
+        const id = document.getElementById('countryId').value;
+        const payload = {
+            name: document.getElementById('cName').value.trim(),
+            name_en: document.getElementById('cNameEn').value.trim(),
+            slug: document.getElementById('cSlug').value.trim(),
+            flag_emoji: document.getElementById('cFlag').value.trim(),
+            description: document.getElementById('cDesc').value.trim(),
+            order: parseInt(document.getElementById('cOrder').value) || 0,
+            is_active: document.getElementById('cActive').checked,
+        };
+        try {
+            if (id) {
+                await AdminAPI.patch(`/admin/donations/countries/${id}/`, payload);
+                AdminConfig.showToast('Pays mis à jour.', 'success');
+            } else {
+                await AdminAPI.post('/admin/donations/countries/', payload);
+                AdminConfig.showToast('Pays créé.', 'success');
+            }
+            closeCountryModal();
+            await loadCountriesForFilters();
+            loadCountries();
+        } catch(e) { AdminConfig.showToast('Erreur : ' + e.message, 'error'); }
+    }
+
+    function closeCountryModal() { document.getElementById('countryModal').classList.remove('open'); }
+
+    async function deleteCountry(id, name) {
+        if (!confirm(`Supprimer le pays "${name}" ?`)) return;
+        try {
+            await AdminAPI.delete(`/admin/donations/countries/${id}/`);
+            AdminConfig.showToast('Pays supprimé.', 'success');
+            await loadCountriesForFilters();
+            loadCountries();
+        } catch(e) { AdminConfig.showToast(e.message, 'error'); }
+    }
+
+    // ── Pagination ────────────────────────────────────────────────
+    function renderPagination(prefix, total, pageSize, current) {
+        const totalPages = Math.ceil(total / pageSize);
+        const el = document.getElementById(`${prefix}Pagination`);
+        if (totalPages <= 1) { el.innerHTML = ''; return; }
+        let html = '';
+        if (current > 1) html += `<button class="btn btn-sm btn-outline" onclick="${prefix}Page=${current-1};load${prefix==='don'?'Donations':'Projects'}()">← Préc.</button>`;
+        html += `<span style="padding:0 12px;font-size:14px;">Page ${current} / ${totalPages}</span>`;
+        if (current < totalPages) html += `<button class="btn btn-sm btn-outline" onclick="${prefix}Page=${current+1};load${prefix==='don'?'Donations':'Projects'}()">Suiv. →</button>`;
+        el.innerHTML = html;
+    }
+
+    function escHtml(str) {
+        return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Close modals on overlay click
+    ['projectModal','countryModal','donStatusModal'].forEach(id => {
+        document.getElementById(id).addEventListener('click', e => {
+            if (e.target === e.currentTarget) e.target.classList.remove('open');
+        });
+    });
+    </script>
+</body>
+</html>

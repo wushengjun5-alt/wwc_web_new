@@ -645,6 +645,11 @@
                 <a href="/shop/box-builder/" class="active">Composer ma box</a>
             </nav>
             <div class="header-actions">
+                <div id="lang-switcher" style="display:flex;background:var(--wwc-bg-light,#f5f5f5);border-radius:8px;overflow:hidden;border:1px solid var(--wwc-border,#ececec);padding:2px;gap:2px;">
+                    <button data-lang="fr" onclick="switchLang('fr')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">FR</button>
+                    <button data-lang="en" onclick="switchLang('en')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">EN</button>
+                    <button data-lang="ar" onclick="switchLang('ar')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">ع</button>
+                </div>
                 <button class="cart-icon" onclick="toggleCart()" title="Voir le panier">
                     🛒
                     <span class="cart-count" id="cart-count">0</span>
@@ -779,6 +784,35 @@
         let selectedBox = null;
         let selectedProducts = []; // list of product objects
         let eligibleProducts = []; // all eligible products for current box
+
+        // ── Language / i18n ───────────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        function tObj(obj, field) {
+            if (!obj) return '';
+            const lang = getLang();
+            if (lang === 'fr') return obj[field] || '';
+            const loc = obj[`${field}_${lang}`];
+            return (loc && loc.trim()) ? loc : (obj[field] || '');
+        }
+        function renderLangSwitcher() {
+            const lang = getLang();
+            document.querySelectorAll('#lang-switcher button[data-lang]').forEach(btn => {
+                const active = btn.dataset.lang === lang;
+                btn.style.background = active ? '#1c345e' : 'transparent';
+                btn.style.color = active ? 'white' : '#191919';
+            });
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        }
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            renderLangSwitcher();
+            loadBoxes();
+        }
 
         // ── Notification ──────────────────────────────────────────────
         function notify(msg, type = 'info') {
@@ -924,11 +958,11 @@
                 list.innerHTML = boxes.map(box => `
                     <div class="box-card" onclick="selectBox(${box.id}, '${box.slug}')">
                         <div class="box-card-image">
-                            ${box.image ? `<img src="${box.image}" alt="${box.name}">` : '📦'}
+                            ${box.image ? `<img src="${box.image}" alt="${tObj(box,'name')}">` : '📦'}
                         </div>
                         <div class="box-card-body">
-                            <div class="box-card-name">${box.name}</div>
-                            <div class="box-card-desc">${box.description}</div>
+                            <div class="box-card-name">${tObj(box,'name')}</div>
+                            <div class="box-card-desc">${tObj(box,'description')}</div>
                             <div class="box-card-meta">
                                 <span class="box-meta-pill">🎁 ${box.min_items}–${box.max_items} produits</span>
                                 <span class="box-meta-pill">✅ ${box.eligible_products ? box.eligible_products.length : '?'} choix</span>
@@ -978,11 +1012,11 @@
                 return `
                 <div class="pick-card ${isPicked ? 'picked' : ''}" id="pick-${p.id}" onclick="toggleProduct(${p.id})">
                     <div class="pick-card-img">
-                        ${imgSrc ? `<img src="${imgSrc}" alt="${p.name}">` : '🧴'}
+                        ${imgSrc ? `<img src="${imgSrc}" alt="${tObj(p,'name')}">` : '🧴'}
                         <div class="pick-check">✓</div>
                     </div>
                     <div class="pick-card-body">
-                        <div class="pick-card-name">${p.name}</div>
+                        <div class="pick-card-name">${tObj(p,'name')}</div>
                         <div class="pick-card-impact">🌱 ${p.impact_quantity} ${p.impact_item}</div>
                     </div>
                 </div>`;
@@ -1020,7 +1054,7 @@
             const min = selectedBox.min_items;
             const max = selectedBox.max_items;
 
-            document.getElementById('summary-box-name').textContent = selectedBox.name;
+            document.getElementById('summary-box-name').textContent = tObj(selectedBox,'name');
             document.getElementById('summary-count').textContent = `${n} produit${n > 1 ? 's' : ''}`;
             document.getElementById('summary-range').textContent = `${min}–${max} requis`;
 
@@ -1034,7 +1068,7 @@
             } else {
                 tagsList.innerHTML = selectedProducts.map(p => `
                     <span class="selected-item-tag">
-                        ${p.name.substring(0, 20)}${p.name.length > 20 ? '…' : ''}
+                        ${tObj(p,'name').substring(0, 20)}${tObj(p,'name').length > 20 ? '…' : ''}
                         <button onclick="toggleProduct(${p.id})" title="Retirer">✕</button>
                     </span>`
                 ).join('');
@@ -1110,6 +1144,7 @@
 
         // ── Init ──────────────────────────────────────────────────────
         renderAuthNav();
+        renderLangSwitcher();
         loadCart();
         loadBoxes();
         setStep(1);

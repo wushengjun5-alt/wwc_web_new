@@ -268,6 +268,11 @@
                 <a href="/shop/box-builder/">Composer ma box</a>
             </nav>
             <div class="header-actions">
+                <div id="lang-switcher" style="display:flex;background:#f5f5f5;border-radius:8px;overflow:hidden;border:1px solid #ececec;padding:2px;gap:2px;">
+                    <button data-lang="fr" onclick="switchLang('fr')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">FR</button>
+                    <button data-lang="en" onclick="switchLang('en')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">EN</button>
+                    <button data-lang="ar" onclick="switchLang('ar')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">ع</button>
+                </div>
                 <a href="/shop/" class="btn btn-shop">Acheter & agir</a>
             </div>
         </div>
@@ -337,6 +342,35 @@
         let currentPage = 1;
         const PAGE_SIZE = 9;
 
+        // ── Language / i18n ───────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        function tObj(obj, field) {
+            if (!obj) return '';
+            const lang = getLang();
+            if (lang === 'fr') return obj[field] || '';
+            const loc = obj[`${field}_${lang}`];
+            return (loc && loc.trim()) ? loc : (obj[field] || '');
+        }
+        function renderLangSwitcher() {
+            const lang = getLang();
+            document.querySelectorAll('#lang-switcher button[data-lang]').forEach(btn => {
+                const active = btn.dataset.lang === lang;
+                btn.style.background = active ? '#1c345e' : 'transparent';
+                btn.style.color = active ? 'white' : '#191919';
+            });
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        }
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            renderLangSwitcher();
+            loadEvents(1);
+        }
+
         async function loadSummary() {
             try {
                 const res = await fetch(`${API_URL}/impact/summary/`);
@@ -391,7 +425,7 @@
 
             let mediaHtml;
             if (e.photo) {
-                mediaHtml = `<div class="event-media"><img src="${escHtml(e.photo)}" alt="${escHtml(e.title)}" loading="lazy"></div>`;
+                mediaHtml = `<div class="event-media"><img src="${escHtml(e.photo)}" alt="${escHtml(tObj(e,'title'))}" loading="lazy"></div>`;
             } else if (e.video_url) {
                 // YouTube embed
                 const ytMatch = e.video_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
@@ -428,8 +462,8 @@
                             <span class="event-date">📅 ${date}</span>
                             <span class="event-school">🏫 ${escHtml(e.school)}</span>
                         </div>
-                        <h3 class="event-title">${escHtml(e.title)}</h3>
-                        ${e.description ? `<p class="event-description">${escHtml(e.description)}</p>` : ''}
+                        <h3 class="event-title">${escHtml(tObj(e,'title'))}</h3>
+                        ${tObj(e,'description') ? `<p class="event-description">${escHtml(tObj(e,'description'))}</p>` : ''}
                         <div class="event-impact-badge">
                             <span class="impact-icon">💝</span>
                             <span class="impact-text">${e.items_delivered.toLocaleString('fr-FR')} ${escHtml(itemLabel)} livrés</span>
@@ -457,6 +491,7 @@
         }
 
         // Init
+        renderLangSwitcher();
         loadSummary();
         loadEvents(1);
     </script>

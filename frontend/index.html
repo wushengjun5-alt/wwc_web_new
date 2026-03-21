@@ -648,6 +648,11 @@
                 <a href="/shop/box-builder/">Composer ma box</a>
             </nav>
             <div class="header-actions">
+                <div id="lang-switcher" style="display:flex;background:var(--wwc-bg-light);border-radius:8px;overflow:hidden;border:1px solid var(--wwc-border);padding:2px;gap:2px;">
+                    <button data-lang="fr" onclick="switchLang('fr')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">FR</button>
+                    <button data-lang="en" onclick="switchLang('en')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">EN</button>
+                    <button data-lang="ar" onclick="switchLang('ar')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">ع</button>
+                </div>
                 <div id="currency-switcher" style="display:flex;background:var(--wwc-bg-light);border-radius:8px;overflow:hidden;border:1px solid var(--wwc-border);">
                     <button id="btn-tnd" onclick="switchCurrency('TND')" style="padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:#1c345e;color:white;">DT</button>
                     <button id="btn-eur" onclick="switchCurrency('EUR')" style="padding:7px 12px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:transparent;color:#191919;">€</button>
@@ -1254,6 +1259,36 @@
         let searchTimer     = null;
         const PAGE_SIZE     = 12;
 
+        // ── Language / i18n ───────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        function tObj(obj, field) {
+            if (!obj) return '';
+            const lang = getLang();
+            if (lang === 'fr') return obj[field] || '';
+            const loc = obj[`${field}_${lang}`];
+            return (loc && loc.trim()) ? loc : (obj[field] || '');
+        }
+        function renderLangSwitcher() {
+            const lang = getLang();
+            document.querySelectorAll('#lang-switcher button[data-lang]').forEach(btn => {
+                const active = btn.dataset.lang === lang;
+                btn.style.background = active ? '#1c345e' : 'transparent';
+                btn.style.color = active ? 'white' : '#191919';
+            });
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        }
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            renderLangSwitcher();
+            loadCategories();
+            loadProducts();
+        }
+
         // Currency
         function getCurrentCurrency() {
             return localStorage.getItem('wwc_currency') || 'TND';
@@ -1280,6 +1315,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             renderAuthNav();
             renderCurrencySwitcher();
+            renderLangSwitcher();
             loadCategories();
             loadProducts();
             loadCart();
@@ -1348,7 +1384,7 @@
                 container.innerHTML = `
                     <a href="#" class="category-link active" onclick="filterByCategory('')">🛍️ TOUS</a>
                     ${categories.map(cat => `
-                        <a href="#" class="category-link" onclick="filterByCategory('${cat.slug}')">${cat.icon || ''} ${cat.name.toUpperCase()}</a>
+                        <a href="#" class="category-link" onclick="filterByCategory('${cat.slug}')">${cat.icon || ''} ${tObj(cat,'name').toUpperCase()}</a>
                     `).join('')}
                     <a href="/shop/box-builder/" class="category-link" style="color:var(--wwc-primary); font-weight:700;">🎁 COMPOSER MA BOX</a>
                 `;
@@ -1419,11 +1455,11 @@
                         >${inWL ? '♥' : '♡'}</button>
                         <div class="product-image">
                             ${product.primary_image?.image
-                                ? `<img src="${product.primary_image.image}" alt="${escHtml(product.name)}" style="width:100%;height:100%;object-fit:cover;">`
+                                ? `<img src="${product.primary_image.image}" alt="${escHtml(tObj(product,'name'))}" style="width:100%;height:100%;object-fit:cover;">`
                                 : '🧴'}
                         </div>
                         <div class="product-info">
-                            <h3 class="product-name">${escHtml(product.name)}</h3>
+                            <h3 class="product-name">${escHtml(tObj(product,'name'))}</h3>
                             ${product.review_count > 0 ? `
                                 <div class="product-rating">
                                     <span class="stars">${'★'.repeat(Math.floor(product.average_rating))}${'☆'.repeat(5-Math.floor(product.average_rating))}</span>

@@ -78,6 +78,12 @@ def serve_box_builder_page(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_producer_page(request, slug=None):
+    """Serve the producer public profile page"""
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'producer.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
 def serve_shop_admin_page(request, page='index'):
     """Serve shop admin HTML pages"""
     if not page.endswith('.html'):
@@ -88,6 +94,24 @@ def serve_shop_admin_page(request, page='index'):
     # Default to index
     admin_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'admin', 'index.html')
     return FileResponse(open(admin_path, 'rb'), content_type='text/html')
+
+
+def serve_shop_static(request, folder, filename):
+    """Serve frontend static files (JS, CSS) from frontend/<folder>/"""
+    file_path = os.path.join(settings.BASE_DIR.parent, 'frontend', folder, filename)
+    content_types = {
+        '.css': 'text/css',
+        '.js': 'application/javascript',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.svg': 'image/svg+xml',
+    }
+    ext = os.path.splitext(filename)[1]
+    content_type = content_types.get(ext, 'application/octet-stream')
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'), content_type=content_type)
+    from django.http import Http404
+    raise Http404("File not found")
 
 
 def serve_shop_admin_static(request, folder, filename):
@@ -125,12 +149,16 @@ urlpatterns = [
     path('shop/donate/', serve_donate_page, name='shop-donate'),
     path('shop/donate/success/', serve_donate_page, name='shop-donate-success'),
     path('shop/box-builder/', serve_box_builder_page, name='shop-box-builder'),
+    path('shop/producers/<slug:slug>/', serve_producer_page, name='shop-producer'),
 
     # Shop admin (HTML interface for product management)
     path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),
     path('shop/admin/<str:page>', serve_shop_admin_page, name='shop-admin-page'),
     path('shop/admin/css/<str:filename>', serve_shop_admin_static, {'folder': 'css'}, name='shop-admin-css'),
     path('shop/admin/js/<str:filename>', serve_shop_admin_static, {'folder': 'js'}, name='shop-admin-js'),
+
+    # Frontend static files (shared JS utilities)
+    path('shop/js/<str:filename>', serve_shop_static, {'folder': 'js'}, name='shop-js'),
 
     # Django Admin
     path('admin/', admin.site.urls),

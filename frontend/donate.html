@@ -183,6 +183,11 @@
             <a href="/shop/box-builder/">Composer ma box</a>
         </nav>
         <div class="header-actions">
+            <div id="lang-switcher" style="display:flex;background:#f5f5f5;border-radius:8px;overflow:hidden;border:1px solid #ececec;padding:2px;gap:2px;">
+                <button data-lang="fr" onclick="switchLang('fr')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">FR</button>
+                <button data-lang="en" onclick="switchLang('en')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">EN</button>
+                <button data-lang="ar" onclick="switchLang('ar')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">ع</button>
+            </div>
             <a href="/shop/" class="btn btn-primary">Boutique</a>
         </div>
     </div>
@@ -211,6 +216,36 @@ const API = '/api/v1';
 let selectedCurrency = 'TND';
 let selectedPaymentMethod = 'bank_transfer';
 
+// ── Language / i18n ─────────────────────────────────
+const LANGS = ['fr', 'en', 'ar'];
+function getLang() {
+    const v = localStorage.getItem('wwc_lang');
+    return LANGS.includes(v) ? v : 'fr';
+}
+function tObj(obj, field) {
+    if (!obj) return '';
+    const lang = getLang();
+    if (lang === 'fr') return obj[field] || '';
+    const loc = obj[`${field}_${lang}`];
+    return (loc && loc.trim()) ? loc : (obj[field] || '');
+}
+function renderLangSwitcher() {
+    const lang = getLang();
+    document.querySelectorAll('#lang-switcher button[data-lang]').forEach(btn => {
+        const active = btn.dataset.lang === lang;
+        btn.style.background = active ? '#1c345e' : 'transparent';
+        btn.style.color = active ? 'white' : '#191919';
+    });
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+}
+function switchLang(lang) {
+    localStorage.setItem('wwc_lang', lang);
+    renderLangSwitcher();
+    renderView();
+}
+renderLangSwitcher();
+
 // ── State ──────────────────────────────────────────
 let state = { view: 'countries', country: null, project: null };
 
@@ -228,10 +263,10 @@ function renderBreadcrumb() {
     const bc = document.getElementById('breadcrumb');
     let html = '<a href="javascript:void(0)" onclick="navigate(\'countries\')">Pays</a>';
     if (state.country) {
-        html += '<span>›</span><a href="javascript:void(0)" onclick="navigate(\'projects\')">' + escH(state.country.flag_emoji) + ' ' + escH(state.country.name) + '</a>';
+        html += '<span>›</span><a href="javascript:void(0)" onclick="navigate(\'projects\')">' + escH(state.country.flag_emoji) + ' ' + escH(tObj(state.country,'name')) + '</a>';
     }
     if (state.project) {
-        html += '<span>›</span><span>' + escH(state.project.title) + '</span>';
+        html += '<span>›</span><span>' + escH(tObj(state.project,'title')) + '</span>';
     }
     bc.innerHTML = html;
 }
@@ -256,8 +291,8 @@ async function renderCountries() {
             countries.map(function(c) {
                 return '<div class="country-card" onclick="selectCountry(' + c.id + ')">' +
                     '<div class="country-flag">' + escH(c.flag_emoji) + '</div>' +
-                    '<div class="country-name">' + escH(c.name) + '</div>' +
-                    '<div class="country-desc">' + escH(c.description) + '</div>' +
+                    '<div class="country-name">' + escH(tObj(c,'name')) + '</div>' +
+                    '<div class="country-desc">' + escH(tObj(c,'description')) + '</div>' +
                     '<span class="country-count">' + c.project_count + ' projet' + (c.project_count !== 1 ? 's' : '') + ' en cours</span>' +
                     '</div>';
             }).join('') +
@@ -288,18 +323,18 @@ async function renderProjects() {
 
         const categoryLabels = { food: 'Alimentation', infrastructure: 'Infrastructure', sports: 'Sport', education: 'Éducation', health: 'Santé', other: 'Autre' };
 
-        view.innerHTML = '<h2 class="section-title">' + escH(state.country.flag_emoji) + ' ' + escH(state.country.name) + '</h2>' +
+        view.innerHTML = '<h2 class="section-title">' + escH(state.country.flag_emoji) + ' ' + escH(tObj(state.country,'name')) + '</h2>' +
             '<p class="section-sub">Sélectionnez un projet pour voir les détails et faire un don.</p>' +
             '<div class="projects-grid">' +
             projects.map(function(p) {
                 return '<div class="project-card" onclick="selectProject(' + p.id + ')">' +
-                    '<div class="project-img">' + (p.image ? '<img src="' + escH(p.image) + '" alt="' + escH(p.title) + '" loading="lazy">' : getCategoryEmoji(p.category)) + '</div>' +
+                    '<div class="project-img">' + (p.image ? '<img src="' + escH(p.image) + '" alt="' + escH(tObj(p,'title')) + '" loading="lazy">' : getCategoryEmoji(p.category)) + '</div>' +
                     '<div class="project-body">' +
                     '<div class="project-meta">' +
                     '<span class="badge badge-category">' + (categoryLabels[p.category] || p.category) + '</span>' +
                     (p.is_featured ? '<span class="badge badge-featured">⭐ Prioritaire</span>' : '') +
                     '</div>' +
-                    '<div class="project-title">' + escH(p.title) + '</div>' +
+                    '<div class="project-title">' + escH(tObj(p,'title')) + '</div>' +
                     (p.school ? '<div class="project-school">🏫 ' + escH(p.school) + '</div>' : '') +
                     '<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:' + p.progress_percent + '%"></div></div>' +
                     '<div class="progress-labels">' +
@@ -351,17 +386,17 @@ function renderProjectDetail() {
         '<!-- Left: info -->' +
         '<div>' +
         '<div class="project-detail-img">' +
-        (p.image ? '<img src="' + escH(p.image) + '" alt="' + escH(p.title) + '">' : getCategoryEmoji(p.category)) +
+        (p.image ? '<img src="' + escH(p.image) + '" alt="' + escH(tObj(p,'title')) + '">' : getCategoryEmoji(p.category)) +
         '</div>' +
         '<div style="margin-top:24px;">' +
         '<div class="project-meta" style="margin-bottom:12px;">' +
         '<span class="badge badge-category">' + (categoryLabels[p.category] || p.category) + '</span>' +
         (p.is_featured ? '<span class="badge badge-featured">⭐ Prioritaire</span>' : '') +
-        '<span class="badge" style="background:#e8f5e9;color:#2e7d32;">' + p.country.flag_emoji + ' ' + escH(p.country.name) + '</span>' +
+        '<span class="badge" style="background:#e8f5e9;color:#2e7d32;">' + p.country.flag_emoji + ' ' + escH(tObj(p.country,'name')) + '</span>' +
         '</div>' +
-        '<h1 class="project-detail-title">' + escH(p.title) + '</h1>' +
+        '<h1 class="project-detail-title">' + escH(tObj(p,'title')) + '</h1>' +
         (p.school ? '<p class="project-detail-school">🏫 ' + escH(p.school) + '</p>' : '') +
-        '<p class="project-detail-desc">' + escH(p.description) + '</p>' +
+        '<p class="project-detail-desc">' + escH(tObj(p,'description')) + '</p>' +
         (recentDonors.length > 0 ?
             '<div class="donors-section">' +
             '<div class="donors-title">💝 Derniers donateurs</div>' +

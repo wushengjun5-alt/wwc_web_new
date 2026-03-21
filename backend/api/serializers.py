@@ -22,7 +22,7 @@ class ProducerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producer
         fields = [
-            'id', 'name', 'slug', 'bio', 'location', 'photo',
+            'id', 'name', 'slug', 'bio', 'bio_en', 'bio_ar', 'location', 'photo',
             'total_products_sold', 'member_since', 'is_active'
         ]
 
