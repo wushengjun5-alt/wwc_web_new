@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://js.stripe.com/v3/"></script>
     <style>
         :root {
             --wwc-primary: #1e3a5f;
@@ -131,8 +130,6 @@
         .payment-tab { flex: 1; padding: 12px; border: 2px solid var(--wwc-border); border-radius: 10px; background: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; color: var(--wwc-text); text-align: center; }
         .payment-tab.active { border-color: var(--wwc-secondary); background: #fff3ee; color: var(--wwc-secondary); }
 
-        /* Stripe element */
-        #stripe-element { padding: 12px 14px; border: 1px solid var(--wwc-border); border-radius: 8px; background: white; margin-bottom: 16px; }
 
         /* Checkbox */
         .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
@@ -210,9 +207,6 @@
 
 <script>
 const API = '/api/v1';
-let stripeInstance = null;
-let stripeElements = null;
-let cardElement = null;
 let selectedCurrency = 'TND';
 let selectedPaymentMethod = 'bank_transfer';
 
@@ -431,8 +425,8 @@ function renderProjectDetail() {
         '<button class="payment-tab active" id="tab-bank" onclick="setPayment(\'bank_transfer\')">🏦 Virement bancaire</button>' +
         '<button class="payment-tab" id="tab-stripe" onclick="setPayment(\'stripe\')">💳 Carte bancaire</button>' +
         '</div>' +
-        '<div id="stripe-container" style="display:none;">' +
-        '<div id="stripe-element"></div>' +
+        '<div id="stripe-info" style="display:none;font-size:13px;color:var(--wwc-text-light);background:var(--wwc-bg-light);padding:10px 14px;border-radius:8px;">' +
+        'Vous serez redirigé vers la page de paiement sécurisée Stripe.' +
         '</div>' +
         '<div id="bank-info" style="font-size:13px;color:var(--wwc-text-light);background:var(--wwc-bg-light);padding:10px 14px;border-radius:8px;">' +
         'Après confirmation, vous recevrez les coordonnées bancaires par email ou ci-dessous.' +
@@ -476,25 +470,7 @@ function setPayment(method) {
     document.getElementById('tab-bank').classList.toggle('active', method === 'bank_transfer');
     document.getElementById('tab-stripe').classList.toggle('active', method === 'stripe');
     document.getElementById('bank-info').style.display = method === 'bank_transfer' ? 'block' : 'none';
-    document.getElementById('stripe-container').style.display = method === 'stripe' ? 'block' : 'none';
-
-    if (method === 'stripe' && !cardElement) {
-        initStripe();
-    }
-}
-
-async function initStripe() {
-    try {
-        const res = await fetch('/api/v1/payments/stripe-key/');
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        stripeInstance = Stripe(data.publishable_key);
-        stripeElements = stripeInstance.elements();
-        cardElement = stripeElements.create('card', { style: { base: { fontSize: '14px', fontFamily: 'Inter, sans-serif' } } });
-        cardElement.mount('#stripe-element');
-    } catch(e) {
-        document.getElementById('stripe-container').innerHTML = '<p style="font-size:13px;color:#dc3545;">Stripe non disponible. Utilisez le virement bancaire.</p>';
-    }
+    document.getElementById('stripe-info').style.display = method === 'stripe' ? 'block' : 'none';
 }
 
 // ── Submit ─────────────────────────────────────────
@@ -530,7 +506,7 @@ async function submitDonation(projectId) {
         if (selectedPaymentMethod === 'bank_transfer') {
             showBankSuccess(data, amount, name);
         } else if (selectedPaymentMethod === 'stripe') {
-            await handleStripePayment(data.client_secret, data.donation_id, name, email);
+            window.location.href = data.checkout_url;
         }
     } catch(e) {
         showError('Erreur réseau. Veuillez réessayer.');
@@ -558,24 +534,6 @@ function showBankSuccess(data, amount, name) {
         '</div>';
 }
 
-async function handleStripePayment(clientSecret, donationId, name, email) {
-    const result = await stripeInstance.confirmCardPayment(clientSecret, {
-        payment_method: { card: cardElement, billing_details: { name: name, email: email } }
-    });
-    if (result.error) {
-        showError(result.error.message);
-        document.getElementById('donate-btn').disabled = false;
-        document.getElementById('donate-btn').textContent = '💝 Confirmer mon don';
-    } else {
-        document.getElementById('donate-form-card').innerHTML =
-            '<div class="success-card">' +
-            '<div class="success-icon">🎉</div>' +
-            '<div class="success-title">Don confirmé !</div>' +
-            '<p class="success-text">Merci pour votre générosité. Votre paiement a été accepté.</p>' +
-            '<button class="btn btn-primary" style="margin-top:20px;" onclick="navigate(\'projects\')">Voir d\'autres projets</button>' +
-            '</div>';
-    }
-}
 
 function showError(msg) {
     const el = document.getElementById('form-error');
@@ -598,7 +556,25 @@ function escH(str) {
 }
 
 // ── Init ───────────────────────────────────────────
-navigate('countries');
+// Check if returning from Stripe success redirect
+const _urlParams = new URLSearchParams(window.location.search);
+const _donationId = _urlParams.get('donation_id');
+if (_donationId && window.location.pathname.includes('/success')) {
+    // Mark donation as completed (Stripe already charged — webhook will confirm,
+    // but show success immediately to the donor)
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('view').innerHTML =
+            '<div class="success-card" style="max-width:560px;margin:0 auto;">' +
+            '<div class="success-icon">🎉</div>' +
+            '<div class="success-title">Don confirmé !</div>' +
+            '<p class="success-text">Merci pour votre générosité. Votre paiement par carte a été accepté.<br>Vous recevrez un email de confirmation.</p>' +
+            '<button class="btn btn-primary" style="margin-top:20px;" onclick="window.location.href=\'/shop/donate/\'">Voir d\'autres projets</button>' +
+            '</div>';
+        document.getElementById('breadcrumb').innerHTML = '';
+    });
+} else {
+    navigate('countries');
+}
 </script>
 </body>
 </html>

@@ -117,6 +117,7 @@ urlpatterns = [
     path('shop/order-success/', serve_order_success_page, name='shop-order-success'),
     path('shop/impact/', serve_impact_page, name='shop-impact'),
     path('shop/donate/', serve_donate_page, name='shop-donate'),
+    path('shop/donate/success/', serve_donate_page, name='shop-donate-success'),
 
     # Shop admin (HTML interface for product management)
     path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),

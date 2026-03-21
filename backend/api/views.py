@@ -977,26 +977,45 @@ class DonationCreateView(APIView):
                 },
             }, status=status.HTTP_201_CREATED)
 
-        # Stripe: create payment intent
+        # Stripe: create Checkout session (redirect flow, same as shop)
         if payment_method == 'stripe':
             try:
-                import stripe
-                from django.conf import settings
-                stripe.api_key = settings.STRIPE_SECRET_KEY
-                currency_stripe = 'eur' if currency == 'EUR' else 'tnd'
-                # Stripe amounts in smallest unit
-                amount_cents = int(float(amount) * 100)
-                intent = stripe.PaymentIntent.create(
-                    amount=amount_cents,
-                    currency=currency_stripe,
-                    metadata={'donation_id': str(donation.id), 'project_id': str(project.id)},
-                    description=f'Don — {project.title}',
+                from api.payments import _get_stripe
+                from django.conf import settings as django_settings
+                _stripe = _get_stripe()
+                tnd_to_eur = float(getattr(django_settings, 'TND_TO_EUR_RATE', 0.30))
+                if currency == 'EUR':
+                    amount_cents = max(int(round(amount * 100)), 1)
+                else:
+                    amount_cents = max(int(round(amount * tnd_to_eur * 100)), 1)
+                origin = request.build_absolute_uri('/').rstrip('/')
+                session = _stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'eur',
+                            'product_data': {
+                                'name': f'Don — {project.title}',
+                                'description': f'École : {project.school}' if project.school else project.title,
+                            },
+                            'unit_amount': amount_cents,
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='payment',
+                    customer_email=donation.donor_email or None,
+                    success_url=f"{origin}/shop/donate/success/?donation_id={donation.id}",
+                    cancel_url=f"{origin}/shop/donate/?project={project.id}",
+                    metadata={
+                        'donation_id': str(donation.id),
+                        'project_id': str(project.id),
+                    },
                 )
-                donation.payment_id = intent.id
+                donation.payment_id = session.id
                 donation.save(update_fields=['payment_id'])
                 return Response({
                     'donation_id': donation.id,
-                    'client_secret': intent.client_secret,
+                    'checkout_url': session.url,
                     'payment_method': 'stripe',
                 }, status=status.HTTP_201_CREATED)
             except Exception as e:
