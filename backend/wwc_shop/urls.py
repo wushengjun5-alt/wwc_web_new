@@ -60,6 +60,12 @@ def serve_order_success_page(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_impact_page(request):
+    """Serve the public impact page"""
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'impact.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
 def serve_shop_admin_page(request, page='index'):
     """Serve shop admin HTML pages"""
     if not page.endswith('.html'):
@@ -103,6 +109,7 @@ urlpatterns = [
     path('shop/reset-password/', serve_reset_password_page, name='shop-reset-password'),
     path('shop/cart/', serve_cart_page, name='shop-cart'),
     path('shop/order-success/', serve_order_success_page, name='shop-order-success'),
+    path('shop/impact/', serve_impact_page, name='shop-impact'),
 
     # Shop admin (HTML interface for product management)
     path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),
