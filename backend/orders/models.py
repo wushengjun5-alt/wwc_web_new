@@ -59,6 +59,11 @@ class Cart(models.Model):
         """Calculate total impact from all cart items"""
         total_impact = {}
         for item in self.items.all():
+            if not item.product:
+                # Composable box item — count number of selected products
+                impact_qty = len(item.box_items) * item.quantity
+                total_impact['produits artisanaux'] = total_impact.get('produits artisanaux', 0) + impact_qty
+                continue
             impact_item = item.product.impact_item
             impact_qty = item.product.impact_quantity * item.quantity
             total_impact[impact_item] = total_impact.get(impact_item, 0) + impact_qty
@@ -67,7 +72,10 @@ class Cart(models.Model):
     def merge_with(self, other_cart):
         """Merge another cart into this one (used when guest logs in)"""
         for item in other_cart.items.all():
-            existing_item = self.items.filter(product=item.product).first()
+            if item.composable_box:
+                existing_item = self.items.filter(composable_box=item.composable_box).first()
+            else:
+                existing_item = self.items.filter(product=item.product).first()
             if existing_item:
                 existing_item.quantity += item.quantity
                 existing_item.save()
@@ -91,6 +99,8 @@ class CartItem(models.Model):
     )
     product = models.ForeignKey(
         Product,
+        null=True,
+        blank=True,
         on_delete=models.CASCADE,
         verbose_name=_('Product')
     )
@@ -120,10 +130,17 @@ class CartItem(models.Model):
         unique_together = ['cart', 'product', 'composable_box']
 
     def __str__(self):
+        if self.composable_box:
+            return f"Box: {self.composable_box.name}"
         return f"{self.quantity}x {self.product.name}"
 
     def get_subtotal(self, currency='TND'):
         """Calculate subtotal for this item"""
+        if self.composable_box:
+            # Composable box: flat box price
+            if currency == 'EUR' and self.composable_box.price_eur:
+                return self.composable_box.price_eur * self.quantity
+            return self.composable_box.price_tnd * self.quantity
         is_b2b = (
             self.cart.user and
             hasattr(self.cart.user, 'customer') and
@@ -134,6 +151,12 @@ class CartItem(models.Model):
 
     def get_impact(self):
         """Get impact for this cart item"""
+        if self.composable_box:
+            return {
+                'item': 'produits artisanaux',
+                'quantity': len(self.box_items) * self.quantity,
+                'school': 'GreenSchool',
+            }
         return {
             'item': self.product.impact_item,
             'quantity': self.product.impact_quantity * self.quantity,

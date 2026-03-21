@@ -25,6 +25,9 @@ router.register(r'orders', views.OrderViewSet, basename='order')
 router.register(r'addresses', views.CustomerAddressViewSet, basename='address')
 router.register(r'wishlist', views.WishlistViewSet, basename='wishlist')
 
+# Composable box routes
+router.register(r'composable-boxes', views.ComposableBoxViewSet, basename='composable-box')
+
 # Impact routes
 router.register(r'impact-events', views.ImpactEventViewSet, basename='impact-event')
 

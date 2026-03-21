@@ -31,6 +31,7 @@ from .serializers import (
     ProductListSerializer, ProductDetailSerializer,
     ComposableBoxSerializer, ReviewSerializer, ReviewCreateSerializer,
     CartSerializer, CartItemSerializer, AddToCartSerializer, UpdateCartItemSerializer,
+    AddBoxToCartSerializer,
     OrderListSerializer, OrderDetailSerializer, CheckoutSerializer,
     CustomerSerializer, CustomerAddressSerializer, WishlistSerializer,
     CustomerDashboardSerializer, ImpactEventSerializer,
@@ -184,9 +185,9 @@ class ComposableBoxViewSet(viewsets.ReadOnlyModelViewSet):
 class CartViewSet(viewsets.ViewSet):
     """ViewSet for shopping cart operations"""
     permission_classes = [AllowAny]
-    # Disable SessionAuthentication so CSRF is not enforced on POST requests
-    # from the WordPress plugin. Cart identity uses X-Session-Key header instead.
-    authentication_classes = []
+    # Use JWT authentication so Bearer tokens work, but not SessionAuthentication
+    # (which enforces CSRF). Cart identity also accepts X-Session-Key header.
+    authentication_classes = [JWTAuthentication]
 
     def get_cart(self, request):
         """Get or create cart for user/session.
@@ -298,6 +299,35 @@ class CartViewSet(viewsets.ViewSet):
         cart = self.get_cart(request)
         cart.clear()
         return Response({'message': 'Cart cleared'})
+
+    @action(detail=False, methods=['post'], url_path='add-box')
+    def add_box(self, request):
+        """Add a composable box to cart"""
+        serializer = AddBoxToCartSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        cart = self.get_cart(request)
+        box = serializer.validated_data['box']
+        product_ids = serializer.validated_data['product_ids']
+        quantity = serializer.validated_data['quantity']
+
+        # Remove any existing box item for this box in cart, then create fresh
+        CartItem.objects.filter(cart=cart, composable_box=box).delete()
+
+        CartItem.objects.create(
+            cart=cart,
+            product=None,
+            composable_box=box,
+            box_items=product_ids,
+            quantity=quantity,
+        )
+
+        cart.refresh_from_db()
+        return Response({
+            'message': 'Box added to cart',
+            'cart': CartSerializer(cart, context={'currency': cart.currency}).data
+        }, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'])
     def impact(self, request):
@@ -933,7 +963,7 @@ class DonationCreateView(APIView):
 
     def post(self, request):
         data = request.data
-        project_id = data.get('project_id')
+        project_id = data.get('project_id') or data.get('project')
         if not project_id:
             return Response({'error': 'project_id requis.'}, status=status.HTTP_400_BAD_REQUEST)
         project = get_object_or_404(DonationProject, pk=project_id, is_active=True)
