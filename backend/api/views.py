@@ -840,3 +840,167 @@ class PasswordResetConfirmView(APIView):
         user.save()
 
         return Response({'message': 'Mot de passe réinitialisé avec succès'})
+
+
+# ============================================
+# Donation Views
+# ============================================
+
+from donations.models import Country, DonationProject, Donation as DonationModel
+
+class DonationCountryListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        countries = Country.objects.filter(is_active=True)
+        data = [{
+            'id': c.id,
+            'name': c.name,
+            'name_en': c.name_en,
+            'slug': c.slug,
+            'flag_emoji': c.flag_emoji,
+            'description': c.description,
+            'project_count': c.projects.filter(is_active=True).count(),
+        } for c in countries]
+        return Response(data)
+
+
+class DonationProjectListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        queryset = DonationProject.objects.filter(is_active=True).select_related('country')
+        country_slug = request.query_params.get('country', '')
+        if country_slug:
+            queryset = queryset.filter(country__slug=country_slug)
+        data = [{
+            'id': p.id,
+            'title': p.title,
+            'title_en': p.title_en,
+            'description': p.description,
+            'school': p.school,
+            'category': p.category,
+            'goal_amount': str(p.goal_amount),
+            'raised_amount': str(p.raised_amount),
+            'progress_percent': p.progress_percent,
+            'donor_count': p.donor_count,
+            'currency': p.currency,
+            'deadline': p.deadline.isoformat() if p.deadline else None,
+            'image': request.build_absolute_uri(p.image.url) if p.image else None,
+            'is_featured': p.is_featured,
+            'country': {'name': p.country.name, 'slug': p.country.slug, 'flag_emoji': p.country.flag_emoji},
+        } for p in queryset]
+        return Response(data)
+
+
+class DonationProjectDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        p = get_object_or_404(DonationProject, pk=pk, is_active=True)
+        recent_donors = []
+        for d in p.donations.filter(status='completed').order_by('-created_at')[:5]:
+            recent_donors.append({
+                'name': 'Anonyme' if d.is_anonymous else (d.donor_name or 'Donateur'),
+                'amount': str(d.amount),
+                'currency': d.currency,
+                'message': d.message if not d.is_anonymous else '',
+                'created_at': d.created_at.isoformat(),
+            })
+        return Response({
+            'id': p.id,
+            'title': p.title,
+            'title_en': p.title_en,
+            'description': p.description,
+            'description_en': p.description_en,
+            'school': p.school,
+            'category': p.category,
+            'goal_amount': str(p.goal_amount),
+            'raised_amount': str(p.raised_amount),
+            'progress_percent': p.progress_percent,
+            'donor_count': p.donor_count,
+            'currency': p.currency,
+            'deadline': p.deadline.isoformat() if p.deadline else None,
+            'image': request.build_absolute_uri(p.image.url) if p.image else None,
+            'is_featured': p.is_featured,
+            'country': {'name': p.country.name, 'slug': p.country.slug, 'flag_emoji': p.country.flag_emoji},
+            'recent_donors': recent_donors,
+        })
+
+
+class DonationCreateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        data = request.data
+        project_id = data.get('project_id')
+        if not project_id:
+            return Response({'error': 'project_id requis.'}, status=status.HTTP_400_BAD_REQUEST)
+        project = get_object_or_404(DonationProject, pk=project_id, is_active=True)
+
+        try:
+            amount = float(data.get('amount', 0))
+        except (TypeError, ValueError):
+            return Response({'error': 'Montant invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+        if amount <= 0:
+            return Response({'error': 'Le montant doit être supérieur à 0.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        payment_method = data.get('payment_method', 'bank_transfer')
+        currency = data.get('currency', project.currency)
+        is_anonymous = bool(data.get('is_anonymous', False))
+
+        donation = DonationModel.objects.create(
+            project=project,
+            donor_name='' if is_anonymous else data.get('donor_name', ''),
+            donor_email='' if is_anonymous else data.get('donor_email', ''),
+            amount=amount,
+            currency=currency,
+            payment_method=payment_method,
+            message=data.get('message', ''),
+            is_anonymous=is_anonymous,
+            status='pending',
+        )
+
+        # Bank transfer: stays pending, admin confirms
+        if payment_method == 'bank_transfer':
+            return Response({
+                'donation_id': donation.id,
+                'status': 'pending',
+                'payment_method': 'bank_transfer',
+                'message': 'Votre intention de don a été enregistrée. Veuillez effectuer le virement bancaire avec la référence ci-dessous.',
+                'reference': f'DON-{donation.id:06d}',
+                'bank_details': {
+                    'beneficiary': 'Wallah We Can',
+                    'iban': 'TN59 1234 5678 9012 3456 7890',
+                    'bic': 'BIATTNTT',
+                    'reference': f'DON-{donation.id:06d}',
+                },
+            }, status=status.HTTP_201_CREATED)
+
+        # Stripe: create payment intent
+        if payment_method == 'stripe':
+            try:
+                import stripe
+                from django.conf import settings
+                stripe.api_key = settings.STRIPE_SECRET_KEY
+                currency_stripe = 'eur' if currency == 'EUR' else 'tnd'
+                # Stripe amounts in smallest unit
+                amount_cents = int(float(amount) * 100)
+                intent = stripe.PaymentIntent.create(
+                    amount=amount_cents,
+                    currency=currency_stripe,
+                    metadata={'donation_id': str(donation.id), 'project_id': str(project.id)},
+                    description=f'Don — {project.title}',
+                )
+                donation.payment_id = intent.id
+                donation.save(update_fields=['payment_id'])
+                return Response({
+                    'donation_id': donation.id,
+                    'client_secret': intent.client_secret,
+                    'payment_method': 'stripe',
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                donation.delete()
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'error': 'Méthode de paiement invalide.'}, status=status.HTTP_400_BAD_REQUEST)

@@ -17,6 +17,7 @@ from django.utils import timezone
 from products.models import Product, ProductImage, ProductCategory, Producer
 from orders.models import Order, Coupon, ImpactEvent
 from customers.models import Customer
+from donations.models import Country, DonationProject, Donation as DonationModel
 from .admin_serializers import (
     AdminProductListSerializer,
     AdminProductDetailSerializer,
@@ -453,6 +454,9 @@ class AdminStatsView(APIView):
             'total_impact_events': ImpactEvent.objects.count(),
             'published_impact_events': ImpactEvent.objects.filter(is_published=True).count(),
             'total_items_delivered': ImpactEvent.objects.aggregate(t=Sum('items_delivered'))['t'] or 0,
+            'total_donations': DonationModel.objects.filter(status='completed').count(),
+            'total_raised': str(DonationModel.objects.filter(status='completed').aggregate(t=Sum('amount'))['t'] or 0),
+            'pending_donations': DonationModel.objects.filter(status='pending', payment_method='bank_transfer').count(),
         })
 
 
@@ -902,3 +906,188 @@ class AdminImpactEventDetailView(APIView):
         e = self._get_event(pk)
         e.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ============================================
+# Admin Donation Management
+# ============================================
+
+
+class AdminDonationCountryListView(APIView):
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request):
+        countries = Country.objects.all().order_by('order', 'name')
+        data = [{
+            'id': c.id, 'name': c.name, 'name_en': c.name_en, 'slug': c.slug,
+            'flag_emoji': c.flag_emoji, 'description': c.description,
+            'is_active': c.is_active, 'order': c.order,
+            'project_count': c.projects.count(),
+        } for c in countries]
+        return Response(data)
+
+    def post(self, request):
+        d = request.data
+        try:
+            c = Country.objects.create(
+                name=d['name'], name_en=d.get('name_en', ''), name_ar=d.get('name_ar', ''),
+                slug=d['slug'], flag_emoji=d.get('flag_emoji', '🌍'),
+                description=d.get('description', ''), is_active=d.get('is_active', True),
+                order=d.get('order', 0),
+            )
+            return Response({'id': c.id, 'name': c.name}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminDonationCountryDetailView(APIView):
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def patch(self, request, pk):
+        c = get_object_or_404(Country, pk=pk)
+        for field in ['name', 'name_en', 'name_ar', 'slug', 'flag_emoji', 'description', 'is_active', 'order']:
+            if field in request.data:
+                setattr(c, field, request.data[field])
+        try:
+            c.save()
+            return Response({'message': 'Pays mis à jour.'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        get_object_or_404(Country, pk=pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminDonationProjectListView(APIView):
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request):
+        queryset = DonationProject.objects.all().select_related('country').order_by('-created_at')
+        country_id = request.query_params.get('country_id', '')
+        if country_id:
+            queryset = queryset.filter(country_id=country_id)
+        is_active = request.query_params.get('is_active', '')
+        if is_active == 'true':
+            queryset = queryset.filter(is_active=True)
+        elif is_active == 'false':
+            queryset = queryset.filter(is_active=False)
+
+        page_size = int(request.query_params.get('page_size', 20))
+        page = int(request.query_params.get('page', 1))
+        total = queryset.count()
+        items = queryset[(page-1)*page_size : page*page_size]
+
+        data = [{
+            'id': p.id, 'title': p.title, 'title_en': p.title_en,
+            'country': {'id': p.country.id, 'name': p.country.name, 'flag_emoji': p.country.flag_emoji},
+            'category': p.category, 'school': p.school,
+            'goal_amount': str(p.goal_amount), 'raised_amount': str(p.raised_amount),
+            'progress_percent': p.progress_percent, 'donor_count': p.donor_count,
+            'currency': p.currency, 'deadline': p.deadline.isoformat() if p.deadline else None,
+            'is_active': p.is_active, 'is_featured': p.is_featured,
+            'created_at': p.created_at.isoformat(),
+        } for p in items]
+        return Response({'count': total, 'page': page, 'page_size': page_size, 'results': data})
+
+    def post(self, request):
+        d = request.data
+        try:
+            p = DonationProject.objects.create(
+                country_id=d['country_id'], title=d['title'], title_en=d.get('title_en', ''),
+                description=d.get('description', ''), description_en=d.get('description_en', ''),
+                school=d.get('school', ''), category=d.get('category', 'other'),
+                goal_amount=d['goal_amount'], currency=d.get('currency', 'TND'),
+                deadline=d.get('deadline') or None,
+                is_active=d.get('is_active', True), is_featured=d.get('is_featured', False),
+            )
+            return Response({'id': p.id, 'title': p.title}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminDonationProjectDetailView(APIView):
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request, pk):
+        p = get_object_or_404(DonationProject, pk=pk)
+        return Response({
+            'id': p.id, 'title': p.title, 'title_en': p.title_en,
+            'description': p.description, 'description_en': p.description_en,
+            'country_id': p.country_id, 'school': p.school, 'category': p.category,
+            'goal_amount': str(p.goal_amount), 'raised_amount': str(p.raised_amount),
+            'progress_percent': p.progress_percent, 'donor_count': p.donor_count,
+            'currency': p.currency, 'deadline': p.deadline.isoformat() if p.deadline else None,
+            'is_active': p.is_active, 'is_featured': p.is_featured,
+        })
+
+    def patch(self, request, pk):
+        p = get_object_or_404(DonationProject, pk=pk)
+        for field in ['title', 'title_en', 'description', 'description_en', 'school', 'category',
+                      'goal_amount', 'currency', 'is_active', 'is_featured']:
+            if field in request.data:
+                setattr(p, field, request.data[field])
+        if 'country_id' in request.data:
+            p.country_id = request.data['country_id']
+        if 'deadline' in request.data:
+            p.deadline = request.data['deadline'] or None
+        try:
+            p.save()
+            return Response({'message': 'Projet mis à jour.'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        get_object_or_404(DonationProject, pk=pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminDonationListView(APIView):
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request):
+        queryset = DonationModel.objects.all().select_related('project').order_by('-created_at')
+        project_id = request.query_params.get('project_id', '')
+        if project_id:
+            queryset = queryset.filter(project_id=project_id)
+        status_filter = request.query_params.get('status', '')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        page_size = int(request.query_params.get('page_size', 20))
+        page = int(request.query_params.get('page', 1))
+        total = queryset.count()
+        items = queryset[(page-1)*page_size : page*page_size]
+
+        data = [{
+            'id': d.id,
+            'donor_name': 'Anonyme' if d.is_anonymous else d.donor_name,
+            'donor_email': '' if d.is_anonymous else d.donor_email,
+            'amount': str(d.amount), 'currency': d.currency,
+            'payment_method': d.payment_method, 'status': d.status,
+            'message': d.message, 'is_anonymous': d.is_anonymous,
+            'project': {'id': d.project.id, 'title': d.project.title},
+            'reference': f'DON-{d.id:06d}',
+            'created_at': d.created_at.isoformat(),
+        } for d in items]
+        return Response({'count': total, 'page': page, 'page_size': page_size, 'results': data})
+
+
+class AdminDonationDetailView(APIView):
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def patch(self, request, pk):
+        d = get_object_or_404(DonationModel, pk=pk)
+        if 'status' in request.data:
+            d.status = request.data['status']
+        try:
+            d.save()
+            return Response({'message': 'Don mis à jour.'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

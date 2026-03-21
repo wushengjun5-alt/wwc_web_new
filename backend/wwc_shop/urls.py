@@ -66,6 +66,12 @@ def serve_impact_page(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_donate_page(request):
+    """Serve the donation page"""
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'donate.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
 def serve_shop_admin_page(request, page='index'):
     """Serve shop admin HTML pages"""
     if not page.endswith('.html'):
@@ -110,6 +116,7 @@ urlpatterns = [
     path('shop/cart/', serve_cart_page, name='shop-cart'),
     path('shop/order-success/', serve_order_success_page, name='shop-order-success'),
     path('shop/impact/', serve_impact_page, name='shop-impact'),
+    path('shop/donate/', serve_donate_page, name='shop-donate'),
 
     # Shop admin (HTML interface for product management)
     path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),

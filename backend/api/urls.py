@@ -50,6 +50,18 @@ urlpatterns = [
     path('admin/coupons/<int:pk>/', admin_views.AdminCouponDetailView.as_view(), name='admin-coupon-detail'),
     path('admin/impact-events/', admin_views.AdminImpactEventListView.as_view(), name='admin-impact-events'),
     path('admin/impact-events/<int:pk>/', admin_views.AdminImpactEventDetailView.as_view(), name='admin-impact-event-detail'),
+    path('admin/donations/countries/', admin_views.AdminDonationCountryListView.as_view(), name='admin-donation-countries'),
+    path('admin/donations/countries/<int:pk>/', admin_views.AdminDonationCountryDetailView.as_view(), name='admin-donation-country-detail'),
+    path('admin/donations/projects/', admin_views.AdminDonationProjectListView.as_view(), name='admin-donation-projects'),
+    path('admin/donations/projects/<int:pk>/', admin_views.AdminDonationProjectDetailView.as_view(), name='admin-donation-project-detail'),
+    path('admin/donations/', admin_views.AdminDonationListView.as_view(), name='admin-donations'),
+    path('admin/donations/<int:pk>/', admin_views.AdminDonationDetailView.as_view(), name='admin-donation-detail'),
+
+    # Donations
+    path('donations/countries/', views.DonationCountryListView.as_view(), name='donation-countries'),
+    path('donations/projects/', views.DonationProjectListView.as_view(), name='donation-projects'),
+    path('donations/projects/<int:pk>/', views.DonationProjectDetailView.as_view(), name='donation-project-detail'),
+    path('donations/donate/', views.DonationCreateView.as_view(), name='donation-create'),
 
     # Checkout
     path('checkout/', views.CheckoutView.as_view(), name='checkout'),

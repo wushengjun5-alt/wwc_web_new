@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faire un don - Wallah We Can</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        :root {
+            --wwc-primary: #1e3a5f;
+            --wwc-secondary: #ff6b35;
+            --wwc-accent: #f8b4c4;
+            --wwc-text: #2c3e50;
+            --wwc-text-light: #6c757d;
+            --wwc-bg: #ffffff;
+            --wwc-bg-light: #f8f9fa;
+            --wwc-border: #dee2e6;
+            --wwc-success: #28a745;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); line-height: 1.6; }
+
+        .header { background: var(--wwc-primary); color: white; padding: 15px 0; position: sticky; top: 0; z-index: 100; }
+        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 24px; font-weight: 700; color: white; text-decoration: none; }
+        .nav { display: flex; gap: 30px; }
+        .nav a { color: white; text-decoration: none; font-weight: 500; opacity: 0.9; transition: opacity 0.2s; }
+        .nav a:hover, .nav a.active { opacity: 1; }
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .btn { display: inline-block; padding: 9px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; border: none; }
+        .btn-primary { background: var(--wwc-secondary); color: white; font-family: inherit; }
+        .btn-primary:hover { background: #e55a2b; }
+        .btn-outline { background: transparent; color: var(--wwc-primary); border: 2px solid var(--wwc-primary); font-family: inherit; cursor: pointer; }
+        .btn-outline:hover { background: var(--wwc-primary); color: white; }
+
+        .hero { background: linear-gradient(135deg, var(--wwc-primary) 0%, #2d5282 100%); color: white; padding: 60px 20px; text-align: center; }
+        .hero h1 { font-size: 42px; font-weight: 700; margin-bottom: 12px; }
+        .hero p { font-size: 18px; opacity: 0.88; max-width: 580px; margin: 0 auto; }
+
+        .main { max-width: 1000px; margin: 0 auto; padding: 52px 20px 80px; }
+
+        /* Breadcrumb */
+        .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 36px; font-size: 14px; color: var(--wwc-text-light); flex-wrap: wrap; }
+        .breadcrumb a { color: var(--wwc-secondary); text-decoration: none; font-weight: 600; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { color: var(--wwc-border); }
+
+        /* Country cards */
+        .countries-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+        .country-card {
+            background: white; border-radius: 16px; padding: 36px 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07); cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s; text-align: center; border: 2px solid transparent;
+        }
+        .country-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-color: var(--wwc-secondary); }
+        .country-flag { font-size: 56px; margin-bottom: 16px; }
+        .country-name { font-size: 22px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 8px; }
+        .country-desc { font-size: 14px; color: var(--wwc-text-light); margin-bottom: 16px; }
+        .country-count { display: inline-block; background: #e8f4fd; color: #1a6c9e; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+
+        /* Project cards */
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .project-card {
+            background: white; border-radius: 16px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07); cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .project-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .project-img { width: 100%; height: 180px; object-fit: cover; background: linear-gradient(135deg, var(--wwc-accent) 0%, #fce8ed 100%); display: flex; align-items: center; justify-content: center; font-size: 48px; }
+        .project-img img { width: 100%; height: 100%; object-fit: cover; }
+        .project-body { padding: 20px; }
+        .project-meta { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-category { background: #f0f4ff; color: #4a5568; }
+        .badge-featured { background: #fff3e0; color: var(--wwc-secondary); }
+        .project-title { font-size: 16px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 6px; line-height: 1.35; }
+        .project-school { font-size: 13px; color: var(--wwc-text-light); margin-bottom: 14px; }
+        .progress-bar-wrap { background: var(--wwc-bg-light); border-radius: 99px; height: 8px; margin-bottom: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--wwc-secondary), #ff9a6c); transition: width 0.6s ease; }
+        .progress-labels { display: flex; justify-content: space-between; font-size: 13px; }
+        .progress-raised { font-weight: 700; color: var(--wwc-secondary); }
+        .progress-goal { color: var(--wwc-text-light); }
+        .donor-count { font-size: 12px; color: var(--wwc-text-light); margin-top: 6px; }
+
+        /* Project detail */
+        .project-detail { display: grid; grid-template-columns: 1fr 380px; gap: 36px; align-items: start; }
+        .project-detail-img { width: 100%; border-radius: 16px; height: 280px; object-fit: cover; background: linear-gradient(135deg, var(--wwc-accent) 0%, #fce8ed 100%); display: flex; align-items: center; justify-content: center; font-size: 80px; }
+        .project-detail-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
+        .project-detail-title { font-size: 28px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 8px; line-height: 1.3; }
+        .project-detail-school { font-size: 15px; color: var(--wwc-text-light); margin-bottom: 20px; }
+        .project-detail-desc { font-size: 15px; line-height: 1.75; color: var(--wwc-text); margin-bottom: 28px; }
+        .progress-section { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .progress-big { font-size: 32px; font-weight: 700; color: var(--wwc-secondary); margin-bottom: 4px; }
+        .progress-goal-text { font-size: 14px; color: var(--wwc-text-light); margin-bottom: 14px; }
+
+        /* Donors list */
+        .donors-section { margin-top: 28px; }
+        .donors-title { font-size: 16px; font-weight: 600; color: var(--wwc-primary); margin-bottom: 14px; }
+        .donor-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--wwc-border); }
+        .donor-item:last-child { border-bottom: none; }
+        .donor-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--wwc-accent); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .donor-info { flex: 1; min-width: 0; }
+        .donor-name { font-weight: 600; font-size: 14px; }
+        .donor-msg { font-size: 13px; color: var(--wwc-text-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .donor-amount { font-weight: 700; font-size: 14px; color: var(--wwc-secondary); flex-shrink: 0; }
+
+        /* Donate form */
+        .donate-form-card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .donate-form-title { font-size: 20px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--wwc-text); margin-bottom: 6px; }
+        .form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--wwc-border); border-radius: 8px; font-size: 14px; font-family: inherit; transition: border-color 0.2s; }
+        .form-input:focus { outline: none; border-color: var(--wwc-secondary); }
+        .form-input::placeholder { color: var(--wwc-text-light); }
+
+        /* Currency toggle */
+        .currency-toggle { display: flex; background: var(--wwc-bg-light); border-radius: 8px; overflow: hidden; border: 1px solid var(--wwc-border); }
+        .currency-btn { flex: 1; padding: 8px; border: none; background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .currency-btn.active { background: var(--wwc-primary); color: white; }
+
+        /* Amount presets */
+        .amount-presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+        .amount-preset { padding: 8px; border: 1px solid var(--wwc-border); border-radius: 8px; background: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; color: var(--wwc-text); text-align: center; }
+        .amount-preset:hover, .amount-preset.active { border-color: var(--wwc-secondary); background: #fff3ee; color: var(--wwc-secondary); }
+
+        /* Payment method tabs */
+        .payment-tabs { display: flex; gap: 10px; margin-bottom: 16px; }
+        .payment-tab { flex: 1; padding: 12px; border: 2px solid var(--wwc-border); border-radius: 10px; background: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; color: var(--wwc-text); text-align: center; }
+        .payment-tab.active { border-color: var(--wwc-secondary); background: #fff3ee; color: var(--wwc-secondary); }
+
+        /* Stripe element */
+        #stripe-element { padding: 12px 14px; border: 1px solid var(--wwc-border); border-radius: 8px; background: white; margin-bottom: 16px; }
+
+        /* Checkbox */
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+        .checkbox-label input { width: 16px; height: 16px; cursor: pointer; }
+
+        /* Submit btn */
+        .btn-donate { width: 100%; padding: 14px; background: var(--wwc-secondary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.2s; margin-top: 4px; }
+        .btn-donate:hover { background: #e55a2b; }
+        .btn-donate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Success */
+        .success-card { background: white; border-radius: 16px; padding: 40px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); text-align: center; }
+        .success-icon { font-size: 64px; margin-bottom: 16px; }
+        .success-title { font-size: 24px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 10px; }
+        .success-text { font-size: 15px; color: var(--wwc-text-light); margin-bottom: 24px; }
+        .bank-details-box { background: var(--wwc-bg-light); border-radius: 12px; padding: 20px; text-align: left; margin: 20px 0; }
+        .bank-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px solid var(--wwc-border); }
+        .bank-row:last-child { border-bottom: none; }
+        .bank-row .label { color: var(--wwc-text-light); }
+        .bank-row .value { font-weight: 600; }
+        .reference-badge { display: inline-block; background: var(--wwc-primary); color: white; padding: 8px 20px; border-radius: 8px; font-size: 18px; font-weight: 700; letter-spacing: 2px; margin: 12px 0; }
+
+        /* Loading / empty */
+        .loading-state { text-align: center; padding: 60px 20px; color: var(--wwc-text-light); }
+        .spinner { width: 36px; height: 36px; border: 3px solid var(--wwc-border); border-top-color: var(--wwc-primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .section-title { font-size: 26px; font-weight: 700; color: var(--wwc-primary); margin-bottom: 8px; }
+        .section-sub { font-size: 15px; color: var(--wwc-text-light); margin-bottom: 32px; }
+
+        .footer { background: var(--wwc-primary); color: white; padding: 30px 20px 20px; margin-top: 80px; }
+        .footer-container { max-width: 1200px; margin: 0 auto; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 16px; text-align: center; font-size: 13px; opacity: 0.7; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 28px; }
+            .project-detail { grid-template-columns: 1fr; }
+            .nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-container">
+        <a href="/shop/" class="logo">WALLAH WE CAN</a>
+        <nav class="nav">
+            <a href="/shop/">Boutique</a>
+            <a href="/shop/impact/">Notre Impact</a>
+            <a href="/shop/donate/" class="active">Faire un don</a>
+        </nav>
+        <div class="header-actions">
+            <a href="/shop/" class="btn btn-primary">Boutique</a>
+        </div>
+    </div>
+</header>
+
+<section class="hero">
+    <h1>&#10084;&#65039; Faire un don</h1>
+    <p>Choisissez un projet, fixez votre montant, et contribuez directement à changer des vies.</p>
+</section>
+
+<main class="main">
+    <div class="breadcrumb" id="breadcrumb">
+        <a href="/shop/donate/">Pays</a>
+    </div>
+    <div id="view"></div>
+</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-bottom">© 2026 Wallah We Can — Tous droits réservés</div>
+    </div>
+</footer>
+
+<script>
+const API = '/api/v1';
+let stripeInstance = null;
+let stripeElements = null;
+let cardElement = null;
+let selectedCurrency = 'TND';
+let selectedPaymentMethod = 'bank_transfer';
+
+// ── State ──────────────────────────────────────────
+let state = { view: 'countries', country: null, project: null };
+
+function navigate(view, data) {
+    data = data || {};
+    state.view = view;
+    if (data.country !== undefined) state.country = data.country;
+    if (data.project !== undefined) state.project = data.project;
+    renderBreadcrumb();
+    renderView();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderBreadcrumb() {
+    const bc = document.getElementById('breadcrumb');
+    let html = '<a href="javascript:void(0)" onclick="navigate(\'countries\')">Pays</a>';
+    if (state.country) {
+        html += '<span>›</span><a href="javascript:void(0)" onclick="navigate(\'projects\')">' + escH(state.country.flag_emoji) + ' ' + escH(state.country.name) + '</a>';
+    }
+    if (state.project) {
+        html += '<span>›</span><span>' + escH(state.project.title) + '</span>';
+    }
+    bc.innerHTML = html;
+}
+
+function renderView() {
+    const view = document.getElementById('view');
+    view.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Chargement…</p></div>';
+    if (state.view === 'countries') renderCountries();
+    else if (state.view === 'projects') renderProjects();
+    else if (state.view === 'project') renderProjectDetail();
+}
+
+// ── Countries ──────────────────────────────────────
+async function renderCountries() {
+    try {
+        const res = await fetch(API + '/donations/countries/');
+        const countries = await res.json();
+        const view = document.getElementById('view');
+        view.innerHTML = '<h2 class="section-title">Choisissez un pays</h2>' +
+            '<p class="section-sub">Sélectionnez le pays où vous souhaitez diriger votre don.</p>' +
+            '<div class="countries-grid">' +
+            countries.map(function(c) {
+                return '<div class="country-card" onclick="selectCountry(' + c.id + ')">' +
+                    '<div class="country-flag">' + escH(c.flag_emoji) + '</div>' +
+                    '<div class="country-name">' + escH(c.name) + '</div>' +
+                    '<div class="country-desc">' + escH(c.description) + '</div>' +
+                    '<span class="country-count">' + c.project_count + ' projet' + (c.project_count !== 1 ? 's' : '') + ' en cours</span>' +
+                    '</div>';
+            }).join('') +
+            '</div>';
+        window._countries = countries;
+    } catch(e) {
+        document.getElementById('view').innerHTML = '<div class="loading-state">Erreur de chargement.</div>';
+    }
+}
+
+function selectCountry(id) {
+    const c = window._countries.find(function(x) { return x.id === id; });
+    state.country = c;
+    navigate('projects');
+}
+
+// ── Projects ───────────────────────────────────────
+async function renderProjects() {
+    try {
+        const res = await fetch(API + '/donations/projects/?country=' + state.country.slug);
+        const projects = await res.json();
+        const view = document.getElementById('view');
+
+        if (!projects.length) {
+            view.innerHTML = '<div class="loading-state"><p>Aucun projet en cours pour ce pays.</p></div>';
+            return;
+        }
+
+        const categoryLabels = { food: 'Alimentation', infrastructure: 'Infrastructure', sports: 'Sport', education: 'Éducation', health: 'Santé', other: 'Autre' };
+
+        view.innerHTML = '<h2 class="section-title">' + escH(state.country.flag_emoji) + ' ' + escH(state.country.name) + '</h2>' +
+            '<p class="section-sub">Sélectionnez un projet pour voir les détails et faire un don.</p>' +
+            '<div class="projects-grid">' +
+            projects.map(function(p) {
+                return '<div class="project-card" onclick="selectProject(' + p.id + ')">' +
+                    '<div class="project-img">' + (p.image ? '<img src="' + escH(p.image) + '" alt="' + escH(p.title) + '" loading="lazy">' : getCategoryEmoji(p.category)) + '</div>' +
+                    '<div class="project-body">' +
+                    '<div class="project-meta">' +
+                    '<span class="badge badge-category">' + (categoryLabels[p.category] || p.category) + '</span>' +
+                    (p.is_featured ? '<span class="badge badge-featured">⭐ Prioritaire</span>' : '') +
+                    '</div>' +
+                    '<div class="project-title">' + escH(p.title) + '</div>' +
+                    (p.school ? '<div class="project-school">🏫 ' + escH(p.school) + '</div>' : '') +
+                    '<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:' + p.progress_percent + '%"></div></div>' +
+                    '<div class="progress-labels">' +
+                    '<span class="progress-raised">' + formatAmount(p.raised_amount, p.currency) + '</span>' +
+                    '<span class="progress-goal">objectif ' + formatAmount(p.goal_amount, p.currency) + '</span>' +
+                    '</div>' +
+                    '<div class="donor-count">💝 ' + p.donor_count + ' donateur' + (p.donor_count !== 1 ? 's' : '') + ' · ' + p.progress_percent + '% atteint</div>' +
+                    '</div></div>';
+            }).join('') +
+            '</div>';
+        window._projects = projects;
+    } catch(e) {
+        document.getElementById('view').innerHTML = '<div class="loading-state">Erreur de chargement.</div>';
+    }
+}
+
+async function selectProject(id) {
+    const res = await fetch(API + '/donations/projects/' + id + '/');
+    const project = await res.json();
+    state.project = project;
+    navigate('project');
+}
+
+// ── Project detail + donate form ───────────────────
+function renderProjectDetail() {
+    const p = state.project;
+    const categoryLabels = { food: 'Alimentation', infrastructure: 'Infrastructure', sports: 'Sport', education: 'Éducation', health: 'Santé', other: 'Autre' };
+    selectedCurrency = p.currency || 'TND';
+    selectedPaymentMethod = 'bank_transfer';
+
+    const recentDonors = p.recent_donors || [];
+    const donorsHtml = recentDonors.length ? recentDonors.map(function(d) {
+        return '<div class="donor-item">' +
+            '<div class="donor-avatar">💝</div>' +
+            '<div class="donor-info">' +
+            '<div class="donor-name">' + escH(d.name) + '</div>' +
+            (d.message ? '<div class="donor-msg">"' + escH(d.message) + '"</div>' : '') +
+            '</div>' +
+            '<div class="donor-amount">' + formatAmount(d.amount, d.currency) + '</div>' +
+            '</div>';
+    }).join('') : '<p style="font-size:14px;color:var(--wwc-text-light);">Soyez le premier à contribuer !</p>';
+
+    const deadlineHtml = p.deadline
+        ? '<p style="font-size:13px;color:var(--wwc-text-light);margin-top:8px;">⏳ Clôture le ' + new Date(p.deadline).toLocaleDateString('fr-FR', {day:'numeric',month:'long',year:'numeric'}) + '</p>'
+        : '';
+
+    document.getElementById('view').innerHTML =
+        '<div class="project-detail">' +
+        '<!-- Left: info -->' +
+        '<div>' +
+        '<div class="project-detail-img">' +
+        (p.image ? '<img src="' + escH(p.image) + '" alt="' + escH(p.title) + '">' : getCategoryEmoji(p.category)) +
+        '</div>' +
+        '<div style="margin-top:24px;">' +
+        '<div class="project-meta" style="margin-bottom:12px;">' +
+        '<span class="badge badge-category">' + (categoryLabels[p.category] || p.category) + '</span>' +
+        (p.is_featured ? '<span class="badge badge-featured">⭐ Prioritaire</span>' : '') +
+        '<span class="badge" style="background:#e8f5e9;color:#2e7d32;">' + p.country.flag_emoji + ' ' + escH(p.country.name) + '</span>' +
+        '</div>' +
+        '<h1 class="project-detail-title">' + escH(p.title) + '</h1>' +
+        (p.school ? '<p class="project-detail-school">🏫 ' + escH(p.school) + '</p>' : '') +
+        '<p class="project-detail-desc">' + escH(p.description) + '</p>' +
+        (recentDonors.length > 0 ?
+            '<div class="donors-section">' +
+            '<div class="donors-title">💝 Derniers donateurs</div>' +
+            donorsHtml +
+            '</div>' : '') +
+        '</div></div>' +
+        '<!-- Right: progress + form -->' +
+        '<div>' +
+        '<div class="progress-section">' +
+        '<div class="progress-big">' + formatAmount(p.raised_amount, p.currency) + '</div>' +
+        '<div class="progress-goal-text">collectés sur ' + formatAmount(p.goal_amount, p.currency) + '</div>' +
+        '<div class="progress-bar-wrap" style="height:12px;margin-bottom:12px;">' +
+        '<div class="progress-bar-fill" style="width:' + p.progress_percent + '%"></div>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--wwc-text-light);">' +
+        '<span>' + p.donor_count + ' donateur' + (p.donor_count !== 1 ? 's' : '') + '</span>' +
+        '<span>' + p.progress_percent + '% atteint</span>' +
+        '</div>' +
+        deadlineHtml +
+        '</div>' +
+        '<div class="donate-form-card" id="donate-form-card">' +
+        '<div class="donate-form-title">Faire un don</div>' +
+        '<!-- Currency -->' +
+        '<div class="form-group">' +
+        '<label class="form-label">Devise</label>' +
+        '<div class="currency-toggle">' +
+        '<button class="currency-btn ' + (selectedCurrency === 'TND' ? 'active' : '') + '" onclick="setCurrency(\'TND\')">DT (TND)</button>' +
+        '<button class="currency-btn ' + (selectedCurrency === 'EUR' ? 'active' : '') + '" onclick="setCurrency(\'EUR\')">€ (EUR)</button>' +
+        '</div></div>' +
+        '<!-- Amount presets -->' +
+        '<div class="form-group">' +
+        '<label class="form-label">Montant</label>' +
+        '<div class="amount-presets" id="amount-presets">' +
+        getPresetAmounts().map(function(a) { return '<button class="amount-preset" onclick="setPreset(' + a + ', this)">' + a + '</button>'; }).join('') +
+        '</div>' +
+        '<input type="number" id="amount-input" class="form-input" placeholder="Autre montant" min="1" oninput="clearPresets()">' +
+        '</div>' +
+        '<!-- Donor info -->' +
+        '<div class="form-group">' +
+        '<label class="checkbox-label">' +
+        '<input type="checkbox" id="anon-check" onchange="toggleAnon(this.checked)">' +
+        'Donner anonymement' +
+        '</label></div>' +
+        '<div id="donor-fields">' +
+        '<div class="form-group">' +
+        '<label class="form-label">Votre nom</label>' +
+        '<input type="text" id="donor-name" class="form-input" placeholder="Prénom Nom">' +
+        '</div>' +
+        '<div class="form-group">' +
+        '<label class="form-label">Email (pour reçu)</label>' +
+        '<input type="email" id="donor-email" class="form-input" placeholder="votre@email.com">' +
+        '</div></div>' +
+        '<!-- Message -->' +
+        '<div class="form-group">' +
+        '<label class="form-label">Message (optionnel)</label>' +
+        '<textarea id="donor-message" class="form-input" rows="2" placeholder="Un mot d\'encouragement…" style="resize:vertical;"></textarea>' +
+        '</div>' +
+        '<!-- Payment method -->' +
+        '<div class="form-group">' +
+        '<label class="form-label">Mode de paiement</label>' +
+        '<div class="payment-tabs">' +
+        '<button class="payment-tab active" id="tab-bank" onclick="setPayment(\'bank_transfer\')">🏦 Virement bancaire</button>' +
+        '<button class="payment-tab" id="tab-stripe" onclick="setPayment(\'stripe\')">💳 Carte bancaire</button>' +
+        '</div>' +
+        '<div id="stripe-container" style="display:none;">' +
+        '<div id="stripe-element"></div>' +
+        '</div>' +
+        '<div id="bank-info" style="font-size:13px;color:var(--wwc-text-light);background:var(--wwc-bg-light);padding:10px 14px;border-radius:8px;">' +
+        'Après confirmation, vous recevrez les coordonnées bancaires par email ou ci-dessous.' +
+        '</div></div>' +
+        '<div id="form-error" style="color:#dc3545;font-size:13px;margin-bottom:8px;display:none;"></div>' +
+        '<button class="btn-donate" id="donate-btn" onclick="submitDonation(' + p.id + ')">💝 Confirmer mon don</button>' +
+        '</div></div></div>';
+}
+
+// ── Form helpers ───────────────────────────────────
+function getPresetAmounts() {
+    return selectedCurrency === 'TND' ? [20, 50, 100, 200, 500, 1000] : [5, 10, 25, 50, 100, 200];
+}
+
+function setCurrency(cur) {
+    selectedCurrency = cur;
+    document.querySelectorAll('.currency-btn').forEach(function(b) { b.classList.remove('active'); });
+    var idx = cur === 'TND' ? 1 : 2;
+    document.querySelector('.currency-btn:nth-child(' + idx + ')').classList.add('active');
+    const presets = document.getElementById('amount-presets');
+    if (presets) presets.innerHTML = getPresetAmounts().map(function(a) { return '<button class="amount-preset" onclick="setPreset(' + a + ', this)">' + a + '</button>'; }).join('');
+    document.getElementById('amount-input').value = '';
+}
+
+function setPreset(amount, btn) {
+    document.querySelectorAll('.amount-preset').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('amount-input').value = amount;
+}
+
+function clearPresets() {
+    document.querySelectorAll('.amount-preset').forEach(function(b) { b.classList.remove('active'); });
+}
+
+function toggleAnon(checked) {
+    document.getElementById('donor-fields').style.display = checked ? 'none' : 'block';
+}
+
+function setPayment(method) {
+    selectedPaymentMethod = method;
+    document.getElementById('tab-bank').classList.toggle('active', method === 'bank_transfer');
+    document.getElementById('tab-stripe').classList.toggle('active', method === 'stripe');
+    document.getElementById('bank-info').style.display = method === 'bank_transfer' ? 'block' : 'none';
+    document.getElementById('stripe-container').style.display = method === 'stripe' ? 'block' : 'none';
+
+    if (method === 'stripe' && !cardElement) {
+        initStripe();
+    }
+}
+
+async function initStripe() {
+    try {
+        const res = await fetch('/api/v1/payments/stripe-key/');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        stripeInstance = Stripe(data.publishable_key);
+        stripeElements = stripeInstance.elements();
+        cardElement = stripeElements.create('card', { style: { base: { fontSize: '14px', fontFamily: 'Inter, sans-serif' } } });
+        cardElement.mount('#stripe-element');
+    } catch(e) {
+        document.getElementById('stripe-container').innerHTML = '<p style="font-size:13px;color:#dc3545;">Stripe non disponible. Utilisez le virement bancaire.</p>';
+    }
+}
+
+// ── Submit ─────────────────────────────────────────
+async function submitDonation(projectId) {
+    const amount = parseFloat(document.getElementById('amount-input').value);
+    const isAnon = document.getElementById('anon-check').checked;
+    const name = isAnon ? '' : (document.getElementById('donor-name').value || '');
+    const email = isAnon ? '' : (document.getElementById('donor-email').value || '');
+    const message = document.getElementById('donor-message').value || '';
+    const errEl = document.getElementById('form-error');
+    errEl.style.display = 'none';
+
+    if (!amount || amount <= 0) { showError('Veuillez saisir un montant valide.'); return; }
+
+    const btn = document.getElementById('donate-btn');
+    btn.disabled = true; btn.textContent = 'Traitement…';
+
+    try {
+        const res = await fetch(API + '/donations/donate/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                project_id: projectId,
+                amount: amount, currency: selectedCurrency,
+                payment_method: selectedPaymentMethod,
+                donor_name: name, donor_email: email,
+                message: message, is_anonymous: isAnon,
+            }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error || 'Erreur.'); btn.disabled = false; btn.textContent = '💝 Confirmer mon don'; return; }
+
+        if (selectedPaymentMethod === 'bank_transfer') {
+            showBankSuccess(data, amount, name);
+        } else if (selectedPaymentMethod === 'stripe') {
+            await handleStripePayment(data.client_secret, data.donation_id, name, email);
+        }
+    } catch(e) {
+        showError('Erreur réseau. Veuillez réessayer.');
+        btn.disabled = false; btn.textContent = '💝 Confirmer mon don';
+    }
+}
+
+function showBankSuccess(data, amount, name) {
+    const b = data.bank_details;
+    document.getElementById('donate-form-card').innerHTML =
+        '<div class="success-card">' +
+        '<div class="success-icon">💝</div>' +
+        '<div class="success-title">Merci ' + escH(name || '') + ' !</div>' +
+        '<p class="success-text">Votre intention de don de <strong>' + amount + ' ' + selectedCurrency + '</strong> a été enregistrée.</p>' +
+        '<p style="font-size:14px;color:var(--wwc-text);margin-bottom:8px;">Effectuez le virement avec cette référence :</p>' +
+        '<div class="reference-badge">' + escH(data.reference) + '</div>' +
+        '<div class="bank-details-box">' +
+        '<div class="bank-row"><span class="label">Bénéficiaire</span><span class="value">' + escH(b.beneficiary) + '</span></div>' +
+        '<div class="bank-row"><span class="label">IBAN</span><span class="value">' + escH(b.iban) + '</span></div>' +
+        '<div class="bank-row"><span class="label">BIC/SWIFT</span><span class="value">' + escH(b.bic) + '</span></div>' +
+        '<div class="bank-row"><span class="label">Référence</span><span class="value">' + escH(data.reference) + '</span></div>' +
+        '</div>' +
+        '<p style="font-size:13px;color:var(--wwc-text-light);">Notre équipe confirmera votre don dès réception du virement.</p>' +
+        '<button class="btn btn-primary" style="margin-top:20px;" onclick="navigate(\'projects\')">Voir d\'autres projets</button>' +
+        '</div>';
+}
+
+async function handleStripePayment(clientSecret, donationId, name, email) {
+    const result = await stripeInstance.confirmCardPayment(clientSecret, {
+        payment_method: { card: cardElement, billing_details: { name: name, email: email } }
+    });
+    if (result.error) {
+        showError(result.error.message);
+        document.getElementById('donate-btn').disabled = false;
+        document.getElementById('donate-btn').textContent = '💝 Confirmer mon don';
+    } else {
+        document.getElementById('donate-form-card').innerHTML =
+            '<div class="success-card">' +
+            '<div class="success-icon">🎉</div>' +
+            '<div class="success-title">Don confirmé !</div>' +
+            '<p class="success-text">Merci pour votre générosité. Votre paiement a été accepté.</p>' +
+            '<button class="btn btn-primary" style="margin-top:20px;" onclick="navigate(\'projects\')">Voir d\'autres projets</button>' +
+            '</div>';
+    }
+}
+
+function showError(msg) {
+    const el = document.getElementById('form-error');
+    if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+// ── Helpers ────────────────────────────────────────
+function getCategoryEmoji(cat) {
+    var map = { food: '🥗', infrastructure: '🏗️', sports: '⚽', education: '📚', health: '🏥', other: '💝' };
+    return map[cat] || '💝';
+}
+
+function formatAmount(amount, currency) {
+    const n = parseFloat(amount) || 0;
+    return currency === 'EUR' ? n.toLocaleString('fr-FR') + ' €' : n.toLocaleString('fr-FR') + ' DT';
+}
+
+function escH(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ───────────────────────────────────────────
+navigate('countries');
+</script>
+</body>
+</html>
