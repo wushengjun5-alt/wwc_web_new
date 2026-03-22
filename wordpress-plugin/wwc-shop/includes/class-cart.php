@@ -240,6 +240,72 @@ class WWC_Cart {
     }
 
     /**
+     * AJAX: Toggle wishlist (add if not in wishlist, remove if already there)
+     */
+    public function ajax_toggle_wishlist() {
+        check_ajax_referer('wwc-shop-nonce', 'nonce');
+
+        $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+        if (!$product_id) {
+            wp_send_json_error(['message' => __('Invalid product', 'wwc-shop')]);
+        }
+
+        // First check current wishlist state
+        $wishlist = $this->api->get_wishlist();
+        if (is_wp_error($wishlist)) {
+            wp_send_json_error(['message' => $wishlist->get_error_message()]);
+        }
+
+        // Look for existing wishlist item for this product
+        $existing_id = null;
+        $items = is_array($wishlist) ? ($wishlist['results'] ?? $wishlist) : [];
+        foreach ($items as $item) {
+            $pid = $item['product']['id'] ?? $item['product_id'] ?? null;
+            if ($pid == $product_id) {
+                $existing_id = $item['id'];
+                break;
+            }
+        }
+
+        if ($existing_id) {
+            $result = $this->api->remove_from_wishlist($existing_id);
+            if (is_wp_error($result)) {
+                wp_send_json_error(['message' => $result->get_error_message()]);
+            }
+            wp_send_json_success(['in_wishlist' => false, 'message' => __('Retiré des favoris', 'wwc-shop')]);
+        } else {
+            $result = $this->api->add_to_wishlist($product_id);
+            if (is_wp_error($result)) {
+                wp_send_json_error(['message' => $result->get_error_message()]);
+            }
+            wp_send_json_success(['in_wishlist' => true, 'message' => __('Ajouté aux favoris', 'wwc-shop')]);
+        }
+    }
+
+    /**
+     * AJAX: Submit a product review
+     */
+    public function ajax_add_review() {
+        check_ajax_referer('wwc-shop-nonce', 'nonce');
+
+        $product_slug = isset($_POST['product_slug']) ? sanitize_text_field($_POST['product_slug']) : '';
+        $rating       = isset($_POST['rating']) ? intval($_POST['rating']) : 0;
+        $comment      = isset($_POST['comment']) ? sanitize_textarea_field($_POST['comment']) : '';
+
+        if (empty($product_slug) || $rating < 1 || $rating > 5) {
+            wp_send_json_error(['message' => __('Veuillez sélectionner une note entre 1 et 5.', 'wwc-shop')]);
+        }
+
+        $result = $this->api->add_review($product_slug, $rating, $comment);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => $result->get_error_message()]);
+        }
+
+        wp_send_json_success(['message' => __('Avis soumis. Il sera publié après modération.', 'wwc-shop')]);
+    }
+
+    /**
      * Get current cart (for templates)
      */
     public function get_current_cart() {

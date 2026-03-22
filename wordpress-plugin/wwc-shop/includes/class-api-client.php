@@ -65,21 +65,19 @@ class WWC_API_Client {
             ],
         ];
 
-        // Add API key if set
-        if (!empty($this->api_key)) {
-            $args['headers']['Authorization'] = 'Token ' . $this->api_key;
-        }
-
-        // Add session key for cart operations
+        // Add session key for cart operations (guest identity)
         $session_key = $this->get_session_key();
         if ($session_key) {
             $args['headers']['X-Session-Key'] = $session_key;
         }
 
-        // Add JWT token if user is logged in
+        // Add JWT token if the customer is logged in (takes priority over admin key)
         $token = $this->get_jwt_token();
         if ($token) {
             $args['headers']['Authorization'] = 'Bearer ' . $token;
+        } elseif (!empty($this->api_key) && strpos($endpoint, 'admin/') === 0) {
+            // Only send the admin API key on admin-prefixed endpoints
+            $args['headers']['Authorization'] = 'Api-Key ' . $this->api_key;
         }
 
         // Add data to request
@@ -103,8 +101,8 @@ class WWC_API_Client {
 
         // Handle non-success status codes
         if ($status_code >= 400) {
-            $error_message = isset($data['error']) ? $data['error'] : 'API request failed';
-            return new WP_Error('api_error', $error_message, ['status' => $status_code]);
+            $error_message = $this->extract_error_message($data, $status_code);
+            return new WP_Error('api_error', $error_message, ['status' => $status_code, 'data' => $data]);
         }
 
         // Cache successful GET requests
@@ -141,6 +139,38 @@ class WWC_API_Client {
      */
     public function delete($endpoint) {
         return $this->request($endpoint, 'DELETE', [], false);
+    }
+
+    /**
+     * Extract a human-readable error message from a DRF error response.
+     * DRF can return: {'detail':'...'}, {'error':'...'}, {'field':['msg',...]}, or lists.
+     */
+    private function extract_error_message($data, $status_code) {
+        if (!is_array($data)) {
+            return 'API request failed (HTTP ' . $status_code . ')';
+        }
+        // Standard DRF detail / our own error key
+        if (isset($data['detail'])) {
+            return is_string($data['detail']) ? $data['detail'] : json_encode($data['detail']);
+        }
+        if (isset($data['error'])) {
+            return is_string($data['error']) ? $data['error'] : json_encode($data['error']);
+        }
+        if (isset($data['message'])) {
+            return is_string($data['message']) ? $data['message'] : json_encode($data['message']);
+        }
+        // DRF validation errors: {'field': ['msg1', ...], ...}
+        $messages = [];
+        foreach ($data as $field => $errors) {
+            if (is_array($errors)) {
+                foreach ($errors as $err) {
+                    $messages[] = is_string($err) ? $err : json_encode($err);
+                }
+            } elseif (is_string($errors)) {
+                $messages[] = $errors;
+            }
+        }
+        return !empty($messages) ? implode(' ', $messages) : 'API request failed (HTTP ' . $status_code . ')';
     }
 
     /**
@@ -384,6 +414,45 @@ class WWC_API_Client {
      */
     public function update_customer_profile($data) {
         return $this->patch('customer/profile/', $data);
+    }
+
+    // ============================================
+    // Wishlist Methods
+    // ============================================
+
+    /**
+     * Get wishlist items
+     */
+    public function get_wishlist() {
+        return $this->get('wishlist/', [], false);
+    }
+
+    /**
+     * Add product to wishlist
+     */
+    public function add_to_wishlist($product_id) {
+        return $this->post('wishlist/', ['product' => $product_id]);
+    }
+
+    /**
+     * Remove product from wishlist by wishlist item ID
+     */
+    public function remove_from_wishlist($wishlist_item_id) {
+        return $this->delete("wishlist/{$wishlist_item_id}/");
+    }
+
+    // ============================================
+    // Review Methods
+    // ============================================
+
+    /**
+     * Submit a product review
+     */
+    public function add_review($product_slug, $rating, $comment) {
+        return $this->post("products/{$product_slug}/add_review/", [
+            'rating'  => $rating,
+            'comment' => $comment,
+        ]);
     }
 
     // ============================================

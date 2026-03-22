@@ -437,6 +437,8 @@ final class WWC_Shop {
             'wwc_clear_cart',
             'wwc_apply_coupon',
             'wwc_checkout',
+            'wwc_toggle_wishlist',
+            'wwc_add_review',
         ];
 
         foreach ($cart_actions as $action) {

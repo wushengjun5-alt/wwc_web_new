@@ -222,6 +222,68 @@ $primary_image = WWC_Product::get_image_url($product);
 
 </div>
 
+<!-- Reviews Section -->
+<?php
+$api      = wwc_shop()->api;
+$reviews  = $api->get_product_reviews($product['slug']);
+$is_auth  = $api->is_authenticated();
+?>
+<div class="wwc-product-reviews">
+
+    <?php if (!empty($reviews) && !is_wp_error($reviews)): ?>
+    <h2 class="wwc-section-title"><?php esc_html_e('Avis clients', 'wwc-shop'); ?></h2>
+    <div class="wwc-reviews-list">
+        <?php foreach ($reviews as $review): ?>
+        <div class="wwc-review-item">
+            <div class="wwc-review-header">
+                <span class="wwc-review-author"><?php echo esc_html($review['author_name'] ?? __('Client', 'wwc-shop')); ?></span>
+                <span class="wwc-review-stars"><?php echo WWC_Product::render_stars($review['rating']); ?></span>
+                <span class="wwc-review-date"><?php echo esc_html(date_i18n('j F Y', strtotime($review['created_at']))); ?></span>
+            </div>
+            <?php if (!empty($review['comment'])): ?>
+            <p class="wwc-review-comment"><?php echo esc_html($review['comment']); ?></p>
+            <?php endif; ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($is_auth): ?>
+    <div class="wwc-review-form-wrap">
+        <h3><?php esc_html_e('Laisser un avis', 'wwc-shop'); ?></h3>
+        <div id="wwc-review-message" class="wwc-message" style="display:none;"></div>
+        <form id="wwc-review-form" class="wwc-auth-form" data-product-slug="<?php echo esc_attr($product['slug']); ?>" novalidate>
+            <div class="wwc-form-row">
+                <label><?php esc_html_e('Votre note', 'wwc-shop'); ?> <span class="required">*</span></label>
+                <div class="wwc-star-rating">
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                    <label class="wwc-star-label" style="color:#ccc; font-size:24px; cursor:pointer;">
+                        <input type="radio" name="rating" value="<?php echo $i; ?>" style="display:none;" required>
+                        ★
+                    </label>
+                    <?php endfor; ?>
+                </div>
+            </div>
+            <div class="wwc-form-row">
+                <label for="wwc-review-comment"><?php esc_html_e('Votre avis', 'wwc-shop'); ?></label>
+                <textarea id="wwc-review-comment" name="comment" rows="4" placeholder="<?php esc_attr_e('Partagez votre expérience…', 'wwc-shop'); ?>"></textarea>
+            </div>
+            <button type="submit" class="wwc-btn wwc-btn--primary" id="wwc-review-submit">
+                <?php esc_html_e('Envoyer mon avis', 'wwc-shop'); ?>
+            </button>
+        </form>
+    </div>
+    <?php else: ?>
+    <p class="wwc-review-login-prompt">
+        <?php printf(
+            esc_html__('Veuillez %s pour laisser un avis.', 'wwc-shop'),
+            '<a href="' . esc_url(home_url('/connexion/')) . '">' . esc_html__('vous connecter', 'wwc-shop') . '</a>'
+        ); ?>
+    </p>
+    <?php endif; ?>
+
+</div>
+
 <!-- Related Products Section -->
 <?php
 $api = wwc_shop()->api;
