@@ -121,10 +121,14 @@
                         this.showNotification(response.data.message, 'success');
                         this.openSidebar();
                     } else {
+                        if (response.data && response.data.debug) {
+                            console.error('[WWC Cart] Add-to-cart error debug:', response.data.debug);
+                        }
                         this.showNotification(response.data.message || wwcShop.i18n.error, 'error');
                     }
                 }.bind(this),
-                error: function() {
+                error: function(xhr, status, error) {
+                    console.error('[WWC Cart] AJAX error:', status, error, xhr.responseText);
                     this.showNotification(wwcShop.i18n.error, 'error');
                 }.bind(this),
                 complete: function() {

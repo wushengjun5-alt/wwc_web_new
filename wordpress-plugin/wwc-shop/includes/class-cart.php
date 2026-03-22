@@ -39,7 +39,16 @@ class WWC_Cart {
         $result = $this->api->add_to_cart($product_id, $quantity);
 
         if (is_wp_error($result)) {
-            wp_send_json_error(['message' => $result->get_error_message()]);
+            $error_data = $result->get_error_data();
+            $debug_info = [
+                'api_url'    => get_option('wwc_api_url', '(not set)'),
+                'http_status' => $error_data['status'] ?? 'n/a',
+                'raw_data'   => $error_data['data'] ?? null,
+            ];
+            wp_send_json_error([
+                'message' => $result->get_error_message(),
+                'debug'   => $debug_info,
+            ]);
         }
 
         wp_send_json_success([
