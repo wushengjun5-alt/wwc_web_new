@@ -1479,7 +1479,7 @@
                                 ${getCurrentCurrency() === 'EUR' && product.price_eur ? product.price_eur + ' €' : product.price_tnd + ' DT'}
                             </div>
                             <div class="product-impact">💝 ${product.impact_quantity} ${escHtml(product.impact_item)} pour ${escHtml(product.impact_school)}</div>
-                            <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${product.id})">
+                            <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${product.id})" ${product.is_in_stock === false ? 'disabled' : ''}>
                                 ${product.is_in_stock === false ? 'Rupture de stock' : 'Ajouter au panier'}
                             </button>
                         </div>
@@ -1766,6 +1766,11 @@
                     body: JSON.stringify({ product_id: productId, quantity: quantity })
                 });
                 const data = await response.json();
+                if (!response.ok) {
+                    const msg = data.product_id?.[0] || data.detail || data.error || 'Erreur lors de l\'ajout';
+                    showNotification(msg, 'error');
+                    return;
+                }
                 cart = data.cart;
                 updateCartDisplay();
                 showNotification(`${quantity} article(s) ajouté(s) au panier`, 'success');
@@ -1911,6 +1916,11 @@
                     body: JSON.stringify({ product_id: productId, quantity: 1 })
                 });
                 const data = await response.json();
+                if (!response.ok) {
+                    const msg = data.product_id?.[0] || data.detail || data.error || 'Erreur lors de l\'ajout';
+                    showNotification(msg, 'error');
+                    return;
+                }
                 cart = data.cart;
                 updateCartDisplay();
                 showNotification('Produit ajouté au panier');

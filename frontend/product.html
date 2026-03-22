@@ -1018,8 +1018,8 @@
                             </div>
                         </div>` : ''}
 
-                        <button class="btn-add-cart" onclick="addToCart()">
-                            Ajouter au panier
+                        <button class="btn-add-cart" onclick="addToCart()" ${product.is_in_stock === false ? 'disabled' : ''}>
+                            ${product.is_in_stock === false ? 'Rupture de stock' : 'Ajouter au panier'}
                         </button>
 
                         <div class="product-share">
@@ -1265,12 +1265,13 @@
                     body: JSON.stringify({ product_id: currentProduct.id, quantity: quantity })
                 });
 
+                const data = await response.json();
                 if (response.ok) {
-                    const data = await response.json();
                     updateCartCount(data.cart.item_count || data.cart.items?.length || 0);
                     showNotification(`${quantity} article(s) ajouté(s) au panier`, 'success');
                 } else {
-                    throw new Error('Erreur');
+                    const msg = data.product_id?.[0] || data.detail || data.error || 'Erreur lors de l\'ajout au panier';
+                    showNotification(msg, 'error');
                 }
             } catch (error) {
                 console.error('Error adding to cart:', error);

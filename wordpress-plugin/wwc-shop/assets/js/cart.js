@@ -386,4 +386,12 @@
     // Expose to global scope
     window.WWC_Cart = WWC_Cart;
 
+    // Debug helper: run this in the browser console to test the API connection:
+    // jQuery.post(wwcShop.ajaxUrl, {action:'wwc_debug_api'}).then(r => console.table(r))
+    window.wwcDebugApi = function() {
+        jQuery.post(wwcShop.ajaxUrl, {action: 'wwc_debug_api'})
+            .then(function(r) { console.log('[WWC Debug]', r); console.table(r); })
+            .fail(function(x) { console.error('[WWC Debug] AJAX fail:', x.responseText); });
+    };
+
 })(jQuery);

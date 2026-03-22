@@ -446,6 +446,10 @@ final class WWC_Shop {
             add_action("wp_ajax_nopriv_{$action}", [$this->cart, str_replace('wwc_', 'ajax_', $action)]);
         }
 
+        // Diagnostic: raw API connection test (remove after debugging)
+        add_action('wp_ajax_wwc_debug_api',        [$this, 'ajax_debug_api']);
+        add_action('wp_ajax_nopriv_wwc_debug_api', [$this, 'ajax_debug_api']);
+
         // Auth AJAX actions (available to both logged-in and guests)
         $auth_actions = [
             'wwc_register'               => 'ajax_register',
@@ -459,6 +463,27 @@ final class WWC_Shop {
             add_action("wp_ajax_{$action}",        [$this->auth, $method]);
             add_action("wp_ajax_nopriv_{$action}", [$this->auth, $method]);
         }
+    }
+
+    /**
+     * Diagnostic AJAX: test raw API connection and return full details
+     */
+    public function ajax_debug_api() {
+        $api_url   = get_option('wwc_api_url', 'NOT SET');
+        $test_url  = rtrim($api_url, '/') . '/api/v1/products/?page_size=1';
+
+        $response  = wp_remote_get($test_url, ['timeout' => 10]);
+        $is_error  = is_wp_error($response);
+
+        wp_send_json([
+            'api_url'       => $api_url,
+            'test_url'      => $test_url,
+            'wp_error'      => $is_error ? $response->get_error_message() : null,
+            'http_status'   => $is_error ? null : wp_remote_retrieve_response_code($response),
+            'body_preview'  => $is_error ? null : substr(wp_remote_retrieve_body($response), 0, 300),
+            'php_version'   => PHP_VERSION,
+            'wp_version'    => get_bloginfo('version'),
+        ]);
     }
 
     /**
