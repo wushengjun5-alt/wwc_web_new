@@ -20,11 +20,26 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Sans', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
 
-        .header { background: #ffffff; border-bottom: 1px solid #ececec; padding: 0; height: 70px; }
-        .header-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; height: 70px; display: flex; align-items: center; justify-content: space-between; }
-        .logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: #1c345e; text-decoration: none; }
-        .back-link { color: #191919; text-decoration: none; font-size: 14px; font-weight: 600; }
-        .back-link:hover { color: #e04403; }
+        .header { background: #1c345e; padding: 0; height: 80px; position: sticky; top: 0; z-index: 200; }
+        .header-container { max-width: 1100px; margin: 0 auto; padding: 0 24px; height: 80px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+        .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+        .logo img { height: 48px; width: auto; display: block; }
+        .back-link { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .back-link:hover { color: white; }
+
+        .header-actions { display: flex; align-items: center; gap: 16px; }
+
+        /* Lang dropdown — dark header variant */
+        .hdr-dropdown { position: relative; }
+        .hdr-dropdown-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .hdr-dropdown-btn:hover { background: rgba(255,255,255,0.22); }
+        .hdr-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); overflow: hidden; min-width: 120px; z-index: 300; }
+        .hdr-dropdown-menu.open { display: block; }
+        .hdr-dropdown-item { display: block; width: 100%; padding: 9px 16px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 600; color: #404040; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+        .hdr-dropdown-item:hover { background: #f5f5f5; color: #e04403; }
+        .hdr-dropdown-item.active { color: #e04403; background: rgba(224,68,3,0.07); }
+        [dir=rtl] .hdr-dropdown-menu { right: auto; left: 0; }
+        [dir=rtl] .hdr-dropdown-item { text-align: right; }
 
         .main { max-width: 1100px; margin: 0 auto; padding: 40px 20px; display: grid; grid-template-columns: 1fr 340px; gap: 28px; align-items: start; }
         @media (max-width: 820px) { .main { grid-template-columns: 1fr; } }
@@ -78,6 +93,17 @@
         .btn-outline { background: transparent; color: #e04403; border: 2px solid #e04403; margin-top: 8px; }
         .btn-outline:hover { background: #e04403; color: white; }
 
+        /* Coupon */
+        .coupon-row { display: flex; gap: 8px; margin: 16px 0; }
+        .coupon-input { flex: 1; padding: 10px 14px; border: 1px solid var(--wwc-border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+        .coupon-input:focus { outline: none; border-color: #e04403; }
+        .coupon-btn { padding: 10px 16px; background: #1c345e; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .coupon-btn:hover { background: #e04403; }
+        .coupon-result { font-size: 13px; padding: 4px 0; }
+        .coupon-result.ok { color: #155724; }
+        .coupon-result.err { color: #721c24; }
+        .summary-row.discount { color: #28a745; }
+
         /* Spinner */
         .spinner { display: inline-block; width: 36px; height: 36px; border: 3px solid var(--wwc-border); border-top-color: #e04403; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -98,8 +124,20 @@
 <body>
     <header class="header">
         <div class="header-container">
-            <a href="/shop/" class="logo">WALLAH WE CAN</a>
-            <a href="/shop/" class="back-link">← Continuer mes achats</a>
+            <a href="/shop/" class="logo">
+                <img src="https://wallahwecan.org/wp-content/uploads/2022/05/LOGO-WWC-.png" alt="Wallah We Can">
+            </a>
+            <div class="header-actions">
+                <a href="/shop/" class="back-link" data-i18n="back_to_shop">← Continuer mes achats</a>
+                <div class="hdr-dropdown" id="lang-dropdown">
+                    <button class="hdr-dropdown-btn" onclick="toggleDropdown('lang-dropdown')" id="lang-label">FR <svg viewBox="0 0 10 6" style="width:8px;fill:white"><path d="M0 0l5 6 5-6z"/></svg></button>
+                    <div class="hdr-dropdown-menu" id="lang-menu">
+                        <button class="hdr-dropdown-item" data-lang="fr" onclick="switchLang('fr')">🇫🇷 Français</button>
+                        <button class="hdr-dropdown-item" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                        <button class="hdr-dropdown-item" data-lang="ar" onclick="switchLang('ar')">🇹🇳 العربية</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -111,24 +149,132 @@
 
         <!-- Summary -->
         <aside class="card summary-card" id="summary-card" style="display:none;">
-            <div class="card-title" style="margin-bottom:16px;">Récapitulatif</div>
-            <div class="summary-row"><span>Sous-total</span><span id="sum-subtotal">—</span></div>
-            <div class="summary-row"><span>Livraison</span><span style="color:var(--wwc-text-light);">Calculée à l'étape suivante</span></div>
-            <div class="summary-row total"><span>Total estimé</span><span id="sum-total">—</span></div>
+            <div class="card-title" style="margin-bottom:16px;" data-i18n="order_summary">Récapitulatif</div>
+            <div class="summary-row"><span data-i18n="subtotal">Sous-total</span><span id="sum-subtotal">—</span></div>
+            <div class="summary-row" id="sum-discount-row" style="display:none;color:#28a745;"><span>Remise <span id="sum-coupon-label"></span></span><span id="sum-discount">—</span></div>
+            <div class="summary-row"><span data-i18n="shipping">Livraison</span><span style="color:var(--wwc-text-light);">Calculée à l'étape suivante</span></div>
+            <div class="summary-row total"><span data-i18n="total">Total estimé</span><span id="sum-total">—</span></div>
+
+            <!-- Coupon -->
+            <div style="border-top:1px solid var(--wwc-border); margin-top:12px; padding-top:14px;">
+                <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--wwc-secondary);">Code promo</div>
+                <div class="coupon-row">
+                    <input class="coupon-input" id="coupon-input" type="text" placeholder="CODECOUPON" autocomplete="off" style="text-transform:uppercase;">
+                    <button class="coupon-btn" onclick="applyCoupon()">Appliquer</button>
+                </div>
+                <div class="coupon-result" id="coupon-result"></div>
+            </div>
 
             <div class="impact-box" id="sum-impact" style="display:none;">
-                <h4>💝 Votre impact avec cette commande</h4>
+                <h4>💝 <span data-i18n="impact">Votre impact avec cette commande</span></h4>
                 <ul id="sum-impact-list"></ul>
             </div>
 
-            <a href="/shop/checkout/" class="btn btn-primary">Passer la commande →</a>
-            <a href="/shop/" class="btn btn-outline">Continuer mes achats</a>
+            <a href="/shop/checkout/" id="checkout-btn" class="btn btn-primary" data-i18n="checkout_btn">Passer la commande →</a>
+            <a href="/shop/" class="btn btn-outline" data-i18n="back_to_shop">Continuer mes achats</a>
         </aside>
     </div>
 
     <div class="notification" id="notification"></div>
 
     <script>
+        // ── i18n ──────────────────────────────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+
+        const T = {
+            fr: {
+                cart_title:   'Votre panier',
+                empty_cart:   'Votre panier est vide',
+                back_to_shop: 'Continuer mes achats',
+                checkout_btn: 'Passer la commande',
+                subtotal:     'Sous-total',
+                shipping:     'Livraison',
+                total:        'Total',
+                remove:       'Supprimer',
+                qty:          'Quantité',
+                product:      'Produit',
+                price:        'Prix',
+                impact:       'Impact',
+                empty_msg:    'Découvrez nos produits',
+                order_summary:'Récapitulatif',
+            },
+            en: {
+                cart_title:   'Your cart',
+                empty_cart:   'Your cart is empty',
+                back_to_shop: 'Continue shopping',
+                checkout_btn: 'Proceed to checkout',
+                subtotal:     'Subtotal',
+                shipping:     'Shipping',
+                total:        'Total',
+                remove:       'Remove',
+                qty:          'Quantity',
+                product:      'Product',
+                price:        'Price',
+                impact:       'Impact',
+                empty_msg:    'Discover our products',
+                order_summary:'Order summary',
+            },
+            ar: {
+                cart_title:   'سلة التسوق',
+                empty_cart:   'سلة التسوق فارغة',
+                back_to_shop: 'متابعة التسوق',
+                checkout_btn: 'إتمام الطلب',
+                subtotal:     'المجموع الجزئي',
+                shipping:     'الشحن',
+                total:        'الإجمالي',
+                remove:       'إزالة',
+                qty:          'الكمية',
+                product:      'المنتج',
+                price:        'السعر',
+                impact:       'التأثير',
+                empty_msg:    'اكتشف منتجاتنا',
+                order_summary:'ملخص الطلب',
+            },
+        };
+
+        function t(key) { return (T[getLang()] || T.fr)[key] || T.fr[key] || key; }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                el.textContent = t(el.dataset.i18n);
+            });
+            document.documentElement.lang = getLang();
+            document.documentElement.dir = getLang() === 'ar' ? 'rtl' : 'ltr';
+        }
+
+        function renderLangSwitcher() {
+            const lang = getLang();
+            const labels = { fr: 'FR', en: 'EN', ar: 'ع' };
+            const lbl = document.getElementById('lang-label');
+            if (lbl) lbl.innerHTML = `${labels[lang]} <svg viewBox="0 0 10 6" style="width:8px;fill:white"><path d="M0 0l5 6 5-6z"/></svg>`;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                el.classList.toggle('active', el.dataset.lang === lang);
+            });
+            applyTranslations();
+        }
+
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            renderLangSwitcher();
+        }
+
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id).querySelector('.hdr-dropdown-menu');
+            menu.classList.toggle('open');
+            document.addEventListener('click', function handler(e) {
+                if (!document.getElementById(id).contains(e.target)) {
+                    menu.classList.remove('open');
+                    document.removeEventListener('click', handler);
+                }
+            });
+        }
+        // ── end i18n ──────────────────────────────────────────────────────────
+
         const API_URL = '/api/v1';
 
         function getSessionKey() {
@@ -136,9 +282,22 @@
             if (!key) { key = crypto.randomUUID(); localStorage.setItem('wwc_session_key', key); }
             return key;
         }
+        function getValidToken() {
+            const token = localStorage.getItem('wwc_access_token');
+            if (!token) return null;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+                if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+                    localStorage.removeItem('wwc_access_token');
+                    localStorage.removeItem('wwc_refresh_token');
+                    return null;
+                }
+            } catch { return null; }
+            return token;
+        }
         function apiHeaders(extra) {
             const h = { 'Content-Type': 'application/json', 'X-Session-Key': getSessionKey() };
-            const token = localStorage.getItem('wwc_access_token');
+            const token = getValidToken();
             if (token) h['Authorization'] = `Bearer ${token}`;
             return Object.assign(h, extra);
         }
@@ -147,6 +306,73 @@
             return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
+        // Coupon state
+        let appliedCoupon = null;  // { code, discount_amount, discount_type }
+        let cartSubtotal = 0;
+        let cartSymbol = 'DT';
+
+        async function applyCoupon() {
+            const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+            const resultEl = document.getElementById('coupon-result');
+            if (!code) return;
+
+            resultEl.textContent = 'Vérification…';
+            resultEl.className = 'coupon-result';
+
+            try {
+                const res = await fetch(`${API_URL}/coupons/apply/`, {
+                    method: 'POST',
+                    headers: apiHeaders(),
+                    body: JSON.stringify({ code, subtotal: cartSubtotal }),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    resultEl.textContent = data.error || 'Code invalide.';
+                    resultEl.className = 'coupon-result err';
+                    appliedCoupon = null;
+                    updateSummaryDiscount(0);
+                    return;
+                }
+                appliedCoupon = data;
+                const disc = parseFloat(data.discount_amount) || 0;
+                resultEl.textContent = `✓ Code appliqué : -${disc.toFixed(2)} ${cartSymbol}`;
+                resultEl.className = 'coupon-result ok';
+                updateSummaryDiscount(disc);
+                document.getElementById('sum-coupon-label').textContent = `(${escHtml(data.code)})`;
+                updateCheckoutLink(data.code);
+            } catch {
+                resultEl.textContent = 'Erreur de connexion.';
+                resultEl.className = 'coupon-result err';
+            }
+        }
+
+        function updateSummaryDiscount(disc) {
+            const row = document.getElementById('sum-discount-row');
+            const totalEl = document.getElementById('sum-total');
+            if (disc > 0) {
+                row.style.display = 'flex';
+                document.getElementById('sum-discount').textContent = `-${disc.toFixed(2)} ${cartSymbol}`;
+                const newTotal = Math.max(0, cartSubtotal - disc);
+                totalEl.textContent = `${newTotal.toFixed(2)} ${cartSymbol}`;
+            } else {
+                row.style.display = 'none';
+                totalEl.textContent = `${cartSubtotal.toFixed(2)} ${cartSymbol}`;
+            }
+        }
+
+        function updateCheckoutLink(couponCode) {
+            const btn = document.getElementById('checkout-btn');
+            if (btn && couponCode) {
+                btn.href = `/shop/checkout/?coupon=${encodeURIComponent(couponCode)}`;
+            }
+        }
+
+        // Allow Enter key on coupon input
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('coupon-input');
+            if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') applyCoupon(); });
+        });
+
         function showNotification(msg, type = 'success') {
             const el = document.getElementById('notification');
             el.textContent = msg;
@@ -154,7 +380,10 @@
             setTimeout(() => el.classList.remove('show'), 3000);
         }
 
-        document.addEventListener('DOMContentLoaded', loadCart);
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLangSwitcher();
+            loadCart();
+        });
 
         async function loadCart() {
             try {
@@ -175,10 +404,10 @@
                 card.innerHTML = `
                     <div class="cart-empty">
                         <div class="cart-empty-icon">🛒</div>
-                        <h2>Votre panier est vide</h2>
-                        <p>Ajoutez des produits pour commencer votre commande.</p>
+                        <h2>${t('empty_cart')}</h2>
+                        <p>${t('empty_msg')}</p>
                         <a href="/shop/" class="btn btn-primary" style="display:inline-flex;width:auto;padding:12px 28px;">
-                            Découvrir nos produits
+                            ${t('back_to_shop')}
                         </a>
                     </div>`;
                 document.getElementById('summary-card').style.display = 'none';
@@ -189,16 +418,16 @@
 
             card.innerHTML = `
                 <div class="card-title">
-                    Mon panier
+                    ${t('cart_title')}
                     <span class="item-count">${items.length} article${items.length > 1 ? 's' : ''}</span>
                 </div>
                 <table class="cart-table">
                     <thead>
                         <tr>
-                            <th>Produit</th>
-                            <th>Prix unitaire</th>
-                            <th>Quantité</th>
-                            <th>Total</th>
+                            <th>${t('product')}</th>
+                            <th>${t('price')}</th>
+                            <th>${t('qty')}</th>
+                            <th>${t('total')}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -233,7 +462,7 @@
                                 </td>
                                 <td class="price-cell" id="sub-${item.id}">${subtotal} ${symbol}</td>
                                 <td>
-                                    <button class="remove-btn" onclick="removeItem(${item.id})" title="Retirer">🗑</button>
+                                    <button class="remove-btn" onclick="removeItem(${item.id})" title="${t('remove')}">🗑</button>
                                 </td>
                             </tr>`;
                         }).join('')}
@@ -243,8 +472,12 @@
             // Summary
             const sumCard = document.getElementById('summary-card');
             sumCard.style.display = 'block';
+            cartSubtotal = parseFloat(cart.total) || 0;
+            cartSymbol = symbol;
             document.getElementById('sum-subtotal').textContent = `${cart.total} ${symbol}`;
             document.getElementById('sum-total').textContent    = `${cart.total} ${symbol}`;
+            // Re-apply coupon if already applied
+            if (appliedCoupon) updateSummaryDiscount(parseFloat(appliedCoupon.discount_amount) || 0);
 
             // Impact
             const impact = cart.total_impact || {};
@@ -254,6 +487,9 @@
                 document.getElementById('sum-impact-list').innerHTML =
                     impactEntries.map(([type, qty]) => `<li><strong>${qty}</strong> ${escHtml(type)}</li>`).join('');
             }
+
+            // Re-run translations so any data-i18n inside the re-rendered summary card stays correct
+            applyTranslations();
         }
 
         async function updateQty(itemId, newQty) {
@@ -264,17 +500,27 @@
                     headers: apiHeaders(),
                     body: JSON.stringify({ quantity: newQty })
                 });
-                const cart = await res.json();
-                renderCart(cart);
+                const data = await res.json();
+                if (!res.ok) {
+                    const msg = data.detail || data.error || data.quantity?.[0] || 'Erreur de mise à jour';
+                    showNotification(msg, 'error');
+                    return;
+                }
+                renderCart(data);
             } catch { showNotification('Erreur de mise à jour', 'error'); }
         }
 
         async function removeItem(itemId) {
             try {
                 const res  = await fetch(`${API_URL}/cart/remove/${itemId}/`, { method: 'DELETE', headers: apiHeaders() });
-                const cart = await res.json();
-                renderCart(cart);
-                showNotification('Article retiré', 'info');
+                const data = await res.json();
+                if (!res.ok) {
+                    const msg = data.detail || data.error || 'Erreur lors de la suppression';
+                    showNotification(msg, 'error');
+                    return;
+                }
+                renderCart(data);
+                showNotification(t('remove'), 'info');
             } catch { showNotification('Erreur lors de la suppression', 'error'); }
         }
     </script>

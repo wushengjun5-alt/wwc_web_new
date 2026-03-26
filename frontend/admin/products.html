@@ -55,6 +55,14 @@
                 <span class="nav-icon">🤲</span>
                 <span>Dons</span>
             </a>
+            <a href="shipping.html" class="nav-item">
+                <span class="nav-icon">🚚</span>
+                <span>Livraison</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span>Paramètres</span>
+            </a>
             <div class="nav-divider"></div>
             <a href="../index.html" class="nav-item">
                 <span class="nav-icon">🏪</span>
@@ -78,6 +86,7 @@
                 <h1>Produits</h1>
             </div>
             <div class="header-right">
+                <button class="btn btn-outline" id="btnBulkB2B">🏢 Tarifs B2B</button>
                 <a href="product-edit.html" class="btn btn-primary">
                     <span>➕</span> Nouveau Produit
                 </a>
@@ -167,6 +176,18 @@
         </div>
     </main>
 
+    <style>
+        .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:1000; align-items:center; justify-content:center; }
+        .modal.active { display:flex; }
+        .modal-overlay { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); }
+        .modal-content { position:relative; background:white; border-radius:var(--radius-lg); width:90%; max-width:450px; box-shadow:var(--shadow-lg); }
+        .modal-header { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; border-bottom:1px solid var(--admin-border); }
+        .modal-header h3 { font-size:16px; font-weight:600; }
+        .modal-close { background:none; border:none; font-size:24px; cursor:pointer; color:var(--admin-text-light); }
+        .modal-body { padding:20px; }
+        .modal-footer { display:flex; justify-content:flex-end; gap:10px; padding:15px 20px; border-top:1px solid var(--admin-border); }
+    </style>
+
     <!-- Delete Confirmation Modal -->
     <div class="modal" id="deleteModal">
         <div class="modal-overlay"></div>
@@ -182,6 +203,55 @@
             <div class="modal-footer">
                 <button class="btn btn-outline" id="cancelDelete">Annuler</button>
                 <button class="btn btn-danger" id="confirmDelete">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- B2B Bulk Pricing Modal -->
+    <div class="modal" id="b2bModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width:520px;">
+            <div class="modal-header">
+                <h3>🏢 Tarifs B2B en masse</h3>
+                <button class="modal-close" onclick="closeB2BModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom:16px;color:var(--admin-text-light);font-size:14px;">
+                    Appliquer un tarif B2B à tous les produits publiés. Le prix B2B sera calculé en appliquant une remise sur le prix TND actuel.
+                </p>
+                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Remise B2B (%)</label>
+                        <input type="number" id="b2bDiscount" class="form-input" min="1" max="80" value="20" placeholder="ex: 20">
+                        <small style="color:var(--admin-text-light);">% de réduction sur le prix TND</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantité minimum</label>
+                        <input type="number" id="b2bMinQty" class="form-input" min="1" value="3" placeholder="ex: 3">
+                        <small style="color:var(--admin-text-light);">Commande minimale B2B</small>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="form-label">Appliquer à</label>
+                    <select id="b2bScope" class="form-input">
+                        <option value="all">Tous les produits publiés</option>
+                        <option value="no_b2b">Seulement ceux sans tarif B2B</option>
+                        <option value="selected">Produits sélectionnés ({{ n }} sélectionnés)</option>
+                    </select>
+                </div>
+                <div id="b2bPreview" style="background:var(--admin-bg);border-radius:var(--radius);padding:12px;font-size:13px;display:none;">
+                    <strong>Aperçu:</strong> <span id="b2bPreviewText"></span>
+                </div>
+                <div id="b2bProgress" style="display:none;margin-top:12px;">
+                    <div style="background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden;">
+                        <div id="b2bProgressBar" style="background:var(--admin-primary);height:100%;width:0%;transition:width 0.3s;"></div>
+                    </div>
+                    <p id="b2bProgressText" style="font-size:13px;color:var(--admin-text-light);margin-top:6px;">Mise à jour...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeB2BModal()">Annuler</button>
+                <button class="btn btn-primary" id="applyB2BBtn" onclick="applyBulkB2B()">Appliquer</button>
             </div>
         </div>
     </div>

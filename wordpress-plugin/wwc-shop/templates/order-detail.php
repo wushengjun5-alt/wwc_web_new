@@ -11,7 +11,7 @@ $api   = wwc_shop()->api;
 $order = $api->get_order($order_number);
 
 if (is_wp_error($order) || empty($order)) {
-    echo '<p class="wwc-error">' . esc_html__('Commande introuvable.', 'wwc-shop') . '</p>';
+    echo '<p class="wwc-error">' . WWC_I18n::t('Commande introuvable.') . '</p>';
     return;
 }
 
@@ -20,13 +20,13 @@ $currency = $order['currency'] ?? 'TND';
 $symbol   = $currency === 'EUR' ? '€' : 'DT';
 
 $status_labels = [
-    'pending'    => __('En attente', 'wwc-shop'),
-    'paid'       => __('Payée', 'wwc-shop'),
-    'processing' => __('En traitement', 'wwc-shop'),
-    'shipped'    => __('Expédiée', 'wwc-shop'),
-    'delivered'  => __('Livrée', 'wwc-shop'),
-    'cancelled'  => __('Annulée', 'wwc-shop'),
-    'refunded'   => __('Remboursée', 'wwc-shop'),
+    'pending'    => WWC_I18n::t('En attente'),
+    'paid'       => WWC_I18n::t('Payée'),
+    'processing' => WWC_I18n::t('En traitement'),
+    'shipped'    => WWC_I18n::t('Expédiée'),
+    'delivered'  => WWC_I18n::t('Livrée'),
+    'cancelled'  => WWC_I18n::t('Annulée'),
+    'refunded'   => WWC_I18n::t('Remboursée'),
 ];
 $status       = $order['status'] ?? 'pending';
 $status_label = $status_labels[$status] ?? $order['status_display'] ?? $status;
@@ -36,10 +36,10 @@ $status_label = $status_labels[$status] ?? $order['status_display'] ?? $status;
 
     <div class="wwc-order-detail-header">
         <div>
-            <h2><?php printf(esc_html__('Commande #%s', 'wwc-shop'), esc_html($order['order_number'])); ?></h2>
+            <h2><?php printf(WWC_I18n::t('Commande #%s'), esc_html($order['order_number'])); ?></h2>
             <p class="wwc-order-date">
                 <?php printf(
-                    esc_html__('Passée le %s', 'wwc-shop'),
+                    WWC_I18n::t('Passée le %s'),
                     esc_html(date_i18n('j F Y', strtotime($order['created_at'])))
                 ); ?>
             </p>
@@ -51,14 +51,14 @@ $status_label = $status_labels[$status] ?? $order['status_display'] ?? $status;
 
     <!-- Items -->
     <div class="wwc-order-items">
-        <h3><?php esc_html_e('Articles', 'wwc-shop'); ?></h3>
+        <h3><?php WWC_I18n::e('Articles'); ?></h3>
         <table class="wwc-order-items-table">
             <thead>
                 <tr>
-                    <th><?php esc_html_e('Produit', 'wwc-shop'); ?></th>
-                    <th><?php esc_html_e('Qté', 'wwc-shop'); ?></th>
-                    <th><?php esc_html_e('Prix unitaire', 'wwc-shop'); ?></th>
-                    <th><?php esc_html_e('Sous-total', 'wwc-shop'); ?></th>
+                    <th><?php WWC_I18n::e('Produit'); ?></th>
+                    <th><?php WWC_I18n::e('Qté'); ?></th>
+                    <th><?php WWC_I18n::e('Prix unitaire'); ?></th>
+                    <th><?php WWC_I18n::e('Sous-total'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -86,17 +86,17 @@ $status_label = $status_labels[$status] ?? $order['status_display'] ?? $status;
     <!-- Totals -->
     <div class="wwc-order-totals">
         <div class="wwc-order-total-row">
-            <span><?php esc_html_e('Sous-total', 'wwc-shop'); ?></span>
+            <span><?php WWC_I18n::e('Sous-total'); ?></span>
             <span><?php echo esc_html($order['subtotal']); ?> <?php echo esc_html($symbol); ?></span>
         </div>
         <?php if (!empty($order['shipping_cost']) && $order['shipping_cost'] > 0): ?>
         <div class="wwc-order-total-row">
-            <span><?php esc_html_e('Livraison', 'wwc-shop'); ?></span>
+            <span><?php WWC_I18n::e('Livraison'); ?></span>
             <span><?php echo esc_html($order['shipping_cost']); ?> <?php echo esc_html($symbol); ?></span>
         </div>
         <?php endif; ?>
         <div class="wwc-order-total-row wwc-order-total-final">
-            <span><?php esc_html_e('Total', 'wwc-shop'); ?></span>
+            <span><?php WWC_I18n::e('Total'); ?></span>
             <span><?php echo esc_html($order['total']); ?> <?php echo esc_html($symbol); ?></span>
         </div>
     </div>
@@ -104,7 +104,7 @@ $status_label = $status_labels[$status] ?? $order['status_display'] ?? $status;
     <!-- Shipping address -->
     <?php if (!empty($order['shipping_address'])): $addr = $order['shipping_address']; ?>
     <div class="wwc-order-address">
-        <h3><?php esc_html_e('Adresse de livraison', 'wwc-shop'); ?></h3>
+        <h3><?php WWC_I18n::e('Adresse de livraison'); ?></h3>
         <address>
             <?php echo esc_html(trim(($addr['first_name'] ?? '') . ' ' . ($addr['last_name'] ?? ''))); ?><br>
             <?php if (!empty($addr['company'])): echo esc_html($addr['company']) . '<br>'; endif; ?>
@@ -119,9 +119,9 @@ $status_label = $status_labels[$status] ?? $order['status_display'] ?? $status;
     <!-- Tracking -->
     <?php if (!empty($order['tracking_number'])): ?>
     <div class="wwc-order-tracking">
-        <h3><?php esc_html_e('Suivi', 'wwc-shop'); ?></h3>
+        <h3><?php WWC_I18n::e('Suivi'); ?></h3>
         <p><?php printf(
-            esc_html__('Numéro de suivi : %s', 'wwc-shop'),
+            WWC_I18n::t('Numéro de suivi : %s'),
             '<strong>' . esc_html($order['tracking_number']) . '</strong>'
         ); ?></p>
     </div>
@@ -130,7 +130,7 @@ $status_label = $status_labels[$status] ?? $order['status_display'] ?? $status;
     <!-- Actions -->
     <div class="wwc-order-detail-actions">
         <a href="<?php echo esc_url(home_url('/mon-compte/')); ?>" class="wwc-btn wwc-btn--secondary">
-            &larr; <?php esc_html_e('Retour à mon compte', 'wwc-shop'); ?>
+            &larr; <?php WWC_I18n::e('Retour à mon compte'); ?>
         </a>
     </div>
 

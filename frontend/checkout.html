@@ -37,27 +37,36 @@
         /* Header */
         .header {
             background: #ffffff;
-            border-bottom: 1px solid #ececec;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
             padding: 0;
-            height: 70px;
+            height: 80px;
+            position: sticky;
+            top: 0;
+            z-index: 200;
         }
 
         .header-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
-            height: 70px;
+            padding: 0 24px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 24px;
         }
 
         .logo {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: #1c345e;
+            display: flex;
+            align-items: center;
             text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            height: 48px;
+            width: auto;
+            display: block;
         }
 
         .back-link {
@@ -483,6 +492,23 @@
             text-align: center;
         }
 
+        /* Address option tiles */
+        .addr-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+        .addr-tile {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 16px; border: 2px solid var(--wwc-border); border-radius: 12px;
+            cursor: pointer; transition: all 0.2s; background: white;
+        }
+        .addr-tile:hover { border-color: #e04403; }
+        .addr-tile.selected { border-color: #e04403; background: rgba(224,68,3,0.04); }
+        .addr-tile input[type="radio"] { width: 18px; height: 18px; margin-top: 2px; accent-color: #e04403; flex-shrink: 0; }
+        .addr-tile-body { flex: 1; }
+        .addr-tile-title { font-weight: 700; font-size: 14px; color: var(--wwc-secondary); margin-bottom: 2px; }
+        .addr-tile-lines { font-size: 13px; color: #555; line-height: 1.7; }
+        .addr-tile-new-label { font-weight: 700; font-size: 14px; color: var(--wwc-secondary); }
+        .addr-tile-new-sub { font-size: 13px; color: var(--wwc-text-light); }
+        .addr-form-expand { margin-top: 4px; padding-top: 16px; border-top: 1px solid var(--wwc-border); }
+
         /* Responsive */
         @media (max-width: 900px) {
             .checkout-layout {
@@ -498,16 +524,41 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Language dropdown */
+        .hdr-dropdown { position: relative; }
+        .hdr-dropdown-btn { display: flex; align-items: center; gap: 5px; background: rgba(28,52,94,0.1); border: 1px solid rgba(28,52,94,0.25); color: #191919; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .hdr-dropdown-btn:hover { background: rgba(28,52,94,0.18); }
+        .hdr-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); overflow: hidden; min-width: 120px; z-index: 300; }
+        .hdr-dropdown-menu.open { display: block; }
+        .hdr-dropdown-item { display: block; width: 100%; padding: 9px 16px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 600; color: #404040; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+        .hdr-dropdown-item:hover { background: #f5f5f5; color: #e04403; }
+        .hdr-dropdown-item.active { color: #e04403; background: rgba(224,68,3,0.07); }
+
+        /* RTL support */
+        [dir=rtl] .form-group input, [dir=rtl] .form-group select, [dir=rtl] .form-group textarea { text-align: right; direction: rtl; }
+        [dir=rtl] .hdr-dropdown-menu { right: auto; left: 0; }
+        [dir=rtl] .hdr-dropdown-item { text-align: right; }
     </style>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="header-container">
-            <a href="/shop/" class="logo">WALLAH WE CAN</a>
-            <a href="/shop/cart/" class="back-link">
-                ← Mon panier
+            <a href="/shop/" class="logo">
+                <img src="https://wallahwecan.org/wp-content/uploads/2022/05/LOGO-WWC-.png" alt="Wallah We Can">
             </a>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <a href="/shop/cart/" class="back-link" data-i18n="back_to_cart">← Mon panier</a>
+                <div class="hdr-dropdown" id="lang-dropdown">
+                    <button class="hdr-dropdown-btn" onclick="toggleDropdown('lang-dropdown')" id="lang-label">FR <svg viewBox="0 0 10 6" style="width:8px;fill:#191919"><path d="M0 0l5 6 5-6z"/></svg></button>
+                    <div class="hdr-dropdown-menu" id="lang-menu">
+                        <button class="hdr-dropdown-item" data-lang="fr" onclick="switchLang('fr')">🇫🇷 Français</button>
+                        <button class="hdr-dropdown-item" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                        <button class="hdr-dropdown-item" data-lang="ar" onclick="switchLang('ar')">🇹🇳 العربية</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -515,14 +566,14 @@
     <main class="main" id="main-content">
         <div class="loading-page">
             <div class="loading-spinner"></div>
-            <p>Chargement de votre panier...</p>
+            <p data-i18n="loading_cart">Chargement de votre panier...</p>
         </div>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
-            <p>Paiement sécurisé - Vos données sont protégées</p>
+            <p data-i18n="footer_secure">Paiement sécurisé - Vos données sont protégées</p>
             <p style="opacity: 0.7; margin-top: 10px; font-size: 14px;">
                 © 2026 Wallah We Can - Tous droits réservés
             </p>
@@ -533,6 +584,170 @@
     <div class="notification" id="notification"></div>
 
     <script>
+        // ─── i18n ────────────────────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        const T = {
+            fr: {
+                back_to_cart: '← Mon panier',
+                page_title: '🛒 Finaliser la commande',
+                section_contact: '📬 Contact',
+                section_shipping: '📦 Adresse de livraison',
+                section_billing: '🧾 Adresse de facturation',
+                section_payment: '💳 Mode de paiement',
+                section_notes: '📝 Notes (optionnel)',
+                section_gift: '🎁 Emballage cadeau',
+                section_summary: '📋 Récapitulatif',
+                label_email: 'Email', label_phone: 'Téléphone',
+                label_first_name: 'Prénom', label_last_name: 'Nom',
+                label_address: 'Adresse', label_address2: 'Complément d\'adresse',
+                label_city: 'Ville', label_postal: 'Code postal', label_country: 'Pays',
+                label_company: 'Entreprise (optionnel)',
+                addr_same: 'Identique à l\'adresse de livraison',
+                addr_same_sub: 'Utiliser la même adresse pour la facturation',
+                addr_diff: '🏢 Adresse de facturation différente',
+                addr_diff_sub: 'Entreprise, adresse personnelle distincte, etc.',
+                addr_new: '➕ Utiliser une adresse différente',
+                addr_new_sub: 'Saisir une nouvelle adresse',
+                save_address: 'Enregistrer comme adresse par défaut',
+                payment_card: 'Carte bancaire', payment_card_sub: 'Paiement sécurisé via Stripe',
+                payment_cod: 'Paiement à la livraison', payment_cod_sub: 'Payez en espèces à la réception',
+                notes_placeholder: 'Instructions spéciales pour la livraison...',
+                gift_label: 'Ajouter un emballage cadeau',
+                btn_confirm: 'Confirmer la commande', btn_pay_now: 'Payer maintenant',
+                secure: 'Paiement 100% sécurisé',
+                subtotal: 'Sous-total', shipping: 'Livraison', total: 'Total',
+                discount: 'Remise', coupon_placeholder: 'Code promo', coupon_apply: 'Appliquer',
+                qty: 'Quantité',
+                empty_cart_title: 'Votre panier est vide',
+                empty_cart_sub: 'Ajoutez des produits avant de passer commande.',
+                empty_cart_btn: 'Découvrir nos produits',
+                loading_cart: 'Chargement de votre panier...',
+                err_connection: 'Erreur de connexion',
+                err_connection_sub: 'Impossible de charger votre panier. Veuillez réessayer.',
+                back_to_shop: 'Retour à la boutique',
+                footer_secure: 'Paiement sécurisé - Vos données sont protégées',
+            },
+            en: {
+                back_to_cart: '← My cart',
+                page_title: '🛒 Checkout',
+                section_contact: '📬 Contact',
+                section_shipping: '📦 Shipping address',
+                section_billing: '🧾 Billing address',
+                section_payment: '💳 Payment method',
+                section_notes: '📝 Notes (optional)',
+                section_gift: '🎁 Gift wrapping',
+                section_summary: '📋 Order summary',
+                label_email: 'Email', label_phone: 'Phone',
+                label_first_name: 'First name', label_last_name: 'Last name',
+                label_address: 'Address', label_address2: 'Address line 2',
+                label_city: 'City', label_postal: 'Postal code', label_country: 'Country',
+                label_company: 'Company (optional)',
+                addr_same: 'Same as shipping address',
+                addr_same_sub: 'Use the same address for billing',
+                addr_diff: '🏢 Different billing address',
+                addr_diff_sub: 'Company, separate personal address, etc.',
+                addr_new: '➕ Use a different address',
+                addr_new_sub: 'Enter a new address',
+                save_address: 'Save as default address',
+                payment_card: 'Credit card', payment_card_sub: 'Secure payment via Stripe',
+                payment_cod: 'Cash on delivery', payment_cod_sub: 'Pay in cash upon receipt',
+                notes_placeholder: 'Special delivery instructions...',
+                gift_label: 'Add gift wrapping',
+                btn_confirm: 'Confirm order', btn_pay_now: 'Pay now',
+                secure: '100% secure payment',
+                subtotal: 'Subtotal', shipping: 'Shipping', total: 'Total',
+                discount: 'Discount', coupon_placeholder: 'Promo code', coupon_apply: 'Apply',
+                qty: 'Qty',
+                empty_cart_title: 'Your cart is empty',
+                empty_cart_sub: 'Add products before placing an order.',
+                empty_cart_btn: 'Discover our products',
+                loading_cart: 'Loading your cart...',
+                err_connection: 'Connection error',
+                err_connection_sub: 'Unable to load your cart. Please try again.',
+                back_to_shop: 'Back to shop',
+                footer_secure: 'Secure payment - Your data is protected',
+            },
+            ar: {
+                back_to_cart: '← سلة التسوق',
+                page_title: '🛒 إتمام الطلب',
+                section_contact: '📬 التواصل',
+                section_shipping: '📦 عنوان الشحن',
+                section_billing: '🧾 عنوان الفاتورة',
+                section_payment: '💳 طريقة الدفع',
+                section_notes: '📝 ملاحظات (اختياري)',
+                section_gift: '🎁 تغليف الهدايا',
+                section_summary: '📋 ملخص الطلب',
+                label_email: 'البريد الإلكتروني', label_phone: 'الهاتف',
+                label_first_name: 'الاسم الأول', label_last_name: 'الاسم الأخير',
+                label_address: 'العنوان', label_address2: 'تفاصيل إضافية',
+                label_city: 'المدينة', label_postal: 'الرمز البريدي', label_country: 'الدولة',
+                label_company: 'الشركة (اختياري)',
+                addr_same: 'نفس عنوان الشحن',
+                addr_same_sub: 'استخدم نفس العنوان للفاتورة',
+                addr_diff: '🏢 عنوان فاتورة مختلف',
+                addr_diff_sub: 'شركة، عنوان شخصي منفصل، إلخ.',
+                addr_new: '➕ استخدام عنوان مختلف',
+                addr_new_sub: 'أدخل عنوانًا جديدًا',
+                save_address: 'حفظ كعنوان افتراضي',
+                payment_card: 'بطاقة مصرفية', payment_card_sub: 'دفع آمن عبر Stripe',
+                payment_cod: 'الدفع عند الاستلام', payment_cod_sub: 'ادفع نقدًا عند الاستلام',
+                notes_placeholder: 'تعليمات خاصة للتوصيل...',
+                gift_label: 'إضافة تغليف هدية',
+                btn_confirm: 'تأكيد الطلب', btn_pay_now: 'ادفع الآن',
+                secure: 'دفع آمن 100%',
+                subtotal: 'المجموع الجزئي', shipping: 'الشحن', total: 'الإجمالي',
+                discount: 'خصم', coupon_placeholder: 'كود الخصم', coupon_apply: 'تطبيق',
+                qty: 'الكمية',
+                empty_cart_title: 'سلة التسوق فارغة',
+                empty_cart_sub: 'أضف منتجات قبل تقديم طلبك.',
+                empty_cart_btn: 'اكتشف منتجاتنا',
+                loading_cart: 'جاري تحميل سلة التسوق...',
+                err_connection: 'خطأ في الاتصال',
+                err_connection_sub: 'تعذّر تحميل سلة التسوق. يرجى المحاولة مرة أخرى.',
+                back_to_shop: 'العودة إلى المتجر',
+                footer_secure: 'دفع آمن - بياناتك محمية',
+            }
+        };
+        function t(key) { return (T[getLang()] || T.fr)[key] || T.fr[key] || key; }
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                el.textContent = t(key);
+            });
+            document.documentElement.lang = getLang();
+            document.documentElement.dir = getLang() === 'ar' ? 'rtl' : 'ltr';
+        }
+        function renderLangSwitcher() {
+            const lang = getLang();
+            const labels = { fr: 'FR', en: 'EN', ar: 'ع' };
+            const lbl = document.getElementById('lang-label');
+            if (lbl) lbl.innerHTML = `${labels[lang]} <svg viewBox="0 0 10 6" style="width:8px;fill:#191919"><path d="M0 0l5 6 5-6z"/></svg>`;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                el.classList.toggle('active', el.dataset.lang === lang);
+            });
+            applyTranslations();
+        }
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            renderLangSwitcher();
+        }
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id).querySelector('.hdr-dropdown-menu');
+            menu.classList.toggle('open');
+            document.addEventListener('click', function handler(e) {
+                if (!document.getElementById(id).contains(e.target)) {
+                    menu.classList.remove('open');
+                    document.removeEventListener('click', handler);
+                }
+            });
+        }
+        // ─────────────────────────────────────────────────────────────
+
         // API Configuration
         const API_URL = '/api/v1';
 
@@ -550,6 +765,10 @@
         function getCurrencySymbol() { return getCurrentCurrency() === 'EUR' ? '€' : 'DT'; }
         function getGiftFee() { return getCurrentCurrency() === 'EUR' ? 2.00 : 5.00; }
 
+        function escHtml(str) {
+            return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
         function apiHeaders(extra) {
             const h = { 'Content-Type': 'application/json', 'X-Session-Key': getSessionKey() };
             const token = localStorage.getItem('wwc_access_token');
@@ -561,32 +780,202 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            loadShippingCountries();
             loadCart();
         });
 
+        // Load active shipping countries from API and populate all country selects
+        async function loadShippingCountries() {
+            try {
+                const res = await fetch(`${API_URL}/shipping-rates/?is_active=true&page_size=100`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const rates = data.results || [];
+                if (!rates.length) return;
+
+                const optionsHtml = rates.map(r => {
+                    const selected = r.country_code === 'TN' ? ' selected' : '';
+                    return `<option value="${r.country_code}"${selected}>${r.country_name}</option>`;
+                }).join('');
+
+                // Update all three country selects
+                document.querySelectorAll('select[name="shipping_country"], #shipping_country, #billing_country').forEach(sel => {
+                    const current = sel.value;
+                    sel.innerHTML = optionsHtml;
+                    // Restore previously selected value if it exists
+                    if (current && sel.querySelector(`option[value="${current}"]`)) {
+                        sel.value = current;
+                    }
+                });
+            } catch (err) {
+                // Silently fail — hardcoded options remain as fallback
+                console.warn('Could not load shipping countries from API:', err.message);
+            }
+        }
+
         // Load cart
         async function loadCart() {
+            let response;
             try {
-                const response = await fetch(`${API_URL}/cart/`, {
+                response = await fetch(`${API_URL}/cart/`, {
                     headers: apiHeaders()
                 });
                 cart = await response.json();
-
-                if (!cart.items || cart.items.length === 0) {
-                    renderEmptyCart();
-                } else {
-                    renderCheckoutPage();
-                }
             } catch (error) {
                 console.error('Error loading cart:', error);
                 document.getElementById('main-content').innerHTML = `
                     <div class="empty-cart">
                         <div class="empty-cart-icon">⚠️</div>
-                        <h2>Erreur de connexion</h2>
-                        <p>Impossible de charger votre panier. Veuillez réessayer.</p>
-                        <a href="/shop/">Retour à la boutique</a>
+                        <h2>${t('err_connection')}</h2>
+                        <p>${t('err_connection_sub')}</p>
+                        <a href="/shop/">${t('back_to_shop')}</a>
                     </div>
                 `;
+                return;
+            }
+
+            if (!cart.items || cart.items.length === 0) {
+                renderEmptyCart();
+            } else {
+                renderCheckoutPage();
+                // Pre-fill coupon from cart page
+                const urlCoupon = new URLSearchParams(window.location.search).get('coupon');
+                if (urlCoupon) {
+                    const input = document.getElementById('coupon-input');
+                    if (input) { input.value = urlCoupon; applyCoupon(); }
+                }
+                // Pre-fill address from profile if logged in
+                const token = localStorage.getItem('wwc_access_token');
+                if (token) prefillFromProfile(token);
+            }
+        }
+
+        let _profile = null;        // cached profile
+        let _usingSavedAddress = false; // true = tile-saved is selected
+
+        const COUNTRY_NAMES = {TN:'Tunisie',FR:'France',BE:'Belgique',CH:'Suisse',MA:'Maroc',DZ:'Algérie',DE:'Allemagne',GB:'Royaume-Uni',US:'États-Unis',CA:'Canada'};
+
+        async function prefillFromProfile(token) {
+            try {
+                const res = await fetch(`${API_URL}/customer/profile/`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                if (!res.ok) return;
+                _profile = await res.json();
+                const p = _profile;
+
+                // Always fill contact
+                const emailEl = document.getElementById('email');
+                const phoneEl = document.getElementById('phone');
+                if (emailEl) emailEl.value = p.email || '';
+                if (phoneEl) phoneEl.value = p.phone || '';
+
+                const hasAddress = p.default_shipping_address_1 && p.default_shipping_city;
+
+                if (hasAddress) {
+                    // Show two-option tiles, hide plain form
+                    const firstName = p.default_shipping_first_name || p.first_name || '';
+                    const lastName  = p.default_shipping_last_name  || p.last_name  || '';
+
+                    document.getElementById('saved-addr-name').textContent = `${firstName} ${lastName}`.trim();
+                    document.getElementById('saved-addr-lines').innerHTML = [
+                        p.default_shipping_address_1,
+                        p.default_shipping_address_2,
+                        `${p.default_shipping_postal_code || ''} ${p.default_shipping_city || ''}`.trim(),
+                        COUNTRY_NAMES[p.default_shipping_country] || p.default_shipping_country || '',
+                    ].filter(Boolean).join('<br>');
+
+                    document.getElementById('shipping-addr-tiles').style.display = 'flex';
+                    // Hide plain form and remove required so browser doesn't block submit
+                    const plainForm = document.getElementById('shipping-form-fields');
+                    plainForm.style.display = 'none';
+                    plainForm.querySelectorAll('input[required], select[required]').forEach(el => el.removeAttribute('required'));
+
+                    // Pre-fill the plain-form inputs with saved data (used when tile-saved is active)
+                    _fillShippingHiddenFields(p);
+                    _usingSavedAddress = true;
+                } else {
+                    // No saved address — plain form, offer to save
+                    _fillShippingFormFields(p, /* fillName */ true);
+                    document.getElementById('save-address-label').style.display = 'flex';
+                }
+            } catch { /* silent fail */ }
+        }
+
+        // Fill the hidden plain-form fields (tile-saved mode: form is invisible but still submitted)
+        function _fillShippingHiddenFields(p) {
+            const set = (id, val) => { const el = document.getElementById(id); if (el) { el.value = val || ''; el.removeAttribute('required'); } };
+            set('shipping_first_name', p.default_shipping_first_name || p.first_name);
+            set('shipping_last_name',  p.default_shipping_last_name  || p.last_name);
+            set('shipping_address_1',  p.default_shipping_address_1);
+            set('shipping_address_2',  p.default_shipping_address_2);
+            set('shipping_city',       p.default_shipping_city);
+            set('shipping_postal_code',p.default_shipping_postal_code);
+            const countryEl = document.getElementById('shipping_country');
+            if (countryEl && p.default_shipping_country) countryEl.value = p.default_shipping_country;
+        }
+
+        // Pre-fill name fields in the tile-new inline form from profile
+        function _fillShippingFormFields(p, fillName) {
+            if (!fillName) return;
+            const newFields = document.getElementById('shipping-new-fields');
+            if (!newFields) return;
+            const fn = newFields.querySelector('[name="shipping_first_name"]');
+            const ln = newFields.querySelector('[name="shipping_last_name"]');
+            if (fn && !fn.value) fn.value = p.first_name || '';
+            if (ln && !ln.value) ln.value = p.last_name || '';
+        }
+
+        function selectShipping(choice) {
+            const tileSaved = document.getElementById('tile-saved');
+            const tileNew   = document.getElementById('tile-new');
+            const newFields = document.getElementById('shipping-new-fields');
+            const plainForm = document.getElementById('shipping-form-fields');
+
+            if (choice === 'saved') {
+                tileSaved.classList.add('selected');
+                tileNew.classList.remove('selected');
+                newFields.style.display = 'none';
+                // Restore saved address values in the plain hidden form
+                if (_profile) _fillShippingHiddenFields(_profile);
+                _usingSavedAddress = true;
+                // Remove required from new-address inputs
+                newFields.querySelectorAll('input, select').forEach(el => el.removeAttribute('required'));
+            } else {
+                tileSaved.classList.remove('selected');
+                tileNew.classList.add('selected');
+                newFields.style.display = 'block';
+                _usingSavedAddress = false;
+                // Clear any saved-address values from plain form so they don't conflict
+                if (plainForm) plainForm.querySelectorAll('input, select').forEach(el => { if (el.name && el.name.startsWith('shipping_')) el.value = ''; });
+                // Make new-address inputs required
+                ['shipping_first_name','shipping_last_name','shipping_address_1','shipping_city','shipping_postal_code','shipping_country'].forEach(name => {
+                    const el = newFields.querySelector(`[name="${name}"]`);
+                    if (el) el.required = true;
+                });
+                // Pre-fill name from profile
+                if (_profile) _fillShippingFormFields(_profile, true);
+            }
+        }
+
+        function selectBilling(choice) {
+            const tileSame = document.getElementById('tile-billing-same');
+            const tileDiff = document.getElementById('tile-billing-diff');
+            const billingFields = document.getElementById('billing-form-fields');
+
+            if (choice === 'same') {
+                tileSame.classList.add('selected');
+                tileDiff.classList.remove('selected');
+                billingFields.style.display = 'none';
+                billingFields.querySelectorAll('input, select').forEach(el => el.removeAttribute('required'));
+            } else {
+                tileSame.classList.remove('selected');
+                tileDiff.classList.add('selected');
+                billingFields.style.display = 'block';
+                ['billing_first_name','billing_last_name','billing_address_1','billing_city','billing_postal_code','billing_country'].forEach(name => {
+                    const el = billingFields.querySelector(`[name="${name}"]`);
+                    if (el) el.required = true;
+                });
             }
         }
 
@@ -595,9 +984,9 @@
             document.getElementById('main-content').innerHTML = `
                 <div class="empty-cart">
                     <div class="empty-cart-icon">🛒</div>
-                    <h2>Votre panier est vide</h2>
-                    <p>Ajoutez des produits avant de passer commande.</p>
-                    <a href="/shop/">Découvrir nos produits</a>
+                    <h2>${t('empty_cart_title')}</h2>
+                    <p>${t('empty_cart_sub')}</p>
+                    <a href="/shop/">${t('empty_cart_btn')}</a>
                 </div>
             `;
         }
@@ -669,16 +1058,23 @@
             _shipping = shipping;
 
             // Build cart items HTML
-            const itemsHtml = cart.items.map(item => `
+            const itemsHtml = cart.items.map(item => {
+                const name = item.product?.name || item.composable_box_name || 'Article';
+                const img = item.product?.primary_image?.image
+                    ? `<img src="${item.product.primary_image.image}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+                    : (item.composable_box_image
+                        ? `<img src="${item.composable_box_image}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+                        : '🧴');
+                return `
                 <div class="summary-item">
-                    <div class="summary-item-image">🧴</div>
+                    <div class="summary-item-image">${img}</div>
                     <div class="summary-item-details">
-                        <div class="summary-item-name">${item.product.name}</div>
-                        <div class="summary-item-qty">Quantité: ${item.quantity}</div>
+                        <div class="summary-item-name">${escHtml(name)}</div>
+                        <div class="summary-item-qty">${t('qty')}: ${item.quantity}</div>
                     </div>
                     <div class="summary-item-price">${item.subtotal} ${getCurrencySymbol()}</div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
 
             // Build impact HTML
             let impactHtml = '';
@@ -694,76 +1090,228 @@
             }
 
             document.getElementById('main-content').innerHTML = `
-                <h1 class="page-title">🛒 Finaliser la commande</h1>
+                <h1 class="page-title">${t('page_title')}</h1>
 
                 <div class="checkout-layout">
                     <!-- Left: Form -->
                     <div class="checkout-form">
                         <form id="checkout-form" onsubmit="submitOrder(event)">
-                            <!-- Shipping Info -->
+                            <!-- Contact -->
                             <div class="checkout-section">
-                                <h2>📦 Informations de livraison</h2>
+                                <h2>${t('section_contact')}</h2>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="shipping_first_name">Prénom <span class="required">*</span></label>
-                                        <input type="text" id="shipping_first_name" name="shipping_first_name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="shipping_last_name">Nom <span class="required">*</span></label>
-                                        <input type="text" id="shipping_last_name" name="shipping_last_name" required>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="email">Email <span class="required">*</span></label>
+                                        <label for="email">${t('label_email')} <span class="required">*</span></label>
                                         <input type="email" id="email" name="email" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="phone">Téléphone <span class="required">*</span></label>
+                                        <label for="phone">${t('label_phone')} <span class="required">*</span></label>
                                         <input type="tel" id="phone" name="phone" required placeholder="+216 XX XXX XXX">
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="shipping_address_1">Adresse <span class="required">*</span></label>
-                                    <input type="text" id="shipping_address_1" name="shipping_address_1" required placeholder="Numéro et nom de rue">
+                            </div>
+
+                            <!-- Shipping Address -->
+                            <div class="checkout-section">
+                                <h2>${t('section_shipping')}</h2>
+
+                                <!-- Option tiles: shown when logged in + saved address exists -->
+                                <div id="shipping-addr-tiles" class="addr-options" style="display:none;">
+                                    <!-- Tile 1: use saved address -->
+                                    <label class="addr-tile selected" id="tile-saved" onclick="selectShipping('saved')">
+                                        <input type="radio" name="_shipping_choice" value="saved" checked>
+                                        <div class="addr-tile-body">
+                                            <div class="addr-tile-title" id="saved-addr-name"></div>
+                                            <div class="addr-tile-lines" id="saved-addr-lines"></div>
+                                        </div>
+                                    </label>
+                                    <!-- Tile 2: use a different address -->
+                                    <label class="addr-tile" id="tile-new" onclick="selectShipping('new')">
+                                        <input type="radio" name="_shipping_choice" value="new">
+                                        <div class="addr-tile-body">
+                                            <div class="addr-tile-new-label">${t('addr_new')}</div>
+                                            <div class="addr-tile-new-sub">${t('addr_new_sub')}</div>
+                                            <!-- Inline form, shown when tile-new is selected -->
+                                            <div class="addr-form-expand" id="shipping-new-fields" style="display:none;">
+                                                <div class="form-row">
+                                                    <div class="form-group">
+                                                        <label>${t('label_first_name')} <span class="required">*</span></label>
+                                                        <input type="text" name="shipping_first_name" class="form-group input" style="width:100%;padding:12px 14px;border:1px solid var(--wwc-border);border-radius:8px;font-size:15px;font-family:inherit;">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>${t('label_last_name')} <span class="required">*</span></label>
+                                                        <input type="text" name="shipping_last_name" style="width:100%;padding:12px 14px;border:1px solid var(--wwc-border);border-radius:8px;font-size:15px;font-family:inherit;">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>${t('label_address')} <span class="required">*</span></label>
+                                                    <input type="text" name="shipping_address_1" placeholder="Numéro et nom de rue" style="width:100%;padding:12px 14px;border:1px solid var(--wwc-border);border-radius:8px;font-size:15px;font-family:inherit;">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>${t('label_address2')}</label>
+                                                    <input type="text" name="shipping_address_2" placeholder="Appartement, étage, etc. (optionnel)" style="width:100%;padding:12px 14px;border:1px solid var(--wwc-border);border-radius:8px;font-size:15px;font-family:inherit;">
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="form-group">
+                                                        <label>${t('label_city')} <span class="required">*</span></label>
+                                                        <input type="text" name="shipping_city" style="width:100%;padding:12px 14px;border:1px solid var(--wwc-border);border-radius:8px;font-size:15px;font-family:inherit;">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>${t('label_postal')} <span class="required">*</span></label>
+                                                        <input type="text" name="shipping_postal_code" style="width:100%;padding:12px 14px;border:1px solid var(--wwc-border);border-radius:8px;font-size:15px;font-family:inherit;">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>${t('label_country')} <span class="required">*</span></label>
+                                                    <select name="shipping_country" style="width:100%;padding:12px 14px;border:1px solid var(--wwc-border);border-radius:8px;font-size:15px;font-family:inherit;">
+                                                        <option value="TN" selected>Tunisie</option>
+                                                        <option value="FR">France</option>
+                                                        <option value="BE">Belgique</option>
+                                                        <option value="CH">Suisse</option>
+                                                        <option value="MA">Maroc</option>
+                                                        <option value="DZ">Algérie</option>
+                                                        <option value="DE">Allemagne</option>
+                                                        <option value="GB">Royaume-Uni</option>
+                                                    </select>
+                                                </div>
+                                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#555;margin-top:8px;">
+                                                    <input type="checkbox" id="save-address-check" style="width:16px;height:16px;accent-color:#e04403;">
+                                                    ${t('save_address')}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </label>
                                 </div>
-                                <div class="form-group">
-                                    <label for="shipping_address_2">Complément d'adresse</label>
-                                    <input type="text" id="shipping_address_2" name="shipping_address_2" placeholder="Appartement, étage, etc. (optionnel)">
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="shipping_city">Ville <span class="required">*</span></label>
-                                        <input type="text" id="shipping_city" name="shipping_city" required>
+
+                                <!-- Guest / no saved address: plain form -->
+                                <div id="shipping-form-fields">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="shipping_first_name">${t('label_first_name')} <span class="required">*</span></label>
+                                            <input type="text" id="shipping_first_name" name="shipping_first_name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="shipping_last_name">${t('label_last_name')} <span class="required">*</span></label>
+                                            <input type="text" id="shipping_last_name" name="shipping_last_name" required>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="shipping_postal_code">Code postal <span class="required">*</span></label>
-                                        <input type="text" id="shipping_postal_code" name="shipping_postal_code" required>
+                                        <label for="shipping_address_1">${t('label_address')} <span class="required">*</span></label>
+                                        <input type="text" id="shipping_address_1" name="shipping_address_1" required placeholder="Numéro et nom de rue">
                                     </div>
+                                    <div class="form-group">
+                                        <label for="shipping_address_2">${t('label_address2')}</label>
+                                        <input type="text" id="shipping_address_2" name="shipping_address_2" placeholder="Appartement, étage, etc. (optionnel)">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="shipping_city">${t('label_city')} <span class="required">*</span></label>
+                                            <input type="text" id="shipping_city" name="shipping_city" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="shipping_postal_code">${t('label_postal')} <span class="required">*</span></label>
+                                            <input type="text" id="shipping_postal_code" name="shipping_postal_code" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="shipping_country">Pays <span class="required">*</span></label>
+                                        <select id="shipping_country" name="shipping_country" required>
+                                            <option value="TN" selected>Tunisie</option>
+                                            <option value="FR">France</option>
+                                            <option value="BE">Belgique</option>
+                                            <option value="CH">Suisse</option>
+                                            <option value="MA">Maroc</option>
+                                            <option value="DZ">Algérie</option>
+                                            <option value="DE">Allemagne</option>
+                                            <option value="GB">Royaume-Uni</option>
+                                        </select>
+                                    </div>
+                                    <label id="save-address-label" style="display:none;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#555;margin-top:8px;">
+                                        <input type="checkbox" id="save-address-check" style="width:16px;height:16px;accent-color:#e04403;">
+                                        ${t('save_address')}
+                                    </label>
                                 </div>
-                                <div class="form-group">
-                                    <label for="shipping_country">Pays <span class="required">*</span></label>
-                                    <select id="shipping_country" name="shipping_country" required>
-                                        <option value="TN" selected>Tunisie</option>
-                                        <option value="FR">France</option>
-                                        <option value="BE">Belgique</option>
-                                        <option value="CH">Suisse</option>
-                                        <option value="DE">Allemagne</option>
-                                    </select>
+                            </div>
+
+                            <!-- Billing / Invoice Address -->
+                            <div class="checkout-section">
+                                <h2>${t('section_billing')}</h2>
+                                <div class="addr-options">
+                                    <label class="addr-tile selected" id="tile-billing-same" onclick="selectBilling('same')">
+                                        <input type="radio" name="_billing_choice" value="same" checked>
+                                        <div class="addr-tile-body">
+                                            <div class="addr-tile-new-label">${t('addr_same')}</div>
+                                            <div class="addr-tile-new-sub">${t('addr_same_sub')}</div>
+                                        </div>
+                                    </label>
+                                    <label class="addr-tile" id="tile-billing-diff" onclick="selectBilling('diff')">
+                                        <input type="radio" name="_billing_choice" value="diff">
+                                        <div class="addr-tile-body">
+                                            <div class="addr-tile-new-label">${t('addr_diff')}</div>
+                                            <div class="addr-tile-new-sub">${t('addr_diff_sub')}</div>
+                                            <div class="addr-form-expand" id="billing-form-fields" style="display:none;">
+                                                <div class="form-group">
+                                                    <label for="billing_company">${t('label_company')}</label>
+                                                    <input type="text" id="billing_company" name="billing_company" placeholder="Nom de l'entreprise / raison sociale">
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="form-group">
+                                                        <label for="billing_first_name">${t('label_first_name')} <span class="required">*</span></label>
+                                                        <input type="text" id="billing_first_name" name="billing_first_name">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="billing_last_name">${t('label_last_name')} <span class="required">*</span></label>
+                                                        <input type="text" id="billing_last_name" name="billing_last_name">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="billing_address_1">${t('label_address')} <span class="required">*</span></label>
+                                                    <input type="text" id="billing_address_1" name="billing_address_1" placeholder="Numéro et nom de rue">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="billing_address_2">${t('label_address2')}</label>
+                                                    <input type="text" id="billing_address_2" name="billing_address_2" placeholder="Appartement, étage, etc. (optionnel)">
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="form-group">
+                                                        <label for="billing_city">${t('label_city')} <span class="required">*</span></label>
+                                                        <input type="text" id="billing_city" name="billing_city">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="billing_postal_code">${t('label_postal')} <span class="required">*</span></label>
+                                                        <input type="text" id="billing_postal_code" name="billing_postal_code">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="billing_country">${t('label_country')} <span class="required">*</span></label>
+                                                    <select id="billing_country" name="billing_country">
+                                                        <option value="TN" selected>Tunisie</option>
+                                                        <option value="FR">France</option>
+                                                        <option value="BE">Belgique</option>
+                                                        <option value="CH">Suisse</option>
+                                                        <option value="MA">Maroc</option>
+                                                        <option value="DZ">Algérie</option>
+                                                        <option value="DE">Allemagne</option>
+                                                        <option value="GB">Royaume-Uni</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
                                 </div>
                             </div>
 
                             <!-- Payment Method -->
                             <div class="checkout-section">
-                                <h2>💳 Mode de paiement</h2>
+                                <h2>${t('section_payment')}</h2>
                                 <div class="payment-options">
                                     <label class="payment-option selected" onclick="selectPayment(this, 'stripe')">
                                         <input type="radio" name="payment_method" value="stripe" checked>
                                         <div class="payment-label">
                                             <span class="payment-icon">💳</span>
                                             <div class="payment-info">
-                                                <strong>Carte bancaire</strong>
-                                                <small>Paiement sécurisé via Stripe</small>
+                                                <strong>${t('payment_card')}</strong>
+                                                <small>${t('payment_card_sub')}</small>
                                             </div>
                                         </div>
                                     </label>
@@ -772,8 +1320,8 @@
                                         <div class="payment-label">
                                             <span class="payment-icon">💵</span>
                                             <div class="payment-info">
-                                                <strong>Paiement à la livraison</strong>
-                                                <small>Payez en espèces à la réception</small>
+                                                <strong>${t('payment_cod')}</strong>
+                                                <small>${t('payment_cod_sub')}</small>
                                             </div>
                                         </div>
                                     </label>
@@ -782,19 +1330,19 @@
 
                             <!-- Notes -->
                             <div class="checkout-section">
-                                <h2>📝 Notes (optionnel)</h2>
+                                <h2>${t('section_notes')}</h2>
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <textarea id="customer_notes" name="customer_notes" rows="3" placeholder="Instructions spéciales pour la livraison..."></textarea>
+                                    <textarea id="customer_notes" name="customer_notes" rows="3" placeholder="${t('notes_placeholder')}"></textarea>
                                 </div>
                             </div>
 
                             <!-- Gift Packaging -->
                             <div class="checkout-section">
-                                <h2>🎁 Emballage cadeau</h2>
+                                <h2>${t('section_gift')}</h2>
                                 <label style="display:flex; align-items:center; gap:12px; cursor:pointer; padding:14px; background:#fffbf0; border:1px solid #f0c000; border-radius:10px;">
                                     <input type="checkbox" id="gift_packaging" name="gift_packaging" onchange="updateTotal()" style="width:18px; height:18px; cursor:pointer; accent-color:#e04403;">
                                     <div>
-                                        <div style="font-weight:600; font-size:15px;">Ajouter un emballage cadeau</div>
+                                        <div style="font-weight:600; font-size:15px;">${t('gift_label')}</div>
                                         <div style="font-size:13px; color:#888888; margin-top:2px;" id="gift-desc">Votre commande sera présentée dans un beau coffret cadeau (+${getGiftFee().toFixed(0)} ${getCurrencySymbol()})</div>
                                     </div>
                                 </label>
@@ -805,7 +1353,7 @@
                     <!-- Right: Summary -->
                     <div class="order-summary">
                         <div class="summary-box">
-                            <h2>📋 Récapitulatif</h2>
+                            <h2>${t('section_summary')}</h2>
 
                             <div class="summary-items">
                                 ${itemsHtml}
@@ -813,32 +1361,32 @@
 
                             <!-- Coupon code -->
                             <div style="display:flex;gap:8px;margin-bottom:16px;">
-                                <input type="text" id="coupon-input" placeholder="Code promo"
+                                <input type="text" id="coupon-input" placeholder="${t('coupon_placeholder')}"
                                     style="flex:1;padding:9px 12px;border:1px solid var(--wwc-border);border-radius:8px;font-size:14px;font-family:inherit;text-transform:uppercase;">
                                 <button type="button" onclick="applyCoupon()"
-                                    style="padding:9px 16px;background:var(--wwc-primary);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Appliquer</button>
+                                    style="padding:9px 16px;background:var(--wwc-primary);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">${t('coupon_apply')}</button>
                             </div>
                             <div id="coupon-msg" style="font-size:13px;margin-bottom:12px;display:none;"></div>
 
                             <div class="summary-totals">
                                 <div class="summary-row">
-                                    <span>Sous-total</span>
+                                    <span>${t('subtotal')}</span>
                                     <span>${subtotal.toFixed(2)} ${getCurrencySymbol()}</span>
                                 </div>
                                 <div class="summary-row">
-                                    <span>Livraison</span>
+                                    <span>${t('shipping')}</span>
                                     <span>${shipping.toFixed(2)} ${getCurrencySymbol()}</span>
                                 </div>
                                 <div class="summary-row" id="discount-row" style="display:none;color:green;">
-                                    <span>Remise (<span id="discount-code-label"></span>)</span>
+                                    <span>${t('discount')} (<span id="discount-code-label"></span>)</span>
                                     <span id="discount-amount-display">-0.00 ${getCurrencySymbol()}</span>
                                 </div>
                                 <div class="summary-row" id="gift-row" style="display:none;">
-                                    <span>🎁 Emballage cadeau</span>
+                                    <span>🎁 ${t('section_gift')}</span>
                                     <span id="gift-fee-display">${getGiftFee().toFixed(2)} ${getCurrencySymbol()}</span>
                                 </div>
                                 <div class="summary-row total">
-                                    <span>Total</span>
+                                    <span>${t('total')}</span>
                                     <span id="total-display">${total.toFixed(2)} ${getCurrencySymbol()}</span>
                                 </div>
                             </div>
@@ -846,12 +1394,12 @@
                             ${impactHtml}
 
                             <button type="submit" class="btn-pay" id="btn-pay" onclick="submitOrder(event)">
-                                <span class="btn-text">Confirmer la commande</span>
+                                <span class="btn-text">${t('btn_confirm')}</span>
                                 <span class="spinner"></span>
                             </button>
 
                             <p class="secure-notice">
-                                <span>🔒</span> Paiement 100% sécurisé
+                                <span>🔒</span> ${t('secure')}
                             </p>
                         </div>
                     </div>
@@ -870,9 +1418,9 @@
             // Update button text based on payment method
             const btnText = document.querySelector('.btn-pay .btn-text');
             if (method === 'stripe') {
-                btnText.textContent = 'Payer maintenant';
+                btnText.textContent = t('btn_pay_now');
             } else {
-                btnText.textContent = 'Confirmer la commande';
+                btnText.textContent = t('btn_confirm');
             }
         }
 
@@ -894,21 +1442,72 @@
             btnPay.classList.add('loading');
             btnPay.disabled = true;
 
+            // Resolve shipping address:
+            // - tile-saved or no tiles (guest): read from plain form by ID (inside #shipping-form-fields)
+            // - tile-new selected: read from inside #shipping-new-fields
+            const tilesVisible = document.getElementById('shipping-addr-tiles')?.style.display !== 'none';
+            const usingNew = tilesVisible && !_usingSavedAddress;
+
+            function getShip(name) {
+                if (usingNew) {
+                    // Read from the expanded tile-new inline form
+                    const el = document.querySelector(`#shipping-new-fields [name="${name}"]`);
+                    return el ? el.value : '';
+                } else {
+                    // Read from plain form by id (hidden when tiles visible, visible for guests)
+                    const el = document.getElementById(name);
+                    return el ? el.value : '';
+                }
+            }
+
+            // Billing choice: diff tile selected means different billing address
+            const billingSame = !document.getElementById('tile-billing-diff')?.classList.contains('selected');
+
             const checkoutData = {
                 email: formData.get('email'),
                 phone: formData.get('phone'),
-                shipping_first_name: formData.get('shipping_first_name'),
-                shipping_last_name: formData.get('shipping_last_name'),
-                shipping_address_1: formData.get('shipping_address_1'),
-                shipping_address_2: formData.get('shipping_address_2') || '',
-                shipping_city: formData.get('shipping_city'),
-                shipping_postal_code: formData.get('shipping_postal_code'),
-                shipping_country: formData.get('shipping_country'),
+                shipping_first_name: getShip('shipping_first_name'),
+                shipping_last_name:  getShip('shipping_last_name'),
+                shipping_address_1:  getShip('shipping_address_1'),
+                shipping_address_2:  getShip('shipping_address_2') || '',
+                shipping_city:       getShip('shipping_city'),
+                shipping_postal_code:getShip('shipping_postal_code'),
+                shipping_country:    getShip('shipping_country') || 'TN',
                 payment_method: formData.get('payment_method'),
                 customer_notes: formData.get('customer_notes') || '',
                 gift_packaging: document.getElementById('gift_packaging')?.checked || false,
                 coupon_code: _appliedCoupon || '',
+                billing_same_as_shipping: billingSame,
+                billing_first_name: billingSame ? '' : (formData.get('billing_first_name') || ''),
+                billing_last_name:  billingSame ? '' : (formData.get('billing_last_name')  || ''),
+                billing_company:    formData.get('billing_company') || '',
+                billing_address_1:  billingSame ? '' : (formData.get('billing_address_1')  || ''),
+                billing_address_2:  billingSame ? '' : (formData.get('billing_address_2')  || ''),
+                billing_city:       billingSame ? '' : (formData.get('billing_city')        || ''),
+                billing_postal_code:billingSame ? '' : (formData.get('billing_postal_code') || ''),
+                billing_country:    billingSame ? '' : (formData.get('billing_country')     || ''),
             };
+
+            // Save address to profile if checkbox ticked (only when entering a new address)
+            const saveCheck = document.getElementById('save-address-check');
+            if (saveCheck?.checked) {
+                const token = localStorage.getItem('wwc_access_token');
+                if (token) {
+                    fetch(`${API_URL}/customer/profile/`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            default_shipping_first_name:  checkoutData.shipping_first_name,
+                            default_shipping_last_name:   checkoutData.shipping_last_name,
+                            default_shipping_address_1:   checkoutData.shipping_address_1,
+                            default_shipping_address_2:   checkoutData.shipping_address_2,
+                            default_shipping_city:        checkoutData.shipping_city,
+                            default_shipping_postal_code: checkoutData.shipping_postal_code,
+                            default_shipping_country:     checkoutData.shipping_country,
+                        })
+                    }).catch(() => {}); // fire-and-forget
+                }
+            }
 
             try {
                 console.log('Creating order...', checkoutData);
@@ -935,46 +1534,17 @@
                     throw new Error(orderData.error || orderData.detail || 'Erreur lors de la création de la commande');
                 }
 
-                console.log('Order created:', orderData);
-
-                // Step 2: Handle payment based on method
+                // Handle response based on payment method
                 if (checkoutData.payment_method === 'stripe') {
-                    // Create Stripe checkout session
-                    console.log('Creating Stripe session...');
-                    const stripeResponse = await fetch(`${API_URL}/payments/create-session/`, {
-                        method: 'POST',
-                        headers: apiHeaders(),
-                        body: JSON.stringify({
-                            order_number: orderData.order_number,
-                            success_url: window.location.origin + '/shop/order-success/?order=' + orderData.order_number + '&method=stripe',
-                            cancel_url: window.location.origin + '/shop/checkout/?payment=cancelled'
-                        })
-                    });
-
-                    const stripeText = await stripeResponse.text();
-                    console.log('Stripe response:', stripeText);
-
-                    let stripeData;
-                    try {
-                        stripeData = JSON.parse(stripeText);
-                    } catch (e) {
-                        console.error('Failed to parse Stripe response:', stripeText);
-                        throw new Error('Erreur lors de la configuration du paiement');
-                    }
-
-                    if (!stripeResponse.ok) {
-                        throw new Error(stripeData.error || stripeData.detail || `Erreur Stripe (${stripeResponse.status})`);
-                    }
-
-                    // Redirect to Stripe checkout
-                    if (stripeData.checkout_url) {
+                    // Checkout returns a Stripe URL directly — redirect
+                    if (orderData.checkout_url) {
                         showNotification('Redirection vers le paiement...', 'success');
-                        window.location.href = stripeData.checkout_url;
+                        window.location.href = orderData.checkout_url;
                     } else {
                         throw new Error('URL de paiement non reçue');
                     }
                 } else {
-                    // Bank transfer or cash on delivery — redirect to success page
+                    // Bank transfer or cash on delivery — order is created, go to success page
                     window.location.href = `/shop/order-success/?order=${orderData.order_number}&method=${checkoutData.payment_method}`;
                 }
 
@@ -1007,6 +1577,8 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         })();
+
+        renderLangSwitcher();
     </script>
 </body>
 </html>

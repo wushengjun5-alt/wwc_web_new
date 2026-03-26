@@ -21,6 +21,13 @@ class Customer(models.Model):
         ('company', _('Company (B2B)')),
     ]
 
+    B2B_STATUS_CHOICES = [
+        ('not_applicable', _('Not Applicable')),
+        ('pending_approval', _('Pending Approval')),
+        ('approved', _('Approved')),
+        ('rejected', _('Rejected')),
+    ]
+
     LANGUAGE_CHOICES = [
         ('fr', _('French')),
         ('en', _('English')),
@@ -44,6 +51,22 @@ class Customer(models.Model):
         choices=CUSTOMER_TYPE_CHOICES,
         default='individual'
     )
+    b2b_status = models.CharField(
+        _('B2B Status'),
+        max_length=20,
+        choices=B2B_STATUS_CHOICES,
+        default='not_applicable'
+    )
+    b2b_rejection_reason = models.TextField(
+        _('B2B Rejection Reason'),
+        blank=True,
+        help_text='Internal note on why the B2B request was rejected'
+    )
+    b2b_approved_at = models.DateTimeField(
+        _('B2B Approved/Rejected At'),
+        null=True,
+        blank=True
+    )
 
     # Personal info
     phone = models.CharField(_('Phone'), max_length=20, blank=True)
@@ -56,6 +79,8 @@ class Customer(models.Model):
     company_contact_name = models.CharField(_('Contact Person'), max_length=200, blank=True)
 
     # Default shipping address
+    default_shipping_first_name = models.CharField(_('First Name'), max_length=100, blank=True)
+    default_shipping_last_name = models.CharField(_('Last Name'), max_length=100, blank=True)
     default_shipping_address_1 = models.CharField(_('Address Line 1'), max_length=200, blank=True)
     default_shipping_address_2 = models.CharField(_('Address Line 2'), max_length=200, blank=True)
     default_shipping_city = models.CharField(_('City'), max_length=100, blank=True)
@@ -123,7 +148,11 @@ class Customer(models.Model):
 
     @property
     def is_b2b(self):
-        return self.customer_type == 'company'
+        return self.customer_type == 'company' and self.b2b_status == 'approved'
+
+    @property
+    def is_b2b_pending(self):
+        return self.customer_type == 'company' and self.b2b_status == 'pending_approval'
 
     def update_impact_stats(self):
         """Update impact statistics from completed orders"""

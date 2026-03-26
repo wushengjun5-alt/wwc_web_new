@@ -1,0 +1,104 @@
+/* WWC Orders Admin Styles */
+
+.wwc-orders-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+}
+
+.wwc-orders-search {
+    min-width: 260px;
+}
+
+.wwc-orders-count {
+    color: #666;
+    font-size: 13px;
+    margin-left: auto;
+}
+
+/* Status badges */
+.wwc-status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.wwc-status-pending    { background: #fff3cd; color: #856404; }
+.wwc-status-paid       { background: #d4edda; color: #155724; }
+.wwc-status-processing { background: #cce5ff; color: #004085; }
+.wwc-status-shipped    { background: #e2d4f0; color: #6f42c1; }
+.wwc-status-delivered  { background: #d1ecf1; color: #0c5460; }
+.wwc-status-cancelled  { background: #f8d7da; color: #721c24; }
+.wwc-status-refunded   { background: #f0f0f0; color: #555; }
+
+.wwc-orders-table .row-title {
+    font-weight: 600;
+    color: #e04403;
+    text-decoration: none;
+}
+.wwc-orders-table .row-title:hover { text-decoration: underline; }
+
+.wwc-order-meta {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Order detail layout */
+.wwc-order-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    margin-top: 16px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .wwc-order-detail-grid { grid-template-columns: 1fr; }
+}
+
+.wwc-totals-table {
+    width: 100%;
+    margin-top: 16px;
+    border-collapse: collapse;
+}
+
+.wwc-totals-table td {
+    padding: 6px 12px;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+}
+
+.wwc-totals-table td:last-child {
+    text-align: right;
+}
+
+.wwc-totals-total td {
+    padding-top: 12px;
+    font-size: 16px;
+    border-top: 2px solid #ddd;
+}
+
+/* Notice */
+#wwc-order-notice {
+    margin: 12px 0;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+#wwc-order-notice.success {
+    background: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+#wwc-order-notice.error {
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}

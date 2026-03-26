@@ -55,6 +55,14 @@
                 <span class="nav-icon">🤲</span>
                 <span>Dons</span>
             </a>
+            <a href="shipping.html" class="nav-item">
+                <span class="nav-icon">🚚</span>
+                <span>Livraison</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span>Paramètres</span>
+            </a>
             <div class="nav-divider"></div>
             <a href="../index.html" class="nav-item">
                 <span class="nav-icon">🏪</span>
@@ -82,42 +90,78 @@
         </header>
 
         <div class="content-wrapper">
-            <!-- Filters -->
-            <section class="filters-section">
-                <form id="filtersForm" class="filters-form" onsubmit="return false;">
-                    <div class="filter-group">
-                        <input type="search" id="searchInput" placeholder="Nom, email, téléphone..." class="search-input">
-                    </div>
-                    <div class="filter-actions">
-                        <button type="button" onclick="applySearch()" class="btn btn-sm">Rechercher</button>
-                        <button type="button" id="clearFilters" class="btn btn-sm btn-outline">Effacer</button>
-                    </div>
-                </form>
-            </section>
+            <!-- Tabs -->
+            <div style="display:flex; gap:8px; margin-bottom:20px;">
+                <button id="tab-all" class="btn btn-sm" onclick="switchTab('all')" style="background:var(--admin-primary);color:white;">Tous les clients</button>
+                <button id="tab-b2b" class="btn btn-sm btn-outline" onclick="switchTab('b2b')">🏢 Demandes B2B <span id="b2b-badge" style="background:#e04403;color:white;border-radius:30px;padding:1px 8px;font-size:11px;margin-left:4px;display:none;"></span></button>
+            </div>
 
-            <!-- Customers Table -->
-            <section class="section">
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Client</th>
-                                <th>Email</th>
-                                <th>Téléphone</th>
-                                <th>Commandes</th>
-                                <th>Impact</th>
-                                <th>Total dépensé</th>
-                                <th>Inscrit le</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="customersBody">
-                            <tr><td colspan="8" class="loading">Chargement...</td></tr>
-                        </tbody>
-                    </table>
+            <!-- All Customers Tab -->
+            <div id="panel-all">
+                <section class="filters-section">
+                    <form id="filtersForm" class="filters-form" onsubmit="return false;">
+                        <div class="filter-group">
+                            <input type="search" id="searchInput" placeholder="Nom, email, téléphone..." class="search-input">
+                        </div>
+                        <div class="filter-actions">
+                            <button type="button" onclick="applySearch()" class="btn btn-sm">Rechercher</button>
+                            <button type="button" id="clearFilters" class="btn btn-sm btn-outline">Effacer</button>
+                        </div>
+                    </form>
+                </section>
+                <section class="section">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Commandes</th>
+                                    <th>Impact</th>
+                                    <th>Total dépensé</th>
+                                    <th>Inscrit le</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customersBody">
+                                <tr><td colspan="8" class="loading">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="pagination"></div>
+                </section>
+            </div>
+
+            <!-- B2B Requests Tab -->
+            <div id="panel-b2b" style="display:none;">
+                <div style="display:flex; gap:8px; margin-bottom:16px;">
+                    <button class="btn btn-sm" id="b2b-filter-pending" onclick="loadB2B('pending_approval')" style="background:var(--admin-primary);color:white;">En attente</button>
+                    <button class="btn btn-sm btn-outline" id="b2b-filter-approved" onclick="loadB2B('approved')">Approuvés</button>
+                    <button class="btn btn-sm btn-outline" id="b2b-filter-rejected" onclick="loadB2B('rejected')">Rejetés</button>
                 </div>
-                <div class="pagination" id="pagination"></div>
-            </section>
+                <section class="section">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Société</th>
+                                    <th>Contact</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>N° TVA</th>
+                                    <th>Inscrit le</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="b2bBody">
+                                <tr><td colspan="8" class="loading">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
         </div>
     </main>
 
@@ -128,6 +172,8 @@
         let currentSearch = '';
         let searchTimer = null;
 
+        let currentB2BFilter = 'pending_approval';
+
         document.addEventListener('DOMContentLoaded', async function() {
             const connected = await AdminAPI.testConnection();
             if (!connected && !AdminConfig.getApiKey()) {
@@ -137,6 +183,7 @@
                 return;
             }
             loadCustomers();
+            loadB2BPendingCount();
 
             document.getElementById('searchInput').addEventListener('keydown', e => {
                 if (e.key === 'Enter') applySearch();
@@ -240,6 +287,93 @@
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
+        }
+
+        function switchTab(tab) {
+            const isAll = tab === 'all';
+            document.getElementById('panel-all').style.display = isAll ? '' : 'none';
+            document.getElementById('panel-b2b').style.display = isAll ? 'none' : '';
+            document.getElementById('tab-all').style.background = isAll ? 'var(--admin-primary)' : '';
+            document.getElementById('tab-all').style.color = isAll ? 'white' : '';
+            document.getElementById('tab-all').className = isAll ? 'btn btn-sm' : 'btn btn-sm btn-outline';
+            document.getElementById('tab-b2b').className = isAll ? 'btn btn-sm btn-outline' : 'btn btn-sm';
+            document.getElementById('tab-b2b').style.background = isAll ? '' : 'var(--admin-primary)';
+            document.getElementById('tab-b2b').style.color = isAll ? '' : 'white';
+            if (!isAll) loadB2B(currentB2BFilter);
+        }
+
+        async function loadB2BPendingCount() {
+            try {
+                const data = await AdminAPI.get('/admin/b2b/?status=pending_approval');
+                const count = data.count || 0;
+                const badge = document.getElementById('b2b-badge');
+                if (count > 0) { badge.textContent = count; badge.style.display = 'inline'; }
+                else badge.style.display = 'none';
+            } catch {}
+        }
+
+        async function loadB2B(statusFilter) {
+            currentB2BFilter = statusFilter;
+            // Update filter button styles
+            ['pending', 'approved', 'rejected'].forEach(s => {
+                const btn = document.getElementById(`b2b-filter-${s === 'pending' ? 'pending' : s}`);
+                if (btn) { btn.className = 'btn btn-sm btn-outline'; btn.style.background = ''; btn.style.color = ''; }
+            });
+            const activeKey = statusFilter === 'pending_approval' ? 'pending' : statusFilter;
+            const activeBtn = document.getElementById(`b2b-filter-${activeKey}`);
+            if (activeBtn) { activeBtn.className = 'btn btn-sm'; activeBtn.style.background = 'var(--admin-primary)'; activeBtn.style.color = 'white'; }
+
+            const tbody = document.getElementById('b2bBody');
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">Chargement...</td></tr>';
+            try {
+                const data = await AdminAPI.get(`/admin/b2b/?status=${statusFilter}`);
+                const items = data.results || [];
+                if (!items.length) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--admin-text-light);">Aucune demande.</td></tr>';
+                    return;
+                }
+                const statusLabels = { pending_approval: '⏳ En attente', approved: '✅ Approuvé', rejected: '❌ Rejeté' };
+                const statusColors = { pending_approval: '#856404', approved: '#155724', rejected: '#721c24' };
+                const statusBg    = { pending_approval: '#fff8e1', approved: '#d4edda', rejected: '#f8d7da' };
+                tbody.innerHTML = items.map(c => `
+                    <tr>
+                        <td><strong>${escHtml(c.company_name || '—')}</strong></td>
+                        <td>${escHtml((c.first_name + ' ' + c.last_name).trim() || '—')}</td>
+                        <td>${escHtml(c.email)}</td>
+                        <td>${escHtml(c.phone || '—')}</td>
+                        <td style="font-size:12px;color:var(--admin-text-light);">${escHtml(c.company_tax_id || '—')}</td>
+                        <td style="font-size:13px;color:var(--admin-text-light);">${formatDate(c.date_joined)}</td>
+                        <td><span style="padding:3px 10px;border-radius:30px;font-size:12px;font-weight:600;background:${statusBg[c.b2b_status]};color:${statusColors[c.b2b_status]};">${statusLabels[c.b2b_status] || c.b2b_status}</span></td>
+                        <td>
+                            <div class="row-actions" style="display:flex;gap:6px;">
+                                ${c.b2b_status !== 'approved' ? `<button class="btn btn-sm" style="background:#28a745;color:white;" onclick="b2bAction(${c.id},'approve')">Approuver</button>` : ''}
+                                ${c.b2b_status !== 'rejected' ? `<button class="btn btn-sm" style="background:#dc3545;color:white;" onclick="b2bAction(${c.id},'reject')">Rejeter</button>` : ''}
+                            </div>
+                            ${c.b2b_rejection_reason ? `<div style="font-size:11px;color:var(--admin-text-light);margin-top:4px;">Motif : ${escHtml(c.b2b_rejection_reason)}</div>` : ''}
+                            ${c.b2b_approved_at ? `<div style="font-size:11px;color:var(--admin-text-light);">${formatDate(c.b2b_approved_at)}</div>` : ''}
+                        </td>
+                    </tr>`).join('');
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" style="color:var(--admin-danger);padding:20px;">${escHtml(err.message)}</td></tr>`;
+            }
+        }
+
+        async function b2bAction(customerId, action) {
+            const label = action === 'approve' ? 'approuver' : 'rejeter';
+            if (!confirm(`Voulez-vous ${label} ce compte B2B ?`)) return;
+            const payload = { action };
+            if (action === 'reject') {
+                const reason = prompt('Motif du rejet (optionnel, sera inclus dans l\'email) :');
+                if (reason !== null) payload.rejection_reason = reason.trim();
+            }
+            try {
+                await AdminAPI.post(`/admin/b2b/${customerId}/`, payload);
+                AdminConfig.showToast(action === 'approve' ? 'Compte approuvé. Email envoyé.' : 'Compte rejeté. Email envoyé.', 'success');
+                loadB2B(currentB2BFilter);
+                loadB2BPendingCount();
+            } catch (err) {
+                AdminConfig.showToast(err.message, 'error');
+            }
         }
     </script>
 </body>

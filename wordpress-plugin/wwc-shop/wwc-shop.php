@@ -17,7 +17,7 @@
 defined('ABSPATH') || exit;
 
 // Plugin constants
-define('WWC_SHOP_VERSION', '1.0.0');
+define('WWC_SHOP_VERSION', '1.1.0');
 define('WWC_SHOP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WWC_SHOP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WWC_SHOP_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -70,6 +70,7 @@ final class WWC_Shop {
      */
     private function load_dependencies() {
         // Core classes
+        require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-i18n.php';
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-api-client.php';
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-cart.php';
         require_once WWC_SHOP_PLUGIN_DIR . 'includes/class-product.php';
@@ -80,6 +81,10 @@ final class WWC_Shop {
         // Admin classes (only in admin)
         if (is_admin()) {
             require_once WWC_SHOP_PLUGIN_DIR . 'admin/class-products-admin.php';
+            require_once WWC_SHOP_PLUGIN_DIR . 'admin/class-orders-admin.php';
+            require_once WWC_SHOP_PLUGIN_DIR . 'admin/class-donations-admin.php';
+            require_once WWC_SHOP_PLUGIN_DIR . 'admin/class-shipping-admin.php';
+            require_once WWC_SHOP_PLUGIN_DIR . 'admin/class-site-settings-admin.php';
         }
 
         // Initialize API client
@@ -106,6 +111,9 @@ final class WWC_Shop {
 
         // Add cart sidebar to footer
         add_action('wp_footer', [$this, 'render_cart_sidebar']);
+
+        // Inject language switcher into footer
+        add_action('wp_footer', [$this, 'render_lang_switcher']);
 
         // Inject cart count badge into theme nav menus
         add_filter('wp_nav_menu_items', [$this, 'add_cart_count_to_menu'], 10, 2);
@@ -172,6 +180,13 @@ final class WWC_Shop {
             true
         );
 
+        // Resolve current language
+        $allowed_langs = ['fr', 'en', 'ar'];
+        $current_lang  = sanitize_text_field($_COOKIE['wwc_lang'] ?? 'fr');
+        if (!in_array($current_lang, $allowed_langs, true)) {
+            $current_lang = 'fr';
+        }
+
         // Localize scripts
         wp_localize_script('wwc-shop-cart', 'wwcShop', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -180,6 +195,7 @@ final class WWC_Shop {
             'currency' => get_option('wwc_default_currency', 'TND'),
             'cartUrl' => home_url('/cart/'),
             'checkoutUrl' => home_url('/checkout/'),
+            'lang' => $current_lang,
             'i18n' => [
                 'addedToCart' => __('Product added to cart', 'wwc-shop'),
                 'removedFromCart' => __('Product removed from cart', 'wwc-shop'),
@@ -439,6 +455,7 @@ final class WWC_Shop {
             'wwc_checkout',
             'wwc_toggle_wishlist',
             'wwc_add_review',
+            'wwc_set_language',
         ];
 
         foreach ($cart_actions as $action) {
@@ -449,6 +466,10 @@ final class WWC_Shop {
         // Diagnostic: raw API connection test (remove after debugging)
         add_action('wp_ajax_wwc_debug_api',        [$this, 'ajax_debug_api']);
         add_action('wp_ajax_nopriv_wwc_debug_api', [$this, 'ajax_debug_api']);
+
+        // Diagnostic: language/cookie state (remove after debugging)
+        add_action('wp_ajax_wwc_debug_lang',        [$this, 'ajax_debug_lang']);
+        add_action('wp_ajax_nopriv_wwc_debug_lang', [$this, 'ajax_debug_lang']);
 
         // Auth AJAX actions (available to both logged-in and guests)
         $auth_actions = [
@@ -463,6 +484,19 @@ final class WWC_Shop {
             add_action("wp_ajax_{$action}",        [$this->auth, $method]);
             add_action("wp_ajax_nopriv_{$action}", [$this->auth, $method]);
         }
+    }
+
+    /**
+     * Diagnostic AJAX: show cookie and language state
+     */
+    public function ajax_debug_lang() {
+        wp_send_json([
+            'wwc_lang_cookie'   => $_COOKIE['wwc_lang'] ?? '(not set)',
+            'all_cookies'       => array_keys($_COOKIE),
+            'i18n_lang'         => WWC_I18n::lang(),
+            'api_lang'          => $this->api->get_lang(),
+            'test_translation'  => WWC_I18n::t('Ajouter au panier'),
+        ]);
     }
 
     /**
@@ -491,6 +525,41 @@ final class WWC_Shop {
      */
     public function render_cart_sidebar() {
         include WWC_SHOP_PLUGIN_DIR . 'templates/cart-sidebar.php';
+    }
+
+    /**
+     * Render language switcher widget (appended to footer)
+     */
+    public function render_lang_switcher() {
+        $allowed = ['fr', 'en', 'ar'];
+        $current = sanitize_text_field($_COOKIE['wwc_lang'] ?? 'fr');
+        if (!in_array($current, $allowed, true)) {
+            $current = 'fr';
+        }
+        $labels = ['fr' => 'FR', 'en' => 'EN', 'ar' => 'AR'];
+        $flags  = ['fr' => '🇫🇷', 'en' => '🇬🇧', 'ar' => '🇹🇳'];
+        ?>
+        <div class="wwc-lang-switcher" id="wwc-lang-switcher" dir="ltr"
+             data-php-lang="<?php echo esc_attr($current); ?>"
+             data-i18n-lang="<?php echo esc_attr(WWC_I18n::lang()); ?>">
+            <button class="wwc-lang-current" type="button" aria-haspopup="true" aria-expanded="false"
+                    aria-label="<?php echo WWC_I18n::attr('Changer de langue'); ?>">
+                <?php echo esc_html($flags[$current] . ' ' . $labels[$current]); ?>
+            </button>
+            <ul class="wwc-lang-dropdown" role="menu">
+                <?php foreach ($labels as $code => $label): ?>
+                <li role="none">
+                    <button type="button" role="menuitem"
+                            class="wwc-lang-option <?php echo $code === $current ? 'active' : ''; ?>"
+                            data-lang="<?php echo esc_attr($code); ?>"
+                            onclick="WWC_LangSwitcher.setLang('<?php echo esc_js($code); ?>')">
+                        <?php echo esc_html($flags[$code] . ' ' . $label); ?>
+                    </button>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php
     }
 
     /**
@@ -617,11 +686,12 @@ final class WWC_Shop {
      * Append cart count badge to nav menu
      */
     public function add_cart_count_to_menu($items, $args) {
+        $cart_label = WWC_I18n::t('Mon Panier');
         $cart_link = sprintf(
             '<li class="wwc-cart-nav-item"><a href="%s" class="wwc-cart-toggle" data-action="open-cart" aria-label="%s">%s <span class="wwc-cart-count">0</span></a></li>',
             esc_url(home_url('/cart/')),
-            esc_attr__('Panier', 'wwc-shop'),
-            esc_html__('Panier', 'wwc-shop')
+            esc_attr($cart_label),
+            esc_html($cart_label)
         );
         return $items . $cart_link;
     }

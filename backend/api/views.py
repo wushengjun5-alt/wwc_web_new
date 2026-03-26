@@ -19,6 +19,25 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return
 
+
+def _get_request_lang(request):
+    """
+    Resolve the requested language from (in priority order):
+    1. ?lang= query param
+    2. Accept-Language header (first tag only)
+    Supported values: 'fr', 'en', 'ar'. Defaults to 'fr'.
+    """
+    supported = {'fr', 'en', 'ar'}
+    lang = request.query_params.get('lang', '').strip().lower()[:2]
+    if lang in supported:
+        return lang
+    accept = request.META.get('HTTP_ACCEPT_LANGUAGE', '')
+    if accept:
+        lang = accept.split(',')[0].split('-')[0].strip().lower()
+        if lang in supported:
+            return lang
+    return 'fr'
+
 from products.models import (
     Producer, ProductCategory, Product, ProductImage,
     ComposableBox, Review
@@ -49,6 +68,11 @@ class ProductCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProductCategorySerializer
     lookup_field = 'slug'
 
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['lang'] = _get_request_lang(self.request)
+        return ctx
+
     def get_queryset(self):
         queryset = super().get_queryset()
         # Filter for menu categories only
@@ -68,6 +92,11 @@ class ProducerViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProducerSerializer
     lookup_field = 'slug'
 
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['lang'] = _get_request_lang(self.request)
+        return ctx
+
     @action(detail=True, methods=['get'])
     def products(self, request, slug=None):
         """Get all products from a specific producer"""
@@ -86,6 +115,11 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ['producer', 'unit_type', 'is_featured']
     search_fields = ['name', 'description', 'sku']
     ordering_fields = ['price_tnd', 'price_eur', 'created_at', 'average_rating', 'name']
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['lang'] = _get_request_lang(self.request)
+        return ctx
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -176,6 +210,11 @@ class ComposableBoxViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ComposableBox.objects.filter(is_active=True)
     serializer_class = ComposableBoxSerializer
     lookup_field = 'slug'
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['lang'] = _get_request_lang(self.request)
+        return ctx
 
 
 # ============================================
@@ -361,15 +400,26 @@ class CartViewSet(viewsets.ViewSet):
 def _calculate_shipping(country, subtotal, currency):
     """
     Calculate shipping cost based on destination country and order subtotal.
-    Mirrors the logic in WWC_Checkout::calculate_shipping() in the WP plugin.
+    Rates are read from the DB (ShippingRate model); falls back to hardcoded
+    defaults if no matching row exists.
     """
-    rates = {'TN': 7.00, 'FR': 15.00, 'BE': 15.00, 'CH': 20.00, 'DE': 20.00}
-    free_thresholds = {'TN': 100.00, 'FR': 50.00, 'BE': 50.00, 'CH': 75.00, 'DE': 75.00}
+    from orders.models import ShippingRate
+    DEFAULT_RATE = 20.00
+    DEFAULT_THRESHOLD = 75.00
+    try:
+        sr = ShippingRate.objects.get(country_code=country, is_active=True)
+        threshold = float(sr.free_threshold_tnd)
+        rate = float(sr.rate_tnd)
+    except ShippingRate.DoesNotExist:
+        threshold = DEFAULT_THRESHOLD
+        rate = DEFAULT_RATE
+    except Exception:
+        threshold = DEFAULT_THRESHOLD
+        rate = DEFAULT_RATE
 
-    threshold = free_thresholds.get(country, 75.00)
     if subtotal >= threshold:
         return 0.00
-    return rates.get(country, 20.00)
+    return rate
 
 
 class ApplyCouponView(APIView):
@@ -404,45 +454,279 @@ class ApplyCouponView(APIView):
         })
 
 
+def _create_order_items(order, cart):
+    """Create OrderItem rows from a live cart and update stock."""
+    for cart_item in cart.items.select_related('product', 'composable_box'):
+        box = cart_item.composable_box
+        if box:
+            box_price = box.price_eur if cart.currency == 'EUR' and box.price_eur else box.price_tnd
+            impact = cart_item.get_impact()
+            OrderItem.objects.create(
+                order=order,
+                product=None,
+                producer=None,
+                product_name=box.name,
+                product_sku=box.slug,
+                quantity=cart_item.quantity,
+                unit_price=box_price,
+                subtotal=cart_item.get_subtotal(cart.currency),
+                impact_quantity=impact.get('quantity', 0),
+                impact_item=impact.get('item', ''),
+                impact_school=impact.get('school', ''),
+            )
+        else:
+            p = cart_item.product
+            OrderItem.objects.create(
+                order=order,
+                product=p,
+                producer=p.producer,
+                product_name=p.name,
+                product_sku=p.sku,
+                quantity=cart_item.quantity,
+                unit_price=p.get_price(cart.currency),
+                subtotal=cart_item.get_subtotal(cart.currency),
+                impact_quantity=p.impact_quantity * cart_item.quantity,
+                impact_item=p.impact_item,
+                impact_school=p.impact_school,
+            )
+            if p.track_inventory:
+                p.stock_quantity -= cart_item.quantity
+                p.save(update_fields=['stock_quantity'])
+
+
+def _create_order_items_from_snapshot(order, snapshot):
+    """Create OrderItem rows from a cart snapshot (used after Stripe webhook)."""
+    from products.models import Product, Producer
+    from decimal import Decimal
+    for item in snapshot['items']:
+        if item['type'] == 'box':
+            OrderItem.objects.create(
+                order=order,
+                product=None,
+                producer=None,
+                product_name=item['name'],
+                product_sku=item['sku'],
+                quantity=item['quantity'],
+                unit_price=Decimal(item['unit_price']),
+                subtotal=Decimal(item['subtotal']),
+                impact_quantity=item['impact_quantity'],
+                impact_item=item['impact_item'],
+                impact_school=item['impact_school'],
+            )
+        else:
+            product = Product.objects.filter(pk=item['product_id']).first()
+            producer = Producer.objects.filter(pk=item['producer_id']).first() if item.get('producer_id') else None
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                producer=producer,
+                product_name=item['name'],
+                product_sku=item['sku'],
+                quantity=item['quantity'],
+                unit_price=Decimal(item['unit_price']),
+                subtotal=Decimal(item['subtotal']),
+                impact_quantity=item['impact_quantity'],
+                impact_item=item['impact_item'],
+                impact_school=item['impact_school'],
+            )
+            if item.get('track_inventory') and product:
+                product.stock_quantity -= item['quantity']
+                product.save(update_fields=['stock_quantity'])
+
+
 class CheckoutView(APIView):
     """Handle checkout process"""
     permission_classes = [AllowAny]
     authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
 
     def post(self, request):
-        """Create order from cart"""
         serializer = CheckoutSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure session exists
         if not request.session.session_key:
             request.session.create()
 
-        # Get cart — reuse CartViewSet logic so merging works for authenticated users
         cart = CartViewSet().get_cart(request)
-
         if not cart or cart.items.count() == 0:
-            return Response(
-                {'error': 'Cart is empty'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
 
         data = serializer.validated_data
-
         payment_method = data['payment_method']
 
-        # Calculate totals
+        # --- Stripe: save intent only, create order after webhook confirms ---
+        if payment_method == 'stripe':
+            return self._handle_stripe_intent(request, cart, data)
+
+        # --- COD / Bank transfer: create order immediately ---
+        return self._create_order_and_respond(request, cart, data)
+
+    def _collect_cart_snapshot(self, cart):
+        """Capture cart items as plain dicts for later order creation."""
+        snapshot = {'currency': cart.currency, 'items': []}
+        for item in cart.items.select_related('product', 'composable_box'):
+            box = item.composable_box
+            if box:
+                impact = item.get_impact()
+                box_price = box.price_eur if cart.currency == 'EUR' and box.price_eur else box.price_tnd
+                snapshot['items'].append({
+                    'type': 'box',
+                    'name': box.name,
+                    'sku': box.slug,
+                    'quantity': item.quantity,
+                    'unit_price': str(box_price),
+                    'subtotal': str(item.get_subtotal(cart.currency)),
+                    'impact_quantity': impact.get('quantity', 0),
+                    'impact_item': impact.get('item', ''),
+                    'impact_school': impact.get('school', ''),
+                    'track_inventory': False,
+                })
+            else:
+                p = item.product
+                is_b2b = (
+                    cart.user and
+                    hasattr(cart.user, 'customer') and
+                    cart.user.customer.is_b2b
+                )
+                snapshot['items'].append({
+                    'type': 'product',
+                    'product_id': p.id,
+                    'producer_id': p.producer_id,
+                    'name': p.name,
+                    'sku': p.sku,
+                    'quantity': item.quantity,
+                    'unit_price': str(p.get_price(cart.currency, is_b2b=is_b2b, quantity=item.quantity)),
+                    'subtotal': str(item.get_subtotal(cart.currency)),
+                    'impact_quantity': p.impact_quantity * item.quantity,
+                    'impact_item': p.impact_item,
+                    'impact_school': p.impact_school,
+                    'track_inventory': p.track_inventory,
+                })
+        return snapshot
+
+    def _handle_stripe_intent(self, request, cart, data):
+        """For Stripe: save a PendingCheckout and return a Stripe session URL.
+        The actual Order is created only when the webhook fires."""
+        from decimal import Decimal
+        from orders.models import PendingCheckout
+        import stripe as _stripe_lib
+        from django.conf import settings as django_settings
+
         subtotal = cart.get_total()
         country = data.get('shipping_country', 'TN')
-        from decimal import Decimal
         shipping_cost = Decimal(str(_calculate_shipping(country, float(subtotal), cart.currency)))
         gift_packaging = data.get('gift_packaging', False)
-        gift_packaging_fee = Decimal('0.00')
-        if gift_packaging:
-            gift_packaging_fee = Decimal('5.00') if cart.currency == 'TND' else Decimal('2.00')
+        gift_packaging_fee = Decimal('5.00') if (gift_packaging and cart.currency == 'TND') else (Decimal('2.00') if gift_packaging else Decimal('0.00'))
 
-        # Apply coupon discount
+        coupon_code = data.get('coupon_code', '').strip().upper()
+        discount_amount = Decimal('0.00')
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code=coupon_code)
+                valid, _ = coupon.is_valid(float(subtotal))
+                if valid:
+                    discount_amount = coupon.calculate_discount(subtotal)
+            except Coupon.DoesNotExist:
+                pass
+
+        total = subtotal + shipping_cost + gift_packaging_fee - discount_amount
+
+        # Snapshot cart before any clearing
+        cart_snapshot = self._collect_cart_snapshot(cart)
+
+        # Serialise form data (convert Decimal to str for JSON)
+        serialisable_data = {k: str(v) if hasattr(v, '__round__') else v for k, v in data.items()}
+
+        pending = PendingCheckout.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            cart_snapshot=cart_snapshot,
+            form_data={
+                **serialisable_data,
+                '_subtotal': str(subtotal),
+                '_shipping_cost': str(shipping_cost),
+                '_gift_packaging_fee': str(gift_packaging_fee),
+                '_discount_amount': str(discount_amount),
+                '_total': str(total),
+            },
+        )
+
+        # Build Stripe line items
+        _stripe_lib.api_key = django_settings.STRIPE_SECRET_KEY
+        from orders.models import SiteSettings
+        tnd_to_eur = SiteSettings.get_tnd_to_eur()
+
+        def to_cents(amount, currency):
+            if currency == 'EUR':
+                return max(int(round(float(amount) * 100)), 1)
+            return max(int(round(float(amount) * tnd_to_eur * 100)), 1)
+
+        line_items = []
+        for item in cart_snapshot['items']:
+            line_items.append({
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {'name': item['name']},
+                    'unit_amount': to_cents(item['unit_price'], cart_snapshot['currency']),
+                },
+                'quantity': item['quantity'],
+            })
+
+        if float(shipping_cost) > 0:
+            line_items.append({
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {'name': 'Livraison'},
+                    'unit_amount': to_cents(shipping_cost, cart_snapshot['currency']),
+                },
+                'quantity': 1,
+            })
+
+        origin = request.build_absolute_uri('/').rstrip('/')
+        try:
+            session = _stripe_lib.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=line_items,
+                mode='payment',
+                customer_email=data.get('email'),
+                success_url=f"{origin}/shop/order-success/?method=stripe&pending={pending.id}",
+                cancel_url=f"{origin}/shop/checkout/?payment=cancelled",
+                metadata={'pending_checkout_id': str(pending.id)},
+            )
+            pending.stripe_session_id = session.id
+            pending.save(update_fields=['stripe_session_id'])
+        except Exception as e:
+            logger.error("Stripe session creation failed for PendingCheckout %s: %s", getattr(pending, 'id', '?'), e)
+            try:
+                pending.delete()
+            except Exception:
+                pass
+            # Give a friendlier message for network connectivity issues
+            err_str = str(e)
+            if 'getaddrinfo' in err_str or 'NameResolution' in err_str or 'ConnectionError' in err_str or 'APIConnectionError' in err_str:
+                user_msg = 'Impossible de joindre Stripe. Vérifiez la connexion internet du serveur.'
+            else:
+                user_msg = 'Erreur lors de la création de la session de paiement. Veuillez réessayer.'
+            return Response({'error': user_msg}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        # Clear cart now — items are snapshotted
+        cart.clear()
+
+        return Response({
+            'checkout_url': session.url,
+            'pending_checkout_id': str(pending.id),
+            'payment_method': 'stripe',
+        }, status=status.HTTP_200_OK)
+
+    def _create_order_and_respond(self, request, cart, data):
+        """Create order immediately (COD / bank transfer)."""
+        from decimal import Decimal
+
+        subtotal = cart.get_total()
+        country = data.get('shipping_country', 'TN')
+        shipping_cost = Decimal(str(_calculate_shipping(country, float(subtotal), cart.currency)))
+        gift_packaging = data.get('gift_packaging', False)
+        gift_packaging_fee = Decimal('5.00') if (gift_packaging and cart.currency == 'TND') else (Decimal('2.00') if gift_packaging else Decimal('0.00'))
+
         coupon_code = data.get('coupon_code', '').strip().upper()
         discount_amount = Decimal('0.00')
         if coupon_code:
@@ -457,12 +741,9 @@ class CheckoutView(APIView):
                 pass
 
         total = subtotal + shipping_cost + gift_packaging_fee - discount_amount
-
-        # Calculate impact
         impact_summary = cart.get_total_impact()
         total_impact = sum(impact_summary.values())
 
-        # Create order
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
             email=data['email'],
@@ -485,55 +766,42 @@ class CheckoutView(APIView):
             shipping_state=data.get('shipping_state', ''),
             shipping_postal_code=data['shipping_postal_code'],
             shipping_country=data.get('shipping_country', 'TN'),
+            billing_same_as_shipping=data.get('billing_same_as_shipping', True),
+            billing_first_name=data.get('billing_first_name', ''),
+            billing_last_name=data.get('billing_last_name', ''),
+            billing_company=data.get('billing_company', ''),
+            billing_address_1=data.get('billing_address_1', ''),
+            billing_address_2=data.get('billing_address_2', ''),
+            billing_city=data.get('billing_city', ''),
+            billing_postal_code=data.get('billing_postal_code', ''),
+            billing_country=data.get('billing_country', ''),
             payment_method=data['payment_method'],
             customer_notes=data.get('customer_notes', ''),
-            coupon_code=data.get('coupon_code', ''),
+            coupon_code=coupon_code,
         )
 
-        # Create order items
-        for cart_item in cart.items.all():
-            product = cart_item.product
-            OrderItem.objects.create(
-                order=order,
-                product=product,
-                producer=product.producer,
-                product_name=product.name,
-                product_sku=product.sku,
-                quantity=cart_item.quantity,
-                unit_price=product.get_price(cart.currency),
-                subtotal=cart_item.get_subtotal(cart.currency),
-                impact_quantity=product.impact_quantity * cart_item.quantity,
-                impact_item=product.impact_item,
-                impact_school=product.impact_school,
-            )
-
-            # Update stock
-            if product.track_inventory:
-                product.stock_quantity -= cart_item.quantity
-                product.save()
-
-        # Clear cart
+        _create_order_items(order, cart)
         cart.clear()
 
-        # For COD orders: mark as paid immediately and update customer impact
+        from .payments import _send_order_confirmation_email
         if order.payment_method == 'cash_on_delivery':
             order.status = 'paid'
-            order.save(update_fields=['status'])
-            if order.user:
+            order.paid_at = timezone.now()
+            order.save(update_fields=['status', 'paid_at'])
+            if order.user and hasattr(order.user, 'customer'):
                 order.user.customer.update_impact_stats()
-            from .payments import _send_order_confirmation_email
+            _send_order_confirmation_email(order)
+        elif order.payment_method == 'bank_transfer':
             _send_order_confirmation_email(order)
 
-        response_data = {
+        return Response({
             'order_number': order.order_number,
             'order_id': str(order.id),
             'total': str(order.total),
             'currency': order.currency,
             'status': order.status,
             'payment_method': order.payment_method,
-        }
-
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        }, status=status.HTTP_201_CREATED)
 
 
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
@@ -582,19 +850,45 @@ class CustomerDashboardView(APIView):
             customer=customer
         ).select_related('product')[:10]
 
-        # Calculate impact summary
+        # Calculate impact live from confirmed orders (never stale)
+        CONFIRMED = ['paid', 'processing', 'shipped', 'delivered']
+        confirmed_orders = Order.objects.filter(user=request.user, status__in=CONFIRMED)
+        breakdown = {}
+        total_items = 0
+        total_purchases = sum(o.total for o in confirmed_orders)
+        for order in confirmed_orders:
+            for item_type, qty in (order.impact_summary or {}).items():
+                if qty > 0:
+                    breakdown[item_type] = breakdown.get(item_type, 0) + qty
+                    total_items += qty
         impact_summary = {
-            'total_items': customer.total_impact_items,
-            'breakdown': customer.impact_breakdown,
-            'total_purchases': str(customer.total_purchases),
-            'total_orders': customer.total_orders,
+            'total_items': total_items,
+            'breakdown': breakdown,
+            'total_purchases': str(total_purchases),
+            'total_orders': confirmed_orders.count(),
         }
+
+        # Get recent donations
+        from donations.models import Donation as DonationModel
+        recent_donations = DonationModel.objects.filter(
+            user=request.user
+        ).select_related('project').order_by('-created_at')[:5]
+        donations_data = [{
+            'id': d.id,
+            'project_title': d.project.title,
+            'amount': str(d.amount),
+            'currency': d.currency,
+            'status': d.status,
+            'payment_method': d.payment_method,
+            'created_at': d.created_at.isoformat(),
+        } for d in recent_donations]
 
         return Response({
             'customer': CustomerSerializer(customer).data,
             'recent_orders': OrderListSerializer(recent_orders, many=True).data,
             'wishlist': WishlistSerializer(wishlist, many=True).data,
             'impact_summary': impact_summary,
+            'recent_donations': donations_data,
         })
 
 
@@ -665,6 +959,11 @@ class ImpactEventViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ['school', 'item_type']
     ordering_fields = ['date', 'items_delivered']
 
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['lang'] = _get_request_lang(self.request)
+        return ctx
+
 
 class ImpactSummaryView(APIView):
     """Global impact summary"""
@@ -688,16 +987,44 @@ class ImpactSummaryView(APIView):
             is_published=True
         ).order_by('-date')[:5]
 
+        lang = _get_request_lang(request)
         return Response({
             'total_impact_items': total_impact,
             'total_orders': total_orders.count(),
-            'recent_events': ImpactEventSerializer(recent_events, many=True).data,
+            'recent_events': ImpactEventSerializer(recent_events, many=True, context={'lang': lang}).data,
         })
 
 
 # ============================================
 # Auth Views
 # ============================================
+
+def _send_email_verification(request, user):
+    """Send email verification link to newly registered user."""
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.http import urlsafe_base64_encode
+    from django.utils.encoding import force_bytes
+    from django.core.mail import send_mail
+    from django.conf import settings
+
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+    verify_url = f"{settings.SITE_URL}/shop/verify-email/?uid={uid}&token={token}"
+
+    send_mail(
+        subject='Confirmez votre adresse email - Wallah We Can',
+        message=(
+            f"Bonjour {user.first_name or user.email},\n\n"
+            f"Merci de vous être inscrit sur Wallah We Can !\n\n"
+            f"Cliquez sur ce lien pour confirmer votre adresse email :\n{verify_url}\n\n"
+            "Ce lien est valable 24 heures.\n\n"
+            "L'équipe WWC"
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=True,
+    )
+
 
 class UserRegistrationView(generics.CreateAPIView):
     """User registration endpoint"""
@@ -713,6 +1040,9 @@ class UserRegistrationView(generics.CreateAPIView):
         # Issue JWT tokens immediately so the user is logged in after registration
         from rest_framework_simplejwt.tokens import RefreshToken
         refresh = RefreshToken.for_user(user)
+
+        # Send email verification
+        _send_email_verification(request, user)
 
         # Merge guest cart if session key provided
         session_key = request.META.get('HTTP_X_SESSION_KEY')
@@ -731,6 +1061,8 @@ class UserRegistrationView(generics.CreateAPIView):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
+                'customer_type': user.customer.customer_type if hasattr(user, 'customer') else 'individual',
+                'b2b_status': user.customer.b2b_status if hasattr(user, 'customer') else 'not_applicable',
             }
         }, status=status.HTTP_201_CREATED)
 
@@ -786,6 +1118,7 @@ class UserLoginView(APIView):
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'customer_type': user.customer.customer_type if hasattr(user, 'customer') else 'individual',
+                'b2b_status': user.customer.b2b_status if hasattr(user, 'customer') else 'not_applicable',
             }
         })
 
@@ -802,6 +1135,8 @@ class PasswordResetRequestView(APIView):
         from django.utils.encoding import force_bytes
         from django.core.mail import send_mail
 
+        from django.conf import settings as django_settings
+
         email = request.data.get('email', '').strip().lower()
         if not email:
             return Response({'error': 'Email requis'}, status=status.HTTP_400_BAD_REQUEST)
@@ -811,7 +1146,7 @@ class PasswordResetRequestView(APIView):
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
-            reset_url = f"{settings.SITE_URL}/shop/reset-password/?uid={uid}&token={token}"
+            reset_url = f"{django_settings.SITE_URL}/shop/reset-password/?uid={uid}&token={token}"
 
             send_mail(
                 subject='Réinitialisation de votre mot de passe - Wallah We Can',
@@ -822,7 +1157,7 @@ class PasswordResetRequestView(APIView):
                     "Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.\n\n"
                     "L'équipe WWC"
                 ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email=django_settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
                 fail_silently=True,
             )
@@ -872,6 +1207,73 @@ class PasswordResetConfirmView(APIView):
         return Response({'message': 'Mot de passe réinitialisé avec succès'})
 
 
+class ChangePasswordView(APIView):
+    """Change password for authenticated user (requires current password)"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        current_password = request.data.get('current_password', '')
+        new_password = request.data.get('new_password', '')
+        confirm_password = request.data.get('confirm_password', '')
+
+        if not all([current_password, new_password, confirm_password]):
+            return Response({'error': 'Tous les champs sont requis'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not request.user.check_password(current_password):
+            return Response({'error': 'Mot de passe actuel incorrect'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_password != confirm_password:
+            return Response({'error': 'Les mots de passe ne correspondent pas'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(new_password) < 8:
+            return Response({'error': 'Le mot de passe doit contenir au moins 8 caractères'}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.set_password(new_password)
+        request.user.save()
+        return Response({'message': 'Mot de passe modifié avec succès'})
+
+
+class EmailVerificationView(APIView):
+    """Verify email address using uid + token from verification email."""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        from django.contrib.auth.models import User
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_decode
+        from django.utils.encoding import force_str
+
+        uid = request.query_params.get('uid', '')
+        token = request.query_params.get('token', '')
+
+        if not uid or not token:
+            return Response({'error': 'Lien invalide'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except (User.DoesNotExist, ValueError, TypeError):
+            return Response({'error': 'Lien invalide'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({'error': 'Lien expiré ou invalide'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if hasattr(user, 'customer'):
+            user.customer.email_verified = True
+            user.customer.save(update_fields=['email_verified'])
+
+        return Response({'message': 'Email confirmé avec succès'})
+
+    def post(self, request):
+        """Resend verification email (requires authentication)."""
+        if not request.user.is_authenticated:
+            return Response({'error': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        _send_email_verification(request, request.user)
+        return Response({'message': 'Email de vérification envoyé'})
+
+
 # ============================================
 # Donation Views
 # ============================================
@@ -889,6 +1291,7 @@ class DonationCountryListView(APIView):
             'name_en': c.name_en,
             'slug': c.slug,
             'flag_emoji': c.flag_emoji,
+            'image': request.build_absolute_uri(c.image.url) if c.image else None,
             'description': c.description,
             'project_count': c.projects.filter(is_active=True).count(),
         } for c in countries]
@@ -960,6 +1363,7 @@ class DonationProjectDetailView(APIView):
 
 class DonationCreateView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
 
     def post(self, request):
         data = request.data
@@ -979,10 +1383,20 @@ class DonationCreateView(APIView):
         currency = data.get('currency', project.currency)
         is_anonymous = bool(data.get('is_anonymous', False))
 
+        # Auto-fill from authenticated user if logged in
+        linked_user = request.user if request.user.is_authenticated else None
+        if linked_user and not is_anonymous:
+            auto_name = f"{linked_user.first_name} {linked_user.last_name}".strip() or linked_user.username
+            auto_email = linked_user.email
+        else:
+            auto_name = data.get('donor_name', '')
+            auto_email = data.get('donor_email', '')
+
         donation = DonationModel.objects.create(
             project=project,
-            donor_name='' if is_anonymous else data.get('donor_name', ''),
-            donor_email='' if is_anonymous else data.get('donor_email', ''),
+            user=linked_user,
+            donor_name='' if is_anonymous else auto_name,
+            donor_email='' if is_anonymous else auto_email,
             amount=amount,
             currency=currency,
             payment_method=payment_method,
@@ -1011,9 +1425,9 @@ class DonationCreateView(APIView):
         if payment_method == 'stripe':
             try:
                 from api.payments import _get_stripe
-                from django.conf import settings as django_settings
+                from orders.models import SiteSettings
                 _stripe = _get_stripe()
-                tnd_to_eur = float(getattr(django_settings, 'TND_TO_EUR_RATE', 0.30))
+                tnd_to_eur = SiteSettings.get_tnd_to_eur()
                 if currency == 'EUR':
                     amount_cents = max(int(round(amount * 100)), 1)
                 else:
@@ -1053,3 +1467,43 @@ class DonationCreateView(APIView):
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'error': 'Méthode de paiement invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ShippingRateListView(APIView):
+    """
+    Public read-only endpoint that returns active shipping rates.
+    Used by the checkout page to display shipping costs per country and by
+    the WordPress plugin to calculate shipping dynamically.
+
+    GET /api/v1/shipping-rates/
+    GET /api/v1/shipping-rates/?country_code=TN
+    GET /api/v1/shipping-rates/?is_active=true
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        from orders.models import ShippingRate
+        qs = ShippingRate.objects.all()
+
+        country_code = request.query_params.get('country_code')
+        if country_code:
+            qs = qs.filter(country_code__iexact=country_code.strip())
+
+        is_active_param = request.query_params.get('is_active')
+        if is_active_param is not None:
+            qs = qs.filter(is_active=(is_active_param.lower() not in ('false', '0', 'no')))
+
+        rates = [
+            {
+                'id': r.id,
+                'country_code': r.country_code,
+                'country_name': r.country_name,
+                'rate_tnd': str(r.rate_tnd),
+                'free_threshold_tnd': str(r.free_threshold_tnd),
+                'is_active': r.is_active,
+                'updated_at': r.updated_at.isoformat(),
+            }
+            for r in qs.order_by('country_name')
+        ]
+        return Response({'count': len(rates), 'results': rates})

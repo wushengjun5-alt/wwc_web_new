@@ -48,6 +48,11 @@ def serve_reset_password_page(request):
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
+def serve_verify_email_page(request):
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'verify-email.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
 def serve_cart_page(request):
     """Serve the cart page"""
     frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'cart.html')
@@ -75,6 +80,12 @@ def serve_donate_page(request):
 def serve_box_builder_page(request):
     """Serve the composable box builder page"""
     frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'box-builder.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
+
+
+def serve_order_detail_page(request):
+    """Serve the standalone order tracking/detail page"""
+    frontend_path = os.path.join(settings.BASE_DIR.parent, 'frontend', 'order-detail.html')
     return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 
@@ -143,8 +154,10 @@ urlpatterns = [
     path('shop/login/', serve_login_page, name='shop-login'),
     path('shop/account/', serve_account_page, name='shop-account'),
     path('shop/reset-password/', serve_reset_password_page, name='shop-reset-password'),
+    path('shop/verify-email/', serve_verify_email_page, name='shop-verify-email'),
     path('shop/cart/', serve_cart_page, name='shop-cart'),
     path('shop/order-success/', serve_order_success_page, name='shop-order-success'),
+    path('shop/order-detail/', serve_order_detail_page, name='shop-order-detail'),
     path('shop/impact/', serve_impact_page, name='shop-impact'),
     path('shop/donate/', serve_donate_page, name='shop-donate'),
     path('shop/donate/success/', serve_donate_page, name='shop-donate-success'),
@@ -152,10 +165,11 @@ urlpatterns = [
     path('shop/producers/<slug:slug>/', serve_producer_page, name='shop-producer'),
 
     # Shop admin (HTML interface for product management)
-    path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),
-    path('shop/admin/<str:page>', serve_shop_admin_page, name='shop-admin-page'),
+    # Static assets must come BEFORE the catch-all <str:page> route
     path('shop/admin/css/<str:filename>', serve_shop_admin_static, {'folder': 'css'}, name='shop-admin-css'),
     path('shop/admin/js/<str:filename>', serve_shop_admin_static, {'folder': 'js'}, name='shop-admin-js'),
+    path('shop/admin/', serve_shop_admin_page, {'page': 'index'}, name='shop-admin'),
+    path('shop/admin/<str:page>', serve_shop_admin_page, name='shop-admin-page'),
 
     # Frontend static files (shared JS utilities)
     path('shop/js/<str:filename>', serve_shop_static, {'folder': 'js'}, name='shop-js'),

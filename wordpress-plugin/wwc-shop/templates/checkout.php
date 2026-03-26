@@ -22,16 +22,16 @@ $states          = WWC_Checkout::get_tunisia_states();
 
             <!-- Contact Information -->
             <section class="wwc-checkout-section">
-                <h2><?php esc_html_e('Informations de contact', 'wwc-shop'); ?></h2>
+                <h2><?php WWC_I18n::e('Informations de contact'); ?></h2>
 
                 <div class="wwc-form-row">
                     <div class="wwc-form-field wwc-field-half">
-                        <label for="email"><?php esc_html_e('Email', 'wwc-shop'); ?> *</label>
+                        <label for="email"><?php WWC_I18n::e('Email'); ?> *</label>
                         <input type="email" id="email" name="email" required
                                value="<?php echo is_user_logged_in() ? esc_attr(wp_get_current_user()->user_email) : ''; ?>">
                     </div>
                     <div class="wwc-form-field wwc-field-half">
-                        <label for="phone"><?php esc_html_e('Téléphone', 'wwc-shop'); ?> *</label>
+                        <label for="phone"><?php WWC_I18n::e('Téléphone'); ?> *</label>
                         <input type="tel" id="phone" name="phone" required placeholder="+216 XX XXX XXX">
                     </div>
                 </div>
@@ -39,47 +39,47 @@ $states          = WWC_Checkout::get_tunisia_states();
 
             <!-- Shipping Address -->
             <section class="wwc-checkout-section">
-                <h2><?php esc_html_e('Adresse de livraison', 'wwc-shop'); ?></h2>
+                <h2><?php WWC_I18n::e('Adresse de livraison'); ?></h2>
 
                 <div class="wwc-form-row">
                     <div class="wwc-form-field wwc-field-half">
-                        <label for="shipping_first_name"><?php esc_html_e('Prénom', 'wwc-shop'); ?> *</label>
+                        <label for="shipping_first_name"><?php WWC_I18n::e('Prénom'); ?> *</label>
                         <input type="text" id="shipping_first_name" name="shipping_first_name" required>
                     </div>
                     <div class="wwc-form-field wwc-field-half">
-                        <label for="shipping_last_name"><?php esc_html_e('Nom', 'wwc-shop'); ?> *</label>
+                        <label for="shipping_last_name"><?php WWC_I18n::e('Nom'); ?> *</label>
                         <input type="text" id="shipping_last_name" name="shipping_last_name" required>
                     </div>
                 </div>
 
                 <div class="wwc-form-field">
-                    <label for="shipping_company"><?php esc_html_e('Entreprise', 'wwc-shop'); ?> (<?php esc_html_e('optionnel', 'wwc-shop'); ?>)</label>
+                    <label for="shipping_company"><?php WWC_I18n::e('Entreprise'); ?> (<?php WWC_I18n::e('optionnel'); ?>)</label>
                     <input type="text" id="shipping_company" name="shipping_company">
                 </div>
 
                 <div class="wwc-form-field">
-                    <label for="shipping_address_1"><?php esc_html_e('Adresse', 'wwc-shop'); ?> *</label>
+                    <label for="shipping_address_1"><?php WWC_I18n::e('Adresse'); ?> *</label>
                     <input type="text" id="shipping_address_1" name="shipping_address_1" required>
                 </div>
 
                 <div class="wwc-form-field">
-                    <label for="shipping_address_2"><?php esc_html_e('Complément d\'adresse', 'wwc-shop'); ?></label>
+                    <label for="shipping_address_2"><?php WWC_I18n::e("Complément d'adresse"); ?></label>
                     <input type="text" id="shipping_address_2" name="shipping_address_2">
                 </div>
 
                 <div class="wwc-form-row">
                     <div class="wwc-form-field wwc-field-third">
-                        <label for="shipping_postal_code"><?php esc_html_e('Code postal', 'wwc-shop'); ?> *</label>
+                        <label for="shipping_postal_code"><?php WWC_I18n::e('Code postal'); ?> *</label>
                         <input type="text" id="shipping_postal_code" name="shipping_postal_code" required>
                     </div>
                     <div class="wwc-form-field wwc-field-third">
-                        <label for="shipping_city"><?php esc_html_e('Ville', 'wwc-shop'); ?> *</label>
+                        <label for="shipping_city"><?php WWC_I18n::e('Ville'); ?> *</label>
                         <input type="text" id="shipping_city" name="shipping_city" required>
                     </div>
                     <div class="wwc-form-field wwc-field-third">
-                        <label for="shipping_state"><?php esc_html_e('Gouvernorat', 'wwc-shop'); ?></label>
+                        <label for="shipping_state"><?php WWC_I18n::e('Gouvernorat'); ?></label>
                         <select id="shipping_state" name="shipping_state">
-                            <option value=""><?php esc_html_e('Sélectionner', 'wwc-shop'); ?></option>
+                            <option value=""><?php WWC_I18n::e('Sélectionner'); ?></option>
                             <?php foreach ($states as $code => $name): ?>
                                 <option value="<?php echo esc_attr($code); ?>"><?php echo esc_html($name); ?></option>
                             <?php endforeach; ?>
@@ -88,7 +88,7 @@ $states          = WWC_Checkout::get_tunisia_states();
                 </div>
 
                 <div class="wwc-form-field">
-                    <label for="shipping_country"><?php esc_html_e('Pays', 'wwc-shop'); ?> *</label>
+                    <label for="shipping_country"><?php WWC_I18n::e('Pays'); ?> *</label>
                     <select id="shipping_country" name="shipping_country" required>
                         <?php foreach ($countries as $code => $name): ?>
                             <option value="<?php echo esc_attr($code); ?>" <?php selected($code, 'TN'); ?>>
@@ -101,7 +101,7 @@ $states          = WWC_Checkout::get_tunisia_states();
 
             <!-- Payment Method -->
             <section class="wwc-checkout-section">
-                <h2><?php esc_html_e('Méthode de paiement', 'wwc-shop'); ?></h2>
+                <h2><?php WWC_I18n::e('Méthode de paiement'); ?></h2>
 
                 <div class="wwc-payment-methods">
                     <?php
@@ -122,12 +122,12 @@ $states          = WWC_Checkout::get_tunisia_states();
 
             <!-- Order Notes -->
             <section class="wwc-checkout-section">
-                <h2><?php esc_html_e('Notes de commande', 'wwc-shop'); ?></h2>
+                <h2><?php WWC_I18n::e('Notes de commande'); ?></h2>
 
                 <div class="wwc-form-field">
-                    <label for="customer_notes"><?php esc_html_e('Instructions spéciales', 'wwc-shop'); ?></label>
+                    <label for="customer_notes"><?php WWC_I18n::e('Instructions spéciales'); ?></label>
                     <textarea id="customer_notes" name="customer_notes" rows="3"
-                              placeholder="<?php esc_attr_e('Notes sur votre commande, instructions de livraison...', 'wwc-shop'); ?>"></textarea>
+                              placeholder="<?php echo WWC_I18n::attr('Notes sur votre commande, instructions de livraison...'); ?>"></textarea>
                 </div>
             </section>
 
@@ -136,7 +136,7 @@ $states          = WWC_Checkout::get_tunisia_states();
         <!-- Order Summary Sidebar -->
         <aside class="wwc-checkout-sidebar">
             <div class="wwc-order-summary">
-                <h3><?php esc_html_e('Récapitulatif de commande', 'wwc-shop'); ?></h3>
+                <h3><?php WWC_I18n::e('Récapitulatif de commande'); ?></h3>
 
                 <div id="wwc-checkout-items" class="wwc-checkout-items">
                     <!-- Items loaded via AJAX -->
@@ -147,15 +147,15 @@ $states          = WWC_Checkout::get_tunisia_states();
 
                 <div class="wwc-checkout-totals" data-currency="<?php echo esc_attr($currency); ?>" data-currency-symbol="<?php echo esc_attr($currency_symbol); ?>">
                     <div class="wwc-checkout-row">
-                        <span><?php esc_html_e('Sous-total', 'wwc-shop'); ?></span>
+                        <span><?php WWC_I18n::e('Sous-total'); ?></span>
                         <span id="wwc-checkout-subtotal">0 <?php echo esc_html($currency_symbol); ?></span>
                     </div>
                     <div class="wwc-checkout-row">
-                        <span><?php esc_html_e('Livraison', 'wwc-shop'); ?></span>
-                        <span id="wwc-checkout-shipping"><?php esc_html_e('Calculé selon le pays', 'wwc-shop'); ?></span>
+                        <span><?php WWC_I18n::e('Livraison'); ?></span>
+                        <span id="wwc-checkout-shipping"><?php WWC_I18n::e('Calculé selon le pays'); ?></span>
                     </div>
                     <div class="wwc-checkout-row wwc-checkout-total">
-                        <span><?php esc_html_e('Total', 'wwc-shop'); ?></span>
+                        <span><?php WWC_I18n::e('Total'); ?></span>
                         <span id="wwc-checkout-total">0 <?php echo esc_html($currency_symbol); ?></span>
                     </div>
                 </div>
@@ -166,11 +166,11 @@ $states          = WWC_Checkout::get_tunisia_states();
                 </div>
 
                 <button type="submit" class="wwc-btn wwc-btn-primary wwc-btn-checkout">
-                    <?php esc_html_e('Confirmer la commande', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e('Confirmer la commande'); ?>
                 </button>
 
                 <p class="wwc-checkout-secure">
-                    🔒 <?php esc_html_e('Paiement sécurisé', 'wwc-shop'); ?>
+                    🔒 <?php WWC_I18n::e('Paiement sécurisé'); ?>
                 </p>
             </div>
         </aside>

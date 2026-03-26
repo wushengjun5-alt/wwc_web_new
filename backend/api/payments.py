@@ -10,6 +10,7 @@ import stripe
 import logging
 from django.conf import settings
 from django.utils import timezone
+from datetime import timedelta
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from rest_framework.views import APIView
@@ -159,7 +160,8 @@ class CreateCheckoutSessionView(APIView):
         # Always charge in EUR via Stripe.
         # If order is in TND, convert at fixed rate; EUR orders charge directly.
         stripe_currency = 'eur'
-        tnd_to_eur = float(getattr(settings, 'TND_TO_EUR_RATE', 0.30))
+        from orders.models import SiteSettings
+        tnd_to_eur = SiteSettings.get_tnd_to_eur()
 
         def to_cents(amount, currency):
             """Convert an amount to Stripe cents (EUR). Always >= 1 cent."""
@@ -256,29 +258,145 @@ class StripeWebhookView(APIView):
         return Response({'status': 'success'})
 
     def _handle_checkout_completed(self, session):
-        order_number = session['metadata'].get('order_number')
-        if not order_number:
+        metadata = session.get('metadata', {})
+        pending_checkout_id = metadata.get('pending_checkout_id')
+        order_number = metadata.get('order_number')
+        donation_id = metadata.get('donation_id')
+
+        # New flow: create order from PendingCheckout
+        if pending_checkout_id:
+            self._fulfil_pending_checkout(session, pending_checkout_id)
             return
+
+        # Legacy flow: order already existed (COD/bank transfer won't reach here,
+        # but keep for backwards compat with any old sessions in flight)
+        if order_number:
+            try:
+                order = Order.objects.get(order_number=order_number)
+                if order.status == 'pending':
+                    order.status = 'paid'
+                    order.payment_id = session.get('payment_intent', '')
+                    order.paid_at = timezone.now()
+                    order.save()
+
+                    if order.user and hasattr(order.user, 'customer'):
+                        order.user.customer.update_impact_stats()
+
+                    for item in order.items.all():
+                        if item.producer:
+                            item.producer.total_products_sold += item.quantity
+                            item.producer.total_earnings += item.subtotal
+                            item.producer.save()
+
+                    _send_order_confirmation_email(order)
+            except Order.DoesNotExist:
+                logger.warning("Webhook: order %s not found", order_number)
+
+        if donation_id:
+            try:
+                from donations.models import Donation as DonationModel
+                donation = DonationModel.objects.get(pk=donation_id)
+                if donation.status == 'pending':
+                    donation.status = 'completed'
+                    donation.payment_id = session.get('payment_intent', '')
+                    donation.save()
+            except Exception as e:
+                logger.warning("Webhook: donation %s not found or error: %s", donation_id, e)
+
+    def _fulfil_pending_checkout(self, session, pending_checkout_id):
+        """Create the real Order from a PendingCheckout after Stripe payment confirmed."""
+        from orders.models import PendingCheckout
+        from api.views import _create_order_items_from_snapshot
+        from decimal import Decimal
+
         try:
-            order = Order.objects.get(order_number=order_number)
-            if order.status == 'pending':
-                order.status = 'paid'
-                order.payment_id = session.get('payment_intent', '')
-                order.paid_at = timezone.now()
-                order.save()
+            pending = PendingCheckout.objects.get(pk=pending_checkout_id)
+        except PendingCheckout.DoesNotExist:
+            logger.warning("Webhook: PendingCheckout %s not found", pending_checkout_id)
+            return
 
-                if order.user and hasattr(order.user, 'customer'):
-                    order.user.customer.update_impact_stats()
+        fd = pending.form_data
+        snapshot = pending.cart_snapshot
 
-                for item in order.items.all():
-                    if item.producer:
-                        item.producer.total_products_sold += item.quantity
-                        item.producer.total_earnings += item.subtotal
-                        item.producer.save()
+        impact_summary = {}
+        for item in snapshot['items']:
+            key = item['impact_item'] or 'items'
+            impact_summary[key] = impact_summary.get(key, 0) + item['impact_quantity']
+        total_impact = sum(impact_summary.values())
 
-                _send_order_confirmation_email(order)
-        except Order.DoesNotExist:
-            logger.warning("Webhook: order %s not found", order_number)
+        order = Order.objects.create(
+            user=pending.user,
+            email=fd['email'],
+            phone=fd['phone'],
+            status='paid',
+            currency=snapshot['currency'],
+            subtotal=Decimal(fd['_subtotal']),
+            discount_amount=Decimal(fd['_discount_amount']),
+            shipping_cost=Decimal(fd['_shipping_cost']),
+            tax_amount=Decimal(fd['_gift_packaging_fee']),
+            total=Decimal(fd['_total']),
+            total_impact_items=total_impact,
+            impact_summary=impact_summary,
+            payment_method='stripe',
+            payment_id=session.get('payment_intent', ''),
+            paid_at=timezone.now(),
+            shipping_first_name=fd['shipping_first_name'],
+            shipping_last_name=fd['shipping_last_name'],
+            shipping_company=fd.get('shipping_company', ''),
+            shipping_address_1=fd['shipping_address_1'],
+            shipping_address_2=fd.get('shipping_address_2', ''),
+            shipping_city=fd['shipping_city'],
+            shipping_state=fd.get('shipping_state', ''),
+            shipping_postal_code=fd['shipping_postal_code'],
+            shipping_country=fd.get('shipping_country', 'TN'),
+            billing_same_as_shipping=fd.get('billing_same_as_shipping', True),
+            billing_first_name=fd.get('billing_first_name', ''),
+            billing_last_name=fd.get('billing_last_name', ''),
+            billing_company=fd.get('billing_company', ''),
+            billing_address_1=fd.get('billing_address_1', ''),
+            billing_address_2=fd.get('billing_address_2', ''),
+            billing_city=fd.get('billing_city', ''),
+            billing_postal_code=fd.get('billing_postal_code', ''),
+            billing_country=fd.get('billing_country', ''),
+            customer_notes=fd.get('customer_notes', ''),
+            coupon_code=fd.get('coupon_code', ''),
+        )
+
+        _create_order_items_from_snapshot(order, snapshot)
+
+        # Mark coupon as used
+        coupon_code = fd.get('coupon_code', '').strip().upper()
+        if coupon_code:
+            try:
+                from orders.models import Coupon
+                coupon = Coupon.objects.get(code=coupon_code)
+                coupon.used_count += 1
+                coupon.save(update_fields=['used_count'])
+            except Exception:
+                pass
+
+        # Update customer impact stats
+        if pending.user and hasattr(pending.user, 'customer'):
+            pending.user.customer.update_impact_stats()
+
+        # Update producer stats
+        for item in order.items.all():
+            if item.producer:
+                item.producer.total_products_sold += item.quantity
+                item.producer.total_earnings += item.subtotal
+                item.producer.save()
+
+        _send_order_confirmation_email(order)
+
+        # Store order number on pending checkout for the success page to retrieve
+        pending.form_data['_order_number'] = order.order_number
+        pending.save(update_fields=['form_data'])
+
+        # Clean up old pending checkouts (best effort)
+        try:
+            PendingCheckout.objects.filter(created_at__lt=timezone.now() - timedelta(hours=6)).delete()
+        except Exception:
+            pass
 
     def _handle_payment_succeeded(self, payment_intent):
         order_number = payment_intent['metadata'].get('order_number')
@@ -310,6 +428,24 @@ class StripeWebhookView(APIView):
             order.save()
         except Order.DoesNotExist:
             pass
+
+
+class PendingCheckoutStatusView(APIView):
+    """Poll for the order created from a PendingCheckout (Stripe flow)."""
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [AllowAny]
+
+    def get(self, request, pending_id):
+        from orders.models import PendingCheckout
+        try:
+            pending = PendingCheckout.objects.get(pk=pending_id)
+        except (PendingCheckout.DoesNotExist, Exception):
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        order_number = pending.form_data.get('_order_number')
+        if order_number:
+            return Response({'ready': True, 'order_number': order_number})
+        return Response({'ready': False})
 
 
 class PaymentStatusView(APIView):

@@ -33,7 +33,7 @@ class WWC_Cart {
         $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
 
         if (!$product_id) {
-            wp_send_json_error(['message' => __('Invalid product', 'wwc-shop')]);
+            wp_send_json_error(['message' => WWC_I18n::t('Invalid product')]);
         }
 
         $result = $this->api->add_to_cart($product_id, $quantity);
@@ -52,7 +52,7 @@ class WWC_Cart {
         }
 
         wp_send_json_success([
-            'message' => __('Product added to cart', 'wwc-shop'),
+            'message' => WWC_I18n::t('Product added to cart'),
             'cart' => $result['cart'] ?? $result,
             'cart_count' => $this->get_cart_count($result['cart'] ?? $result),
         ]);
@@ -68,7 +68,7 @@ class WWC_Cart {
         $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
 
         if (!$item_id) {
-            wp_send_json_error(['message' => __('Invalid cart item', 'wwc-shop')]);
+            wp_send_json_error(['message' => WWC_I18n::t('Invalid cart item')]);
         }
 
         $result = $this->api->update_cart_item($item_id, $quantity);
@@ -78,7 +78,7 @@ class WWC_Cart {
         }
 
         wp_send_json_success([
-            'message' => __('Cart updated', 'wwc-shop'),
+            'message' => WWC_I18n::t('Cart updated'),
             'cart' => $result,
             'cart_count' => $this->get_cart_count($result),
         ]);
@@ -93,7 +93,7 @@ class WWC_Cart {
         $item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : 0;
 
         if (!$item_id) {
-            wp_send_json_error(['message' => __('Invalid cart item', 'wwc-shop')]);
+            wp_send_json_error(['message' => WWC_I18n::t('Invalid cart item')]);
         }
 
         $result = $this->api->remove_from_cart($item_id);
@@ -103,7 +103,7 @@ class WWC_Cart {
         }
 
         wp_send_json_success([
-            'message' => __('Product removed from cart', 'wwc-shop'),
+            'message' => WWC_I18n::t('Product removed from cart'),
             'cart' => $result,
             'cart_count' => $this->get_cart_count($result),
         ]);
@@ -140,7 +140,7 @@ class WWC_Cart {
         }
 
         wp_send_json_success([
-            'message' => __('Cart cleared', 'wwc-shop'),
+            'message' => WWC_I18n::t('Cart cleared'),
             'cart_count' => 0,
         ]);
     }
@@ -154,11 +154,11 @@ class WWC_Cart {
         $coupon_code = isset($_POST['coupon_code']) ? sanitize_text_field($_POST['coupon_code']) : '';
 
         if (empty($coupon_code)) {
-            wp_send_json_error(['message' => __('Please enter a coupon code', 'wwc-shop')]);
+            wp_send_json_error(['message' => WWC_I18n::t('Please enter a coupon code')]);
         }
 
         // TODO: Implement coupon validation via API
-        wp_send_json_error(['message' => __('Coupon functionality coming soon', 'wwc-shop')]);
+        wp_send_json_error(['message' => WWC_I18n::t('Coupon functionality coming soon')]);
     }
 
     /**
@@ -191,7 +191,7 @@ class WWC_Cart {
         foreach ($required as $field) {
             if (empty($checkout_data[$field])) {
                 wp_send_json_error([
-                    'message' => sprintf(__('%s is required', 'wwc-shop'), ucfirst(str_replace('_', ' ', $field)))
+                    'message' => sprintf(WWC_I18n::t('%s is required'), ucfirst(str_replace('_', ' ', $field)))
                 ]);
             }
         }
@@ -218,11 +218,11 @@ class WWC_Cart {
         }
 
         if (empty($payment_result['checkout_url'])) {
-            wp_send_json_error(['message' => __('Impossible de créer la session de paiement.', 'wwc-shop')]);
+            wp_send_json_error(['message' => WWC_I18n::t('Impossible de créer la session de paiement.')]);
         }
 
         wp_send_json_success([
-            'message'      => __('Commande créée', 'wwc-shop'),
+            'message'      => WWC_I18n::t('Commande créée'),
             'order_number' => $order_number,
             'checkout_url' => $payment_result['checkout_url'],
             'redirect'     => true,
@@ -256,7 +256,7 @@ class WWC_Cart {
 
         $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
         if (!$product_id) {
-            wp_send_json_error(['message' => __('Invalid product', 'wwc-shop')]);
+            wp_send_json_error(['message' => WWC_I18n::t('Invalid product')]);
         }
 
         // First check current wishlist state
@@ -281,13 +281,13 @@ class WWC_Cart {
             if (is_wp_error($result)) {
                 wp_send_json_error(['message' => $result->get_error_message()]);
             }
-            wp_send_json_success(['in_wishlist' => false, 'message' => __('Retiré des favoris', 'wwc-shop')]);
+            wp_send_json_success(['in_wishlist' => false, 'message' => WWC_I18n::t('Retiré des favoris')]);
         } else {
             $result = $this->api->add_to_wishlist($product_id);
             if (is_wp_error($result)) {
                 wp_send_json_error(['message' => $result->get_error_message()]);
             }
-            wp_send_json_success(['in_wishlist' => true, 'message' => __('Ajouté aux favoris', 'wwc-shop')]);
+            wp_send_json_success(['in_wishlist' => true, 'message' => WWC_I18n::t('Ajouté aux favoris')]);
         }
     }
 
@@ -302,7 +302,7 @@ class WWC_Cart {
         $comment      = isset($_POST['comment']) ? sanitize_textarea_field($_POST['comment']) : '';
 
         if (empty($product_slug) || $rating < 1 || $rating > 5) {
-            wp_send_json_error(['message' => __('Veuillez sélectionner une note entre 1 et 5.', 'wwc-shop')]);
+            wp_send_json_error(['message' => WWC_I18n::t('Veuillez sélectionner une note entre 1 et 5.')]);
         }
 
         $result = $this->api->add_review($product_slug, $rating, $comment);
@@ -311,7 +311,7 @@ class WWC_Cart {
             wp_send_json_error(['message' => $result->get_error_message()]);
         }
 
-        wp_send_json_success(['message' => __('Avis soumis. Il sera publié après modération.', 'wwc-shop')]);
+        wp_send_json_success(['message' => WWC_I18n::t('Avis soumis. Il sera publié après modération.')]);
     }
 
     /**
@@ -338,5 +338,37 @@ class WWC_Cart {
             default:
                 return number_format($amount, 2, ',', ' ') . ' DT';
         }
+    }
+
+    /**
+     * AJAX: Set language preference
+     * Stores the chosen language in a cookie and optionally syncs to the
+     * customer profile when authenticated.
+     */
+    public function ajax_set_language() {
+        check_ajax_referer('wwc-shop-nonce', 'nonce');
+
+        $allowed = ['fr', 'en', 'ar'];
+        $lang    = sanitize_text_field($_POST['lang'] ?? '');
+
+        if (!in_array($lang, $allowed, true)) {
+            wp_send_json_error(['message' => 'Invalid language']);
+        }
+
+        // Persist in cookie for 1 year
+        setcookie('wwc_lang', $lang, [
+            'expires'  => time() + YEAR_IN_SECONDS,
+            'path'     => '/',
+            'httponly' => false, // JS needs to read it
+            'samesite' => 'Lax',
+        ]);
+        $_COOKIE['wwc_lang'] = $lang;
+
+        // Sync to customer profile if authenticated
+        if ($this->api->is_authenticated()) {
+            $this->api->update_customer_profile(['preferred_language' => $lang]);
+        }
+
+        wp_send_json_success(['lang' => $lang]);
     }
 }

@@ -19,18 +19,18 @@ $events_list = is_wp_error($impact_events) ? [] : ($impact_events['results'] ?? 
     <!-- Global Impact Stats -->
     <?php if (!is_wp_error($impact)): ?>
     <div class="wwc-global-impact">
-        <h2><?php esc_html_e('Notre Impact Collectif', 'wwc-shop'); ?></h2>
+        <h2><?php WWC_I18n::e('Notre Impact Collectif'); ?></h2>
 
         <div class="wwc-impact-stat-row">
             <div class="wwc-impact-stat">
                 <span class="wwc-stat-icon">💝</span>
                 <span class="wwc-stat-number"><?php echo esc_html(number_format($impact['total_impact_items'] ?? 0)); ?></span>
-                <span class="wwc-stat-label"><?php esc_html_e('items fournis', 'wwc-shop'); ?></span>
+                <span class="wwc-stat-label"><?php WWC_I18n::e('items fournis'); ?></span>
             </div>
             <div class="wwc-impact-stat">
                 <span class="wwc-stat-icon">📦</span>
                 <span class="wwc-stat-number"><?php echo esc_html(number_format($impact['total_orders'] ?? 0)); ?></span>
-                <span class="wwc-stat-label"><?php esc_html_e('commandes solidaires', 'wwc-shop'); ?></span>
+                <span class="wwc-stat-label"><?php WWC_I18n::e('commandes solidaires'); ?></span>
             </div>
         </div>
     </div>
@@ -39,7 +39,7 @@ $events_list = is_wp_error($impact_events) ? [] : ($impact_events['results'] ?? 
     <!-- Impact Events -->
     <?php if (!empty($events_list)): ?>
     <div class="wwc-impact-events">
-        <h2><?php esc_html_e('Événements Récents', 'wwc-shop'); ?></h2>
+        <h2><?php WWC_I18n::e('Événements Récents'); ?></h2>
 
         <div class="wwc-events-grid">
             <?php foreach ($events_list as $event): ?>
@@ -71,7 +71,7 @@ $events_list = is_wp_error($impact_events) ? [] : ($impact_events['results'] ?? 
                         <span class="wwc-event-type">
                             <?php echo esc_html($event['item_type']); ?>
                         </span>
-                        <?php esc_html_e('distribués', 'wwc-shop'); ?>
+                        <?php WWC_I18n::e('distribués'); ?>
                     </div>
 
                     <?php if (!empty($event['description'])): ?>
@@ -82,7 +82,7 @@ $events_list = is_wp_error($impact_events) ? [] : ($impact_events['results'] ?? 
 
                     <?php if (!empty($event['video_url'])): ?>
                     <a href="<?php echo esc_url($event['video_url']); ?>" class="wwc-event-video" target="_blank">
-                        🎥 <?php esc_html_e('Voir la vidéo', 'wwc-shop'); ?>
+                        🎥 <?php WWC_I18n::e('Voir la vidéo'); ?>
                     </a>
                     <?php endif; ?>
                 </div>
@@ -94,10 +94,10 @@ $events_list = is_wp_error($impact_events) ? [] : ($impact_events['results'] ?? 
 
     <!-- Call to Action -->
     <div class="wwc-impact-cta">
-        <h3><?php esc_html_e('Rejoignez le mouvement', 'wwc-shop'); ?></h3>
-        <p><?php esc_html_e('Chaque achat contribue à améliorer la vie des étudiants de GreenSchool.', 'wwc-shop'); ?></p>
+        <h3><?php WWC_I18n::e('Rejoignez le mouvement'); ?></h3>
+        <p><?php WWC_I18n::e('Chaque achat contribue à améliorer la vie des étudiants de GreenSchool.'); ?></p>
         <a href="<?php echo esc_url(home_url('/shop/')); ?>" class="wwc-btn wwc-btn-primary">
-            <?php esc_html_e('Découvrir nos produits', 'wwc-shop'); ?>
+            <?php WWC_I18n::e('Découvrir nos produits'); ?>
         </a>
     </div>
 

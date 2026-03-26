@@ -21,11 +21,12 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Sans', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
 
-        .header { background: #ffffff; border-bottom: 1px solid #ececec; padding: 0; height: 70px; position: sticky; top: 0; z-index: 100; }
-        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; height: 70px; display: flex; align-items: center; justify-content: space-between; }
-        .logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: #1c345e; text-decoration: none; }
-        .header-actions { display: flex; gap: 15px; align-items: center; }
-        .btn { display: inline-block; padding: 9px 18px; border-radius: 30px; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; text-decoration: none; transition: all 0.2s; border: none; }
+        .header { background: #1c345e; padding: 0; height: 80px; position: sticky; top: 0; z-index: 200; }
+        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 80px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+        .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+        .logo img { height: 48px; width: auto; display: block; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .btn { display: inline-block; padding: 9px 20px; border-radius: 30px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; cursor: pointer; text-decoration: none; transition: all 0.2s; border: none; }
         .btn-outline { background: transparent; color: #191919; border: 2px solid #ececec; }
         .btn-outline:hover { border-color: #e04403; color: #e04403; }
         .btn-secondary { background: transparent; color: #191919; border: 2px solid #ececec; }
@@ -53,6 +54,12 @@
         .impact-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
         .impact-number { font-family: 'Montserrat', sans-serif; font-size: 36px; font-weight: 700; color: #e04403; display: block; }
         .impact-label { font-size: 13px; color: var(--wwc-text-light); }
+        .impact-breakdown { margin-top: 20px; background: rgba(255,255,255,0.12); border-radius: 12px; padding: 16px; }
+        .impact-breakdown h3 { color: white; font-size: 14px; font-weight: 600; margin-bottom: 10px; opacity: 0.9; }
+        .impact-breakdown-items { display: flex; flex-wrap: wrap; gap: 10px; }
+        .impact-breakdown-item { background: rgba(255,255,255,0.2); border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+        .impact-breakdown-item strong { color: white; font-size: 20px; font-family: 'Montserrat', sans-serif; }
+        .impact-breakdown-item span { color: rgba(255,255,255,0.9); font-size: 13px; }
 
         /* Section */
         .section { background: white; border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
@@ -120,19 +127,52 @@
         .btn-logout { background: white; color: var(--wwc-text); border: 1px solid var(--wwc-border); }
         .btn-logout:hover { border-color: var(--wwc-error); color: var(--wwc-error); }
 
+        /* Settings */
+        .settings-label { display: block; font-size: 13px; font-weight: 600; color: var(--wwc-text-light); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .settings-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--wwc-border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--wwc-text); background: white; transition: border-color 0.2s; }
+        .settings-input:focus { outline: none; border-color: #e04403; }
+        .settings-btn { background: #e04403; color: white; border: none; padding: 11px 28px; border-radius: 30px; font-size: 14px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.3px; transition: background 0.2s; }
+        .settings-btn:hover { background: #1c345e; }
+
         @media (max-width: 700px) {
             .impact-cards { grid-template-columns: 1fr; }
             .orders-table th:nth-child(4), .orders-table td:nth-child(4) { display: none; }
+            .settings-input { font-size: 16px; } /* prevent zoom on mobile */
         }
+
+        /* Language dropdown */
+        .hdr-dropdown { position: relative; }
+        .hdr-dropdown-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .hdr-dropdown-btn:hover { background: rgba(255,255,255,0.22); }
+        .hdr-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); overflow: hidden; min-width: 120px; z-index: 300; }
+        .hdr-dropdown-menu.open { display: block; }
+        .hdr-dropdown-item { display: block; width: 100%; padding: 9px 16px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 600; color: #404040; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+        .hdr-dropdown-item:hover { background: #f5f5f5; color: #e04403; }
+        .hdr-dropdown-item.active { color: #e04403; background: rgba(224,68,3,0.07); }
+
+        /* RTL support */
+        [dir=rtl] .hdr-dropdown-menu { right: auto; left: 0; }
+        [dir=rtl] .hdr-dropdown-item { text-align: right; }
+        [dir=rtl] .orders-table th, [dir=rtl] .orders-table td { text-align: right; }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="header-container">
-            <a href="/shop/" class="logo">WALLAH WE CAN</a>
+            <a href="/shop/" class="logo">
+                <img src="https://wallahwecan.org/wp-content/uploads/2022/05/LOGO-WWC-.png" alt="Wallah We Can">
+            </a>
             <div class="header-actions">
-                <a href="/shop/" class="btn btn-outline">← Boutique</a>
-                <button class="btn btn-secondary" onclick="logout()">Déconnexion</button>
+                <a href="/shop/" class="btn btn-outline" data-i18n="btn_shop_link">← Boutique</a>
+                <button class="btn btn-secondary" onclick="logout()" data-i18n="btn_logout">Déconnexion</button>
+                <div class="hdr-dropdown" id="lang-dropdown">
+                    <button class="hdr-dropdown-btn" onclick="toggleDropdown('lang-dropdown')" id="lang-label">FR <svg viewBox="0 0 10 6" style="width:8px;fill:white"><path d="M0 0l5 6 5-6z"/></svg></button>
+                    <div class="hdr-dropdown-menu" id="lang-menu">
+                        <button class="hdr-dropdown-item" data-lang="fr" onclick="switchLang('fr')">🇫🇷 Français</button>
+                        <button class="hdr-dropdown-item" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                        <button class="hdr-dropdown-item" data-lang="ar" onclick="switchLang('ar')">🇹🇳 العربية</button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -140,14 +180,229 @@
     <main class="main" id="main">
         <div class="loading-page">
             <div class="spinner"></div>
-            <p>Chargement de votre compte…</p>
+            <p data-i18n="loading">Chargement de votre compte…</p>
         </div>
     </main>
 
     <script>
+        // ─── i18n ────────────────────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        const T = {
+            fr: {
+                btn_shop_link: '← Boutique', btn_logout: 'Déconnexion',
+                loading: 'Chargement de votre compte…',
+                greeting: 'Bonjour,', welcome: 'Bienvenue dans votre espace personnel.',
+                impact_title: '💝 Votre impact',
+                impact_items: 'items fournis aux étudiants',
+                impact_orders: 'commandes', impact_purchases: 'd\'achats',
+                impact_breakdown: 'Détail par article',
+                recent_orders: 'Mes commandes récentes', see_all: 'Voir toutes →',
+                col_order: 'Commande', col_date: 'Date', col_status: 'Statut',
+                col_total: 'Total', col_impact: 'Impact',
+                no_orders: 'Aucune commande pour le moment.',
+                discover: 'Découvrir nos produits →',
+                recent_donations: 'Mes dons récents', donate_link: 'Faire un don →',
+                col_project: 'Projet', col_method: 'Méthode',
+                my_favorites: 'Mes favoris', no_favorites: 'Aucun produit en favoris pour le moment.',
+                remove: 'Retirer',
+                btn_continue: 'Continuer mes achats', btn_settings: '⚙️ Paramètres',
+                back_dashboard: '← Retour au tableau de bord',
+                all_orders: 'Toutes mes commandes',
+                order_detail: 'Commande #', order_placed: 'Passée le',
+                col_product: 'Produit', col_qty: 'Qté', col_unit: 'Prix unit.', col_subtotal_sm: 'Sous-total',
+                subtotal: 'Sous-total', shipping: 'Livraison', total: 'Total',
+                payment_label: 'Paiement :', back_to_account: '← Retour à mon compte',
+                settings_title: '⚙️ Paramètres du compte',
+                personal_info: '👤 Informations personnelles',
+                shipping_address: '📦 Adresse de livraison par défaut',
+                change_password: '🔐 Changer le mot de passe',
+                preferences: '🌍 Préférences',
+                label_first_name: 'Prénom', label_last_name: 'Nom', label_email: 'Email',
+                label_phone: 'Téléphone', label_company: 'Nom de l\'entreprise',
+                label_tax_id: 'Numéro fiscal (TVA)',
+                label_address: 'Adresse', label_address2: 'Complément d\'adresse',
+                label_city: 'Ville', label_postal: 'Code postal', label_country: 'Pays',
+                label_current_pwd: 'Mot de passe actuel',
+                label_new_pwd: 'Nouveau mot de passe',
+                label_confirm_pwd: 'Confirmer le nouveau mot de passe',
+                label_currency: 'Devise préférée', label_language: 'Langue préférée',
+                label_newsletter: 'Recevoir la newsletter',
+                btn_save_profile: 'Enregistrer les modifications',
+                btn_save_address: 'Enregistrer l\'adresse',
+                btn_change_pwd: 'Changer le mot de passe',
+                btn_save_prefs: 'Enregistrer les préférences',
+                email_readonly: 'L\'adresse email ne peut pas être modifiée.',
+                status_pending: 'En attente', status_paid: 'Payée',
+                status_processing: 'En traitement', status_shipped: 'Expédiée',
+                status_delivered: 'Livrée', status_cancelled: 'Annulée',
+                b2b_pending_title: 'Demande B2B en cours de validation',
+                b2b_pending_desc: 'Notre équipe examinera votre demande de compte professionnel sous 24–48h. Vous recevrez un email dès l\'approbation.',
+                b2b_rejected_title: 'Demande B2B non approuvée',
+                b2b_approved_title: 'Compte professionnel B2B actif',
+                b2b_approved_desc: 'Vous bénéficiez des tarifs préférentiels sur tous nos produits.',
+            },
+            en: {
+                btn_shop_link: '← Shop', btn_logout: 'Log out',
+                loading: 'Loading your account…',
+                greeting: 'Hello,', welcome: 'Welcome to your personal space.',
+                impact_title: '💝 Your impact',
+                impact_items: 'items provided to students',
+                impact_orders: 'orders', impact_purchases: 'in purchases',
+                impact_breakdown: 'Breakdown by item',
+                recent_orders: 'My recent orders', see_all: 'View all →',
+                col_order: 'Order', col_date: 'Date', col_status: 'Status',
+                col_total: 'Total', col_impact: 'Impact',
+                no_orders: 'No orders yet.',
+                discover: 'Discover our products →',
+                recent_donations: 'My recent donations', donate_link: 'Donate →',
+                col_project: 'Project', col_method: 'Method',
+                my_favorites: 'My favorites', no_favorites: 'No favorite products yet.',
+                remove: 'Remove',
+                btn_continue: 'Continue shopping', btn_settings: '⚙️ Settings',
+                back_dashboard: '← Back to dashboard',
+                all_orders: 'All my orders',
+                order_detail: 'Order #', order_placed: 'Placed on',
+                col_product: 'Product', col_qty: 'Qty', col_unit: 'Unit price', col_subtotal_sm: 'Subtotal',
+                subtotal: 'Subtotal', shipping: 'Shipping', total: 'Total',
+                payment_label: 'Payment:', back_to_account: '← Back to my account',
+                settings_title: '⚙️ Account settings',
+                personal_info: '👤 Personal information',
+                shipping_address: '📦 Default shipping address',
+                change_password: '🔐 Change password',
+                preferences: '🌍 Preferences',
+                label_first_name: 'First name', label_last_name: 'Last name', label_email: 'Email',
+                label_phone: 'Phone', label_company: 'Company name',
+                label_tax_id: 'Tax number (VAT)',
+                label_address: 'Address', label_address2: 'Address line 2',
+                label_city: 'City', label_postal: 'Postal code', label_country: 'Country',
+                label_current_pwd: 'Current password',
+                label_new_pwd: 'New password',
+                label_confirm_pwd: 'Confirm new password',
+                label_currency: 'Preferred currency', label_language: 'Preferred language',
+                label_newsletter: 'Receive newsletter',
+                btn_save_profile: 'Save changes',
+                btn_save_address: 'Save address',
+                btn_change_pwd: 'Change password',
+                btn_save_prefs: 'Save preferences',
+                email_readonly: 'Email address cannot be changed.',
+                status_pending: 'Pending', status_paid: 'Paid',
+                status_processing: 'Processing', status_shipped: 'Shipped',
+                status_delivered: 'Delivered', status_cancelled: 'Cancelled',
+                b2b_pending_title: 'B2B application under review',
+                b2b_pending_desc: 'Our team will review your professional account application within 24–48h. You will receive an email upon approval.',
+                b2b_rejected_title: 'B2B application not approved',
+                b2b_approved_title: 'Active B2B professional account',
+                b2b_approved_desc: 'You benefit from preferential pricing on all our products.',
+            },
+            ar: {
+                btn_shop_link: 'المتجر →', btn_logout: 'تسجيل الخروج',
+                loading: 'جاري تحميل حسابك…',
+                greeting: 'مرحبًا،', welcome: 'أهلاً بك في مساحتك الشخصية.',
+                impact_title: '💝 تأثيرك',
+                impact_items: 'مواد مقدمة للطلاب',
+                impact_orders: 'طلبات', impact_purchases: 'من المشتريات',
+                impact_breakdown: 'تفصيل حسب المقال',
+                recent_orders: 'طلباتي الأخيرة', see_all: 'عرض الكل →',
+                col_order: 'الطلب', col_date: 'التاريخ', col_status: 'الحالة',
+                col_total: 'الإجمالي', col_impact: 'التأثير',
+                no_orders: 'لا توجد طلبات حتى الآن.',
+                discover: 'اكتشف منتجاتنا →',
+                recent_donations: 'تبرعاتي الأخيرة', donate_link: 'تبرع →',
+                col_project: 'المشروع', col_method: 'الطريقة',
+                my_favorites: 'مفضلتي', no_favorites: 'لا توجد منتجات مفضلة حتى الآن.',
+                remove: 'إزالة',
+                btn_continue: 'مواصلة التسوق', btn_settings: '⚙️ الإعدادات',
+                back_dashboard: '→ العودة إلى لوحة التحكم',
+                all_orders: 'جميع طلباتي',
+                order_detail: 'الطلب #', order_placed: 'بتاريخ',
+                col_product: 'المنتج', col_qty: 'الكمية', col_unit: 'سعر الوحدة', col_subtotal_sm: 'المجموع الجزئي',
+                subtotal: 'المجموع الجزئي', shipping: 'الشحن', total: 'الإجمالي',
+                payment_label: 'الدفع:', back_to_account: '→ العودة إلى حسابي',
+                settings_title: '⚙️ إعدادات الحساب',
+                personal_info: '👤 المعلومات الشخصية',
+                shipping_address: '📦 عنوان الشحن الافتراضي',
+                change_password: '🔐 تغيير كلمة المرور',
+                preferences: '🌍 التفضيلات',
+                label_first_name: 'الاسم الأول', label_last_name: 'الاسم الأخير', label_email: 'البريد الإلكتروني',
+                label_phone: 'الهاتف', label_company: 'اسم الشركة',
+                label_tax_id: 'الرقم الضريبي (TVA)',
+                label_address: 'العنوان', label_address2: 'تفاصيل إضافية',
+                label_city: 'المدينة', label_postal: 'الرمز البريدي', label_country: 'الدولة',
+                label_current_pwd: 'كلمة المرور الحالية',
+                label_new_pwd: 'كلمة المرور الجديدة',
+                label_confirm_pwd: 'تأكيد كلمة المرور الجديدة',
+                label_currency: 'العملة المفضلة', label_language: 'اللغة المفضلة',
+                label_newsletter: 'الاشتراك في النشرة الإخبارية',
+                btn_save_profile: 'حفظ التغييرات',
+                btn_save_address: 'حفظ العنوان',
+                btn_change_pwd: 'تغيير كلمة المرور',
+                btn_save_prefs: 'حفظ التفضيلات',
+                email_readonly: 'لا يمكن تغيير عنوان البريد الإلكتروني.',
+                status_pending: 'في الانتظار', status_paid: 'مدفوع',
+                status_processing: 'قيد المعالجة', status_shipped: 'مشحون',
+                status_delivered: 'تم التوصيل', status_cancelled: 'ملغى',
+                b2b_pending_title: 'طلب B2B قيد المراجعة',
+                b2b_pending_desc: 'سيراجع فريقنا طلب حسابك المهني خلال 24–48 ساعة. ستتلقى بريدًا إلكترونيًا عند الموافقة.',
+                b2b_rejected_title: 'لم تتم الموافقة على طلب B2B',
+                b2b_approved_title: 'حساب B2B المهني نشط',
+                b2b_approved_desc: 'تستفيد من الأسعار التفضيلية على جميع منتجاتنا.',
+            }
+        };
+        function t(key) { return (T[getLang()] || T.fr)[key] || T.fr[key] || key; }
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                el.textContent = t(key);
+            });
+            document.documentElement.lang = getLang();
+            document.documentElement.dir = getLang() === 'ar' ? 'rtl' : 'ltr';
+        }
+        function renderLangSwitcher() {
+            const lang = getLang();
+            const labels = { fr: 'FR', en: 'EN', ar: 'ع' };
+            const lbl = document.getElementById('lang-label');
+            if (lbl) lbl.innerHTML = `${labels[lang]} <svg viewBox="0 0 10 6" style="width:8px;fill:white"><path d="M0 0l5 6 5-6z"/></svg>`;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                el.classList.toggle('active', el.dataset.lang === lang);
+            });
+            applyTranslations();
+        }
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            renderLangSwitcher();
+        }
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id).querySelector('.hdr-dropdown-menu');
+            menu.classList.toggle('open');
+            document.addEventListener('click', function handler(e) {
+                if (!document.getElementById(id).contains(e.target)) {
+                    menu.classList.remove('open');
+                    document.removeEventListener('click', handler);
+                }
+            });
+        }
+        // ─────────────────────────────────────────────────────────────
+
         const API_URL = '/api/v1';
 
-        function getToken() { return localStorage.getItem('wwc_access_token'); }
+        function getToken() {
+            const token = localStorage.getItem('wwc_access_token');
+            if (!token) return null;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+                if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+                    localStorage.removeItem('wwc_access_token');
+                    localStorage.removeItem('wwc_refresh_token');
+                    return null;
+                }
+            } catch { return null; }
+            return token;
+        }
         function clearTokens() {
             localStorage.removeItem('wwc_access_token');
             localStorage.removeItem('wwc_refresh_token');
@@ -169,10 +424,13 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const orderParam = urlParams.get('order');
+        const tabParam   = urlParams.get('tab');
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (orderParam) {
                 await loadOrderDetail(orderParam);
+            } else if (tabParam === 'settings') {
+                await loadSettings();
             } else {
                 await loadDashboard();
             }
@@ -187,6 +445,11 @@
                 });
                 if (res.status === 401) { clearTokens(); window.location.href = '/shop/login/'; return; }
                 const data = await res.json();
+                if (!res.ok) {
+                    const msg = data.detail || data.error || `Erreur ${res.status}`;
+                    document.getElementById('main').innerHTML = `<p style="color:red; text-align:center; padding:60px;">${escHtml(msg)} <a href="/shop/">Retour</a></p>`;
+                    return;
+                }
                 renderDashboard(data);
             } catch (err) {
                 document.getElementById('main').innerHTML = `<p style="color:red; text-align:center; padding:60px;">Erreur de chargement. <a href="/shop/">Retour</a></p>`;
@@ -197,17 +460,51 @@
             const customer   = data.customer   || {};
             const orders     = data.recent_orders || [];
             const impact     = data.impact_summary || {};
+            const donations  = data.recent_donations || [];
             const firstName  = customer.first_name || 'vous';
 
+            // B2B pending banner
+            const b2bStatus = localStorage.getItem('wwc_b2b_status');
+            const customerType = localStorage.getItem('wwc_customer_type');
+            let b2bBanner = '';
+            if (customerType === 'company' && b2bStatus === 'pending_approval') {
+                b2bBanner = `
+                <div style="background:#fff8e1;border:1px solid #f0c000;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:24px;">⏳</span>
+                    <div>
+                        <div style="font-weight:700;color:#856404;">${t('b2b_pending_title')}</div>
+                        <div style="font-size:13px;color:#856404;margin-top:2px;">${t('b2b_pending_desc')}</div>
+                    </div>
+                </div>`;
+            } else if (customerType === 'company' && b2bStatus === 'rejected') {
+                b2bBanner = `
+                <div style="background:#f8d7da;border:1px solid #f5c6cb;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:24px;">❌</span>
+                    <div>
+                        <div style="font-weight:700;color:#721c24;">${t('b2b_rejected_title')}</div>
+                        <div style="font-size:13px;color:#721c24;margin-top:2px;">Contactez-nous à <a href="mailto:contact@wallahwecan.org" style="color:#721c24;">contact@wallahwecan.org</a> pour plus d'informations.</div>
+                    </div>
+                </div>`;
+            } else if (customerType === 'company' && b2bStatus === 'approved') {
+                b2bBanner = `
+                <div style="background:#d4edda;border:1px solid #c3e6cb;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:24px;">✅</span>
+                    <div>
+                        <div style="font-weight:700;color:#155724;">${t('b2b_approved_title')}</div>
+                        <div style="font-size:13px;color:#155724;margin-top:2px;">${t('b2b_approved_desc')}</div>
+                    </div>
+                </div>`;
+            }
+
             const statusLabels = {
-                pending: 'En attente', paid: 'Payée', processing: 'En traitement',
-                shipped: 'Expédiée', delivered: 'Livrée', cancelled: 'Annulée'
+                pending: t('status_pending'), paid: t('status_paid'), processing: t('status_processing'),
+                shipped: t('status_shipped'), delivered: t('status_delivered'), cancelled: t('status_cancelled')
             };
 
             const ordersRows = orders.length === 0
                 ? `<tr><td colspan="5"><div class="empty-state">
-                        Aucune commande pour le moment.
-                        <a href="/shop/">Découvrir nos produits →</a>
+                        ${t('no_orders')}
+                        <a href="/shop/">${t('discover')}</a>
                    </div></td></tr>`
                 : orders.map(o => `
                     <tr>
@@ -220,48 +517,93 @@
 
             document.getElementById('main').innerHTML = `
                 <div class="dashboard-header">
-                    <h1>Bonjour, ${escHtml(firstName)} 👋</h1>
-                    <p>Bienvenue dans votre espace personnel.</p>
+                    <h1>${t('greeting')} ${escHtml(firstName)} 👋</h1>
+                    <p>${t('welcome')}</p>
                 </div>
+                ${b2bBanner}
 
                 <div class="impact-banner">
-                    <h2>💝 Votre impact</h2>
+                    <h2>${t('impact_title')}</h2>
                     <div class="impact-cards">
                         <div class="impact-card">
                             <span class="impact-number">${impact.total_items || 0}</span>
-                            <span class="impact-label">items fournis aux étudiants</span>
+                            <span class="impact-label">${t('impact_items')}</span>
                         </div>
                         <div class="impact-card">
                             <span class="impact-number">${impact.total_orders || 0}</span>
-                            <span class="impact-label">commandes</span>
+                            <span class="impact-label">${t('impact_orders')}</span>
                         </div>
                         <div class="impact-card">
                             <span class="impact-number">${impact.total_purchases || '0'} DT</span>
-                            <span class="impact-label">d'achats</span>
+                            <span class="impact-label">${t('impact_purchases')}</span>
                         </div>
                     </div>
+                    ${(() => {
+                        const breakdown = impact.breakdown || {};
+                        const entries = Object.entries(breakdown).filter(([,v]) => v > 0);
+                        if (!entries.length) return '';
+                        return `
+                        <div class="impact-breakdown">
+                            <h3>${t('impact_breakdown')}</h3>
+                            <div class="impact-breakdown-items">
+                                ${entries.map(([type, qty]) => `
+                                    <div class="impact-breakdown-item">
+                                        <strong>${qty}</strong>
+                                        <span>${escHtml(type)}</span>
+                                    </div>`).join('')}
+                            </div>
+                        </div>`;
+                    })()}
                 </div>
 
                 <div class="section">
                     <div class="section-title">
-                        Mes commandes récentes
-                        <a href="javascript:void(0)" onclick="loadAllOrders()" style="font-size:14px; color:var(--wwc-secondary); text-decoration:none; font-weight:600;">Voir toutes →</a>
+                        ${t('recent_orders')}
+                        <a href="javascript:void(0)" onclick="loadAllOrders()" style="font-size:14px; color:var(--wwc-secondary); text-decoration:none; font-weight:600;">${t('see_all')}</a>
                     </div>
                     <table class="orders-table">
                         <thead>
                             <tr>
-                                <th>Commande</th><th>Date</th><th>Statut</th><th>Total</th><th>Impact</th>
+                                <th>${t('col_order')}</th><th>${t('col_date')}</th><th>${t('col_status')}</th><th>${t('col_total')}</th><th>${t('col_impact')}</th>
                             </tr>
                         </thead>
                         <tbody>${ordersRows}</tbody>
                     </table>
                 </div>
 
+                ${donations.length > 0 ? `
+                <div class="section">
+                    <div class="section-title">
+                        ${t('recent_donations')}
+                        <a href="/shop/donate/" style="font-size:14px; color:var(--wwc-secondary); text-decoration:none; font-weight:600;">${t('donate_link')}</a>
+                    </div>
+                    <table class="orders-table">
+                        <thead>
+                            <tr><th>${t('col_project')}</th><th>${t('col_date')}</th><th>${t('col_status')}</th><th>${t('col_total')}</th><th>${t('col_method')}</th></tr>
+                        </thead>
+                        <tbody>
+                            ${donations.map(d => {
+                                const statusLabel = {pending:t('status_pending'), completed:(getLang()==='ar'?'مكتمل':getLang()==='en'?'Completed':'Complété'), failed:(getLang()==='ar'?'فاشل':getLang()==='en'?'Failed':'Échoué')}[d.status] || d.status;
+                                const statusColor = {pending:'#856404', completed:'#155724', failed:'#721c24'}[d.status] || '#333';
+                                const methodLabel = d.payment_method === 'stripe' ? '💳 Carte' : '🏦 Virement';
+                                return `<tr>
+                                    <td>${escHtml(d.project_title)}</td>
+                                    <td>${formatDate(d.created_at)}</td>
+                                    <td><span style="color:${statusColor};font-weight:600;font-size:13px;">${statusLabel}</span></td>
+                                    <td>${d.amount} ${d.currency}</td>
+                                    <td>${methodLabel}</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>` : ''}
+
                 <div id="wishlist-section"></div>
 
                 <div class="dashboard-actions">
-                    <a href="/shop/" class="btn-action btn-shop">Continuer mes achats</a>
-                    <button class="btn-action btn-logout" onclick="logout()">Déconnexion</button>
+                    <a href="/shop/" class="btn-action btn-shop">${t('btn_continue')}</a>
+                    <a href="/shop/account/?tab=settings" class="btn-action btn-logout">${t('btn_settings')}</a>
+                    <button class="btn-action btn-logout" onclick="logout()">${t('btn_logout')}</button>
                 </div>
             `;
 
@@ -291,8 +633,8 @@
             if (items.length === 0) {
                 section.innerHTML = `
                     <div class="section">
-                        <div class="section-title">Mes favoris</div>
-                        <div class="empty-state">Aucun produit en favoris pour le moment. <a href="/shop/">Découvrir nos produits →</a></div>
+                        <div class="section-title">${t('my_favorites')}</div>
+                        <div class="empty-state">${t('no_favorites')} <a href="/shop/">${t('discover')}</a></div>
                     </div>`;
                 return;
             }
@@ -311,7 +653,7 @@
                         <div class="wishlist-name" title="${escHtml(p.name || '')}">${escHtml(p.name || '—')}</div>
                         <div class="wishlist-price">${p.price_tnd || '—'} DT</div>
                         <div class="wishlist-actions">
-                            <button class="wishlist-btn wishlist-btn-remove" onclick="removeFromWishlist(${w.id})">Retirer</button>
+                            <button class="wishlist-btn wishlist-btn-remove" onclick="removeFromWishlist(${w.id})">${t('remove')}</button>
                         </div>
                     </div>
                 </div>`;
@@ -319,7 +661,7 @@
 
             section.innerHTML = `
                 <div class="section">
-                    <div class="section-title">Mes favoris <span style="font-size:14px;font-weight:400;color:var(--wwc-text-light);">${items.length} produit${items.length > 1 ? 's' : ''}</span></div>
+                    <div class="section-title">${t('my_favorites')} <span style="font-size:14px;font-weight:400;color:var(--wwc-text-light);">${items.length} produit${items.length > 1 ? 's' : ''}</span></div>
                     <div class="wishlist-grid">${cards}</div>
                 </div>`;
         }
@@ -365,12 +707,12 @@
             const totalPages = Math.ceil(total / 10);
 
             const statusLabels = {
-                pending: 'En attente', paid: 'Payée', processing: 'En traitement',
-                shipped: 'Expédiée', delivered: 'Livrée', cancelled: 'Annulée'
+                pending: t('status_pending'), paid: t('status_paid'), processing: t('status_processing'),
+                shipped: t('status_shipped'), delivered: t('status_delivered'), cancelled: t('status_cancelled')
             };
 
             const rows = orders.length === 0
-                ? `<tr><td colspan="5"><div class="empty-state">Aucune commande. <a href="/shop/">Découvrir nos produits →</a></div></td></tr>`
+                ? `<tr><td colspan="5"><div class="empty-state">${t('no_orders')} <a href="/shop/">${t('discover')}</a></div></td></tr>`
                 : orders.map(o => `
                     <tr>
                         <td><a class="order-link" href="/shop/account/?order=${o.order_number}">#${o.order_number}</a></td>
@@ -380,22 +722,24 @@
                         <td>💝 ${o.item_count || '—'}</td>
                     </tr>`).join('');
 
+            const prevLabel = getLang() === 'ar' ? 'التالي ←' : '← Précédent';
+            const nextLabel = getLang() === 'ar' ? '→ السابق' : 'Suivant →';
             const paginationHtml = totalPages > 1 ? `
                 <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:20px;">
-                    ${page > 1 ? `<button class="btn-action btn-logout" onclick="loadAllOrders(${page - 1})">← Précédent</button>` : ''}
+                    ${page > 1 ? `<button class="btn-action btn-logout" onclick="loadAllOrders(${page - 1})">${prevLabel}</button>` : ''}
                     <span style="font-size:14px; color:var(--wwc-text-light);">Page ${page} / ${totalPages}</span>
-                    ${page < totalPages ? `<button class="btn-action btn-logout" onclick="loadAllOrders(${page + 1})">Suivant →</button>` : ''}
+                    ${page < totalPages ? `<button class="btn-action btn-logout" onclick="loadAllOrders(${page + 1})">${nextLabel}</button>` : ''}
                 </div>` : '';
 
             document.getElementById('main').innerHTML = `
-                <button class="back-btn" onclick="loadDashboard()">← Retour au tableau de bord</button>
+                <button class="back-btn" onclick="loadDashboard()">${t('back_dashboard')}</button>
                 <div class="section">
                     <div class="section-title">
-                        Toutes mes commandes
+                        ${t('all_orders')}
                         <span style="font-size:14px; font-weight:400; color:var(--wwc-text-light);">${total} commande${total > 1 ? 's' : ''}</span>
                     </div>
                     <table class="orders-table">
-                        <thead><tr><th>Commande</th><th>Date</th><th>Statut</th><th>Total</th><th>Impact</th></tr></thead>
+                        <thead><tr><th>${t('col_order')}</th><th>${t('col_date')}</th><th>${t('col_status')}</th><th>${t('col_total')}</th><th>${t('col_impact')}</th></tr></thead>
                         <tbody>${rows}</tbody>
                     </table>
                     ${paginationHtml}
@@ -424,8 +768,8 @@
 
         function renderOrderDetail(order) {
             const statusLabels = {
-                pending: 'En attente', paid: 'Payée', processing: 'En traitement',
-                shipped: 'Expédiée', delivered: 'Livrée', cancelled: 'Annulée'
+                pending: t('status_pending'), paid: t('status_paid'), processing: t('status_processing'),
+                shipped: t('status_shipped'), delivered: t('status_delivered'), cancelled: t('status_cancelled')
             };
             const symbol = order.currency === 'EUR' ? '€' : 'DT';
             const items = order.items || [];
@@ -442,60 +786,84 @@
                 </tr>`).join('');
 
             document.getElementById('main').innerHTML = `
-                <button class="back-btn" onclick="window.location.href='/shop/account/'">
-                    ← Retour à mon compte
-                </button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:8px;">
+                    <button class="back-btn" style="margin-bottom:0;" onclick="window.location.href='/shop/account/'">
+                        ${t('back_to_account')}
+                    </button>
+                    <a href="/shop/order-detail/?order=${encodeURIComponent(order.order_number)}"
+                       style="font-size:13px; color:var(--wwc-text-light); text-decoration:none; display:flex; align-items:center; gap:4px;"
+                       target="_blank">
+                        ↗ ${getLang()==='ar'?'فتح في صفحة كاملة':getLang()==='en'?'Open full page':'Ouvrir en pleine page'}
+                    </a>
+                </div>
 
                 <div class="section">
                     <div class="order-detail-header">
                         <div>
-                            <h2>Commande #${escHtml(order.order_number)}</h2>
-                            <div class="order-date">Passée le ${formatDate(order.created_at)}</div>
+                            <h2>${t('order_detail')}${escHtml(order.order_number)}</h2>
+                            <div class="order-date">${t('order_placed')} ${formatDate(order.created_at)}</div>
                         </div>
                         <span class="status-badge status-${order.status}">
                             ${statusLabels[order.status] || order.status}
                         </span>
                     </div>
 
-                    <h4 style="margin-bottom:12px;">Articles</h4>
+                    <h4 style="margin-bottom:12px;">${t('col_product')}</h4>
                     <table class="items-table">
-                        <thead><tr><th>Produit</th><th>Qté</th><th>Prix unit.</th><th>Sous-total</th></tr></thead>
+                        <thead><tr><th>${t('col_product')}</th><th>${t('col_qty')}</th><th>${t('col_unit')}</th><th>${t('col_subtotal_sm')}</th></tr></thead>
                         <tbody>${itemsRows}</tbody>
                     </table>
 
                     <div class="totals-box">
-                        <div class="total-row"><span>Sous-total</span><span>${order.subtotal} ${symbol}</span></div>
+                        <div class="total-row"><span>${t('subtotal')}</span><span>${order.subtotal} ${symbol}</span></div>
                         ${parseFloat(order.shipping_cost) > 0
-                            ? `<div class="total-row"><span>Livraison</span><span>${order.shipping_cost} ${symbol}</span></div>`
+                            ? `<div class="total-row"><span>${t('shipping')}</span><span>${order.shipping_cost} ${symbol}</span></div>`
                             : ''}
                         ${parseFloat(order.discount_amount) > 0
-                            ? `<div class="total-row" style="color:var(--wwc-success);"><span>Remise${order.coupon_code ? ` (${escHtml(order.coupon_code)})` : ''}</span><span>-${order.discount_amount} ${symbol}</span></div>`
+                            ? `<div class="total-row" style="color:var(--wwc-success);"><span>${getLang()==='ar'?'خصم':getLang()==='en'?'Discount':'Remise'}${order.coupon_code ? ` (${escHtml(order.coupon_code)})` : ''}</span><span>-${order.discount_amount} ${symbol}</span></div>`
                             : ''}
                         ${parseFloat(order.tax_amount) > 0
-                            ? `<div class="total-row"><span>🎁 Emballage cadeau</span><span>${order.tax_amount} ${symbol}</span></div>`
+                            ? `<div class="total-row"><span>🎁 ${getLang()==='ar'?'تغليف الهدية':getLang()==='en'?'Gift wrapping':'Emballage cadeau'}</span><span>${order.tax_amount} ${symbol}</span></div>`
                             : ''}
-                        <div class="total-row"><span>Total</span><span>${order.total} ${symbol}</span></div>
+                        <div class="total-row"><span>${t('total')}</span><span>${order.total} ${symbol}</span></div>
                     </div>
 
                     <div style="margin-top:16px; font-size:14px; color:var(--wwc-text-light);">
-                        Paiement :
+                        ${t('payment_label')}
                         <strong style="color:var(--wwc-text);">${{
-                            stripe: 'Carte bancaire (Stripe)',
-                            cash_on_delivery: 'Paiement à la livraison'
+                            stripe: getLang()==='ar'?'بطاقة مصرفية (Stripe)':getLang()==='en'?'Credit card (Stripe)':'Carte bancaire (Stripe)',
+                            cash_on_delivery: getLang()==='ar'?'الدفع عند الاستلام':getLang()==='en'?'Cash on delivery':'Paiement à la livraison'
                         }[order.payment_method] || order.payment_method}</strong>
                     </div>
 
-                    ${order.shipping_address_1 ? `
-                    <div class="address-box">
-                        <h4>Adresse de livraison</h4>
-                        <address style="font-style:normal;line-height:1.8;">
-                            ${escHtml(((order.shipping_first_name || '') + ' ' + (order.shipping_last_name || '')).trim())}<br>
-                            ${escHtml(order.shipping_address_1)}<br>
-                            ${order.shipping_address_2 ? escHtml(order.shipping_address_2) + '<br>' : ''}
-                            ${escHtml(((order.shipping_postal_code || '') + ' ' + (order.shipping_city || '')).trim())}<br>
-                            ${escHtml(order.shipping_country || '')}
-                        </address>
-                    </div>` : ''}
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                        ${order.shipping_address_1 ? `
+                        <div class="address-box">
+                            <h4>📦 Adresse de livraison</h4>
+                            <address style="font-style:normal;line-height:1.8;font-size:14px;">
+                                ${escHtml(((order.shipping_first_name || '') + ' ' + (order.shipping_last_name || '')).trim())}<br>
+                                ${escHtml(order.shipping_address_1)}<br>
+                                ${order.shipping_address_2 ? escHtml(order.shipping_address_2) + '<br>' : ''}
+                                ${escHtml(((order.shipping_postal_code || '') + ' ' + (order.shipping_city || '')).trim())}<br>
+                                ${escHtml(order.shipping_country || '')}
+                            </address>
+                        </div>` : ''}
+
+                        <div class="address-box">
+                            <h4>🧾 Adresse de facturation</h4>
+                            ${order.billing_same_as_shipping
+                                ? `<p style="font-size:13px;color:var(--wwc-text-light);">Identique à l'adresse de livraison</p>`
+                                : `<address style="font-style:normal;line-height:1.8;font-size:14px;">
+                                    ${order.billing_company ? escHtml(order.billing_company) + '<br>' : ''}
+                                    ${escHtml(((order.billing_first_name || '') + ' ' + (order.billing_last_name || '')).trim())}<br>
+                                    ${escHtml(order.billing_address_1 || '')}<br>
+                                    ${order.billing_address_2 ? escHtml(order.billing_address_2) + '<br>' : ''}
+                                    ${escHtml(((order.billing_postal_code || '') + ' ' + (order.billing_city || '')).trim())}<br>
+                                    ${escHtml(order.billing_country || '')}
+                                </address>`
+                            }
+                        </div>
+                    </div>
 
                     ${order.tracking_number ? `
                     <div class="address-box" style="margin-top:12px;">
@@ -516,6 +884,265 @@
         function escHtml(str) {
             return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
+
+        // ─── Settings ──────────────────────────────────────────────
+
+        async function loadSettings() {
+            document.getElementById('main').innerHTML = `<div class="loading-page"><div class="spinner"></div><p>Chargement…</p></div>`;
+            try {
+                const res = await fetch(`${API_URL}/customer/profile/`, { headers: authHeaders() });
+                if (res.status === 401) { clearTokens(); window.location.href = '/shop/login/'; return; }
+                const customer = await res.json();
+                renderSettings(customer);
+            } catch (e) {
+                document.getElementById('main').innerHTML = `<p style="color:red;text-align:center;padding:60px;">Erreur de chargement.</p>`;
+            }
+        }
+
+        function renderSettings(c) {
+            document.getElementById('main').innerHTML = `
+                <div class="dashboard-header">
+                    <button class="back-btn" onclick="window.location.href='/shop/account/'">${t('back_dashboard')}</button>
+                    <h1>${t('settings_title')}</h1>
+                </div>
+
+                <!-- Toast -->
+                <div id="settings-toast" style="display:none;padding:12px 20px;border-radius:10px;margin-bottom:20px;font-weight:600;font-size:14px;"></div>
+
+                <!-- Profile info -->
+                <div class="section">
+                    <div class="section-title">${t('personal_info')}</div>
+                    <form id="form-profile" onsubmit="saveProfile(event)">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label class="settings-label">${t('label_first_name')}</label>
+                                <input class="settings-input" type="text" id="s-first-name" value="${escHtml(c.first_name || '')}" required>
+                            </div>
+                            <div>
+                                <label class="settings-label">${t('label_last_name')}</label>
+                                <input class="settings-input" type="text" id="s-last-name" value="${escHtml(c.last_name || '')}" required>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_email')}</label>
+                            <input class="settings-input" type="email" value="${escHtml(c.email || '')}" disabled style="opacity:0.6;cursor:not-allowed;" title="${t('email_readonly')}">
+                            <small style="color:var(--wwc-text-light);font-size:12px;">${t('email_readonly')}</small>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_phone')}</label>
+                            <input class="settings-input" type="tel" id="s-phone" value="${escHtml(c.phone || '')}">
+                        </div>
+                        ${c.customer_type === 'company' ? `
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_company')}</label>
+                            <input class="settings-input" type="text" id="s-company" value="${escHtml(c.company_name || '')}">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_tax_id')}</label>
+                            <input class="settings-input" type="text" id="s-tax-id" value="${escHtml(c.company_tax_id || '')}">
+                        </div>` : ''}
+                        <button type="submit" class="settings-btn">${t('btn_save_profile')}</button>
+                    </form>
+                </div>
+
+                <!-- Shipping address -->
+                <div class="section">
+                    <div class="section-title">${t('shipping_address')}</div>
+                    <form id="form-address" onsubmit="saveAddress(event)">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label class="settings-label">${t('label_first_name')}</label>
+                                <input class="settings-input" type="text" id="a-first-name" value="${escHtml(c.default_shipping_first_name || c.first_name || '')}">
+                            </div>
+                            <div>
+                                <label class="settings-label">${t('label_last_name')}</label>
+                                <input class="settings-input" type="text" id="a-last-name" value="${escHtml(c.default_shipping_last_name || c.last_name || '')}">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_address')}</label>
+                            <input class="settings-input" type="text" id="a-address1" value="${escHtml(c.default_shipping_address_1 || '')}" placeholder="Rue, numéro...">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_address2')}</label>
+                            <input class="settings-input" type="text" id="a-address2" value="${escHtml(c.default_shipping_address_2 || '')}" placeholder="Appartement, étage...">
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label class="settings-label">${t('label_city')}</label>
+                                <input class="settings-input" type="text" id="a-city" value="${escHtml(c.default_shipping_city || '')}">
+                            </div>
+                            <div>
+                                <label class="settings-label">${t('label_postal')}</label>
+                                <input class="settings-input" type="text" id="a-postal" value="${escHtml(c.default_shipping_postal_code || '')}">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_country')}</label>
+                            <select class="settings-input" id="a-country">
+                                ${[['TN','Tunisie'],['FR','France'],['BE','Belgique'],['CH','Suisse'],['MA','Maroc'],['DZ','Algérie'],['DE','Allemagne'],['GB','Royaume-Uni'],['US','États-Unis'],['CA','Canada']].map(
+                                    ([code,name]) => `<option value="${code}" ${(c.default_shipping_country||'TN')===code?'selected':''}>${name}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <button type="submit" class="settings-btn">${t('btn_save_address')}</button>
+                    </form>
+                </div>
+
+                <!-- Password -->
+                <div class="section">
+                    <div class="section-title">${t('change_password')}</div>
+                    <form id="form-password" onsubmit="changePassword(event)">
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_current_pwd')}</label>
+                            <input class="settings-input" type="password" id="p-current" placeholder="••••••••" autocomplete="current-password">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_new_pwd')}</label>
+                            <input class="settings-input" type="password" id="p-new" placeholder="••••••••" autocomplete="new-password">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label">${t('label_confirm_pwd')}</label>
+                            <input class="settings-input" type="password" id="p-confirm" placeholder="••••••••" autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="settings-btn">${t('btn_change_pwd')}</button>
+                    </form>
+                </div>
+
+                <!-- Preferences -->
+                <div class="section">
+                    <div class="section-title">${t('preferences')}</div>
+                    <form id="form-prefs" onsubmit="savePrefs(event)">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                            <div>
+                                <label class="settings-label">${t('label_currency')}</label>
+                                <select class="settings-input" id="pref-currency">
+                                    <option value="TND" ${(c.preferred_currency||'TND')==='TND'?'selected':''}>TND (Dinar Tunisien)</option>
+                                    <option value="EUR" ${(c.preferred_currency||'')==='EUR'?'selected':''}>EUR (Euro)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="settings-label">${t('label_language')}</label>
+                                <select class="settings-input" id="pref-lang">
+                                    <option value="fr" ${(c.preferred_language||'fr')==='fr'?'selected':''}>Français</option>
+                                    <option value="en" ${(c.preferred_language||'')==='en'?'selected':''}>English</option>
+                                    <option value="ar" ${(c.preferred_language||'')==='ar'?'selected':''}>العربية</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label class="settings-label" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" id="pref-newsletter" ${c.newsletter_subscribed?'checked':''} style="width:18px;height:18px;cursor:pointer;">
+                                ${t('label_newsletter')}
+                            </label>
+                        </div>
+                        <button type="submit" class="settings-btn">${t('btn_save_prefs')}</button>
+                    </form>
+                </div>
+
+                <div class="dashboard-actions">
+                    <a href="/shop/account/" class="btn-action btn-shop">${t('back_dashboard')}</a>
+                    <button class="btn-action btn-logout" onclick="logout()">${t('btn_logout')}</button>
+                </div>
+            `;
+        }
+
+        function showToast(msg, ok = true) {
+            const t = document.getElementById('settings-toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.style.display = 'block';
+            t.style.background = ok ? '#d4edda' : '#f8d7da';
+            t.style.color = ok ? '#155724' : '#721c24';
+            t.style.border = ok ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+            t.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(() => { t.style.display = 'none'; }, 4000);
+        }
+
+        async function saveProfile(e) {
+            e.preventDefault();
+            const body = {
+                first_name: document.getElementById('s-first-name').value.trim(),
+                last_name:  document.getElementById('s-last-name').value.trim(),
+                phone:      document.getElementById('s-phone')?.value.trim() || '',
+            };
+            const companyEl = document.getElementById('s-company');
+            const taxEl     = document.getElementById('s-tax-id');
+            if (companyEl) body.company_name    = companyEl.value.trim();
+            if (taxEl)     body.company_tax_id  = taxEl.value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/customer/profile/`, {
+                    method: 'PATCH', headers: authHeaders(), body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (res.ok) showToast('Informations mises à jour avec succès.');
+                else showToast(data.detail || data.error || 'Erreur lors de la mise à jour.', false);
+            } catch { showToast('Erreur réseau.', false); }
+        }
+
+        async function saveAddress(e) {
+            e.preventDefault();
+            const body = {
+                default_shipping_first_name:   document.getElementById('a-first-name').value.trim(),
+                default_shipping_last_name:    document.getElementById('a-last-name').value.trim(),
+                default_shipping_address_1:    document.getElementById('a-address1').value.trim(),
+                default_shipping_address_2:    document.getElementById('a-address2').value.trim(),
+                default_shipping_city:         document.getElementById('a-city').value.trim(),
+                default_shipping_postal_code:  document.getElementById('a-postal').value.trim(),
+                default_shipping_country:      document.getElementById('a-country').value,
+            };
+            try {
+                const res = await fetch(`${API_URL}/customer/profile/`, {
+                    method: 'PATCH', headers: authHeaders(), body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (res.ok) showToast('Adresse enregistrée avec succès.');
+                else showToast(data.detail || data.error || 'Erreur lors de la mise à jour.', false);
+            } catch { showToast('Erreur réseau.', false); }
+        }
+
+        async function changePassword(e) {
+            e.preventDefault();
+            const current = document.getElementById('p-current').value;
+            const newPwd  = document.getElementById('p-new').value;
+            const confirm = document.getElementById('p-confirm').value;
+            if (newPwd !== confirm) { showToast('Les mots de passe ne correspondent pas.', false); return; }
+            if (newPwd.length < 8)  { showToast('Le mot de passe doit contenir au moins 8 caractères.', false); return; }
+            try {
+                const res = await fetch(`${API_URL}/auth/change-password/`, {
+                    method: 'POST', headers: authHeaders(),
+                    body: JSON.stringify({ current_password: current, new_password: newPwd, confirm_password: confirm })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Mot de passe modifié. Veuillez vous reconnecter.');
+                    document.getElementById('form-password').reset();
+                    setTimeout(() => { clearTokens(); window.location.href = '/shop/login/'; }, 2500);
+                } else {
+                    showToast(data.error || 'Erreur lors du changement.', false);
+                }
+            } catch { showToast('Erreur réseau.', false); }
+        }
+
+        async function savePrefs(e) {
+            e.preventDefault();
+            const body = {
+                preferred_currency:    document.getElementById('pref-currency').value,
+                preferred_language:    document.getElementById('pref-lang').value,
+                newsletter_subscribed: document.getElementById('pref-newsletter').checked,
+            };
+            try {
+                const res = await fetch(`${API_URL}/customer/profile/`, {
+                    method: 'PATCH', headers: authHeaders(), body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (res.ok) showToast('Préférences enregistrées.');
+                else showToast(data.detail || data.error || 'Erreur.', false);
+            } catch { showToast('Erreur réseau.', false); }
+        }
+
+        renderLangSwitcher();
     </script>
 </body>
 </html>

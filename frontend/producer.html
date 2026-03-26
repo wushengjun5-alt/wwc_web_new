@@ -19,31 +19,26 @@
             --wwc-border: #ececec;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Noto Sans', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
+        body { font-family: 'Noto Sans', sans-serif; font-size: 15px; color: var(--wwc-text); background: var(--wwc-bg-light); line-height: 1.7em; }
 
         /* Header */
-        .header {
-            background: #ffffff;
-            border-bottom: 1px solid var(--wwc-border);
-            height: 70px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: var(--wwc-secondary); text-decoration: none; }
-        .nav { display: flex; gap: 30px; }
-        .nav a { color: var(--wwc-dark); text-decoration: none; font-weight: 600; font-size: 14px; text-transform: uppercase; transition: color 0.2s; }
+        .header { background: #1c345e; height: 70px; position: sticky; top: 0; z-index: 200; }
+        .header-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 70px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+        .logo { display: flex; align-items: center; gap: 6px; text-decoration: none; flex-shrink: 0; }
+        .logo img { max-width: 120px; height: auto; display: block; }
+        .logo-text { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: white; letter-spacing: 0.5px; line-height: 1.1; text-transform: uppercase; }
+        .nav { display: flex; gap: 28px; align-items: center; }
+        .nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.3px; transition: color 0.2s; white-space: nowrap; }
         .nav a:hover { color: var(--wwc-primary); }
         .header-actions { display: flex; gap: 15px; align-items: center; }
+        .hdr-dropdown { position: relative; }
+        .hdr-dropdown-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .hdr-dropdown-btn:hover { background: rgba(255,255,255,0.22); }
+        .hdr-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); overflow: hidden; min-width: 100%; z-index: 300; }
+        .hdr-dropdown-menu.open { display: block; }
+        .hdr-dropdown-item { display: block; width: 100%; padding: 9px 16px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 600; color: #404040; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+        .hdr-dropdown-item:hover { background: #f5f5f5; color: #e04403; }
+        .hdr-dropdown-item.active { color: #e04403; background: rgba(224,68,3,0.07); }
 
         /* Hero banner */
         .producer-hero {
@@ -138,17 +133,19 @@
         .spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid var(--wwc-border); border-top-color: var(--wwc-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* RTL support */
-        [dir="rtl"] .nav { flex-direction: row-reverse; }
+        /* RTL support — header is locked ltr, only content flips */
         [dir="rtl"] .producer-hero-inner { flex-direction: row-reverse; }
         [dir="rtl"] .producer-stats { flex-direction: row-reverse; }
     </style>
 </head>
 <body>
 
-<header class="header">
+<header class="header" dir="ltr">
     <div class="header-container">
-        <a href="/shop/" class="logo">WALLAH WE CAN</a>
+        <a href="/shop/" class="logo">
+            <img src="https://wallahwecan.org/wp-content/uploads/2022/05/LOGO-WWC-.png" alt="Wallah We Can">
+            <span class="logo-text">Wallah<br>We Can</span>
+        </a>
         <nav class="nav">
             <a href="/shop/">Boutique</a>
             <a href="/shop/impact/">Notre Impact</a>
@@ -156,12 +153,15 @@
             <a href="/shop/box-builder/">Composer ma box</a>
         </nav>
         <div class="header-actions">
-            <div id="lang-switcher" style="display:flex;background:var(--wwc-bg-light);border-radius:8px;overflow:hidden;border:1px solid var(--wwc-border);padding:2px;gap:2px;">
-                <button data-lang="fr" onclick="switchLang('fr')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">FR</button>
-                <button data-lang="en" onclick="switchLang('en')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">EN</button>
-                <button data-lang="ar" onclick="switchLang('ar')" style="padding:5px 10px;border:none;cursor:pointer;font-size:12px;font-weight:700;border-radius:6px;">ع</button>
+            <div class="hdr-dropdown" id="lang-dropdown">
+                <button class="hdr-dropdown-btn" onclick="toggleDropdown('lang-dropdown')" id="lang-label">FR <svg viewBox="0 0 10 6" width="10" height="10" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg></button>
+                <div class="hdr-dropdown-menu" id="lang-menu">
+                    <button class="hdr-dropdown-item" data-lang="fr" onclick="switchLang('fr')">🇫🇷 Français</button>
+                    <button class="hdr-dropdown-item" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                    <button class="hdr-dropdown-item" data-lang="ar" onclick="switchLang('ar')">🇹🇳 العربية</button>
+                </div>
             </div>
-            <a href="/shop/cart/" style="color:var(--wwc-primary);font-size:20px;text-decoration:none;">🛒</a>
+            <a href="/shop/cart/" style="background:none;border:none;font-size:22px;cursor:pointer;color:rgba(255,255,255,0.85);text-decoration:none;padding:6px;transition:color 0.2s;" onmouseover="this.style.color='#e04403'" onmouseout="this.style.color='rgba(255,255,255,0.85)'" title="Mon panier">🛒</a>
             <div id="auth-nav" style="display:flex;align-items:center;gap:10px;"></div>
         </div>
     </div>
@@ -193,18 +193,31 @@
         const loc = obj[`${field}_${lang}`];
         return (loc && loc.trim()) ? loc : (obj[field] || '');
     }
+    function toggleDropdown(id) {
+        const menu = document.getElementById(id).querySelector('.hdr-dropdown-menu');
+        const isOpen = menu.classList.contains('open');
+        document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+        if (!isOpen) menu.classList.add('open');
+    }
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.hdr-dropdown')) {
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+        }
+    });
     function renderLangSwitcher() {
         const lang = getLang();
-        document.querySelectorAll('#lang-switcher button[data-lang]').forEach(btn => {
-            const active = btn.dataset.lang === lang;
-            btn.style.background = active ? '#1c345e' : 'transparent';
-            btn.style.color = active ? 'white' : '#191919';
+        const labels = { fr: 'FR', en: 'EN', ar: 'ع' };
+        const lbl = document.getElementById('lang-label');
+        if (lbl) lbl.innerHTML = `${labels[lang] || 'FR'} <svg viewBox="0 0 10 6" width="10" height="10" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg>`;
+        document.querySelectorAll('#lang-menu .hdr-dropdown-item').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === lang);
         });
         document.documentElement.lang = lang;
         document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     }
     function switchLang(lang) {
         localStorage.setItem('wwc_lang', lang);
+        document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
         renderLangSwitcher();
         const slug = getSlug();
         if (slug) renderAll(slug);
@@ -216,14 +229,32 @@
         return parts[parts.length - 1] || null;
     }
 
-    function getToken() { return localStorage.getItem('wwc_access_token'); }
+    function getToken() { return getValidToken(); }
+
+    function getValidToken() {
+        const token = localStorage.getItem('wwc_access_token');
+        if (!token) return null;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+            if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+                localStorage.removeItem('wwc_access_token');
+                localStorage.removeItem('wwc_refresh_token');
+                return null;
+            }
+        } catch { return null; }
+        return token;
+    }
 
     function renderAuthNav() {
         const nav = document.getElementById('auth-nav');
-        if (getToken()) {
-            nav.innerHTML = `<a href="/shop/account/" style="text-decoration:none;font-weight:600;font-size:14px;color:var(--wwc-secondary);">Mon compte</a>`;
+        if (getValidToken()) {
+            nav.innerHTML = `
+                <a href="/shop/account/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.3px;" onmouseover="this.style.color='#e04403'" onmouseout="this.style.color='rgba(255,255,255,0.85)'">Mon compte</a>
+                <button onclick="localStorage.removeItem('wwc_access_token');localStorage.removeItem('wwc_refresh_token');renderAuthNav();" style="background:transparent;border:2px solid #e04403;color:#e04403;padding:8px 16px;border-radius:30px;cursor:pointer;font-size:13px;font-weight:700;text-transform:uppercase;" onmouseover="this.style.background='#e04403';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#e04403'">Déconnexion</button>`;
         } else {
-            nav.innerHTML = `<a href="/shop/login/" style="text-decoration:none;font-weight:600;font-size:14px;color:var(--wwc-primary);">Connexion</a>`;
+            nav.innerHTML = `
+                <a href="/shop/login/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.3px;" onmouseover="this.style.color='#e04403'" onmouseout="this.style.color='rgba(255,255,255,0.85)'">Connexion</a>
+                <a href="/shop/login/?tab=register" style="background:#e04403;color:white;text-decoration:none;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;text-transform:uppercase;" onmouseover="this.style.background='white';this.style.color='#e04403'" onmouseout="this.style.background='#e04403';this.style.color='white'">Inscription</a>`;
         }
     }
 

@@ -49,6 +49,8 @@ urlpatterns = [
     path('admin/orders/', admin_views.AdminOrderListView.as_view(), name='admin-orders'),
     path('admin/orders/<str:order_number>/', admin_views.AdminOrderDetailView.as_view(), name='admin-order-detail'),
     path('admin/customers/', admin_views.AdminCustomerListView.as_view(), name='admin-customers'),
+    path('admin/b2b/', admin_views.AdminB2BApprovalView.as_view(), name='admin-b2b-list'),
+    path('admin/b2b/<int:customer_id>/', admin_views.AdminB2BApprovalView.as_view(), name='admin-b2b-detail'),
     path('admin/coupons/', admin_views.AdminCouponListView.as_view(), name='admin-coupons'),
     path('admin/coupons/<int:pk>/', admin_views.AdminCouponDetailView.as_view(), name='admin-coupon-detail'),
     path('admin/impact-events/', admin_views.AdminImpactEventListView.as_view(), name='admin-impact-events'),
@@ -59,6 +61,12 @@ urlpatterns = [
     path('admin/donations/projects/<int:pk>/', admin_views.AdminDonationProjectDetailView.as_view(), name='admin-donation-project-detail'),
     path('admin/donations/', admin_views.AdminDonationListView.as_view(), name='admin-donations'),
     path('admin/donations/<int:pk>/', admin_views.AdminDonationDetailView.as_view(), name='admin-donation-detail'),
+    path('admin/shipping-rates/', admin_views.AdminShippingRateListView.as_view(), name='admin-shipping-rates'),
+    path('admin/shipping-rates/<int:pk>/', admin_views.AdminShippingRateDetailView.as_view(), name='admin-shipping-rate-detail'),
+    path('admin/settings/', admin_views.AdminSiteSettingsView.as_view(), name='admin-settings'),
+
+    # Public shipping rates (read-only, used by checkout and WP plugin)
+    path('shipping-rates/', views.ShippingRateListView.as_view(), name='shipping-rates'),
 
     # Donations
     path('donations/countries/', views.DonationCountryListView.as_view(), name='donation-countries'),
@@ -82,10 +90,13 @@ urlpatterns = [
     path('auth/login/', views.UserLoginView.as_view(), name='login'),
     path('auth/password-reset/', views.PasswordResetRequestView.as_view(), name='password-reset'),
     path('auth/password-reset/confirm/', views.PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    path('auth/change-password/', views.ChangePasswordView.as_view(), name='change-password'),
+    path('auth/verify-email/', views.EmailVerificationView.as_view(), name='verify-email'),
 
     # Payments - Stripe (EUR only)
     path('payments/create-session/', payments.CreateCheckoutSessionView.as_view(), name='create-checkout-session'),
     path('payments/webhook/', payments.StripeWebhookView.as_view(), name='stripe-webhook'),
     path('payments/status/<str:order_number>/', payments.PaymentStatusView.as_view(), name='payment-status'),
+    path('payments/pending/<str:pending_id>/', payments.PendingCheckoutStatusView.as_view(), name='pending-checkout-status'),
 
 ]

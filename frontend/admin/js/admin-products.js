@@ -78,6 +78,10 @@ function setupEventListeners() {
     // Bulk action
     document.getElementById('applyBulkAction').addEventListener('click', applyBulkAction);
 
+    // B2B bulk pricing
+    document.getElementById('btnBulkB2B').addEventListener('click', openB2BModal);
+    document.querySelector('#b2bModal .modal-overlay').addEventListener('click', closeB2BModal);
+
     // Delete modal
     document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
     document.getElementById('cancelDelete').addEventListener('click', closeDeleteModal);
@@ -372,8 +376,109 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// B2B Bulk Pricing
+function openB2BModal() {
+    const modal = document.getElementById('b2bModal');
+    // Update "selected" option label
+    const scopeSelect = document.getElementById('b2bScope');
+    const selectedOpt = scopeSelect.querySelector('option[value="selected"]');
+    selectedOpt.textContent = `Produits sélectionnés (${selectedProducts.size} sélectionnés)`;
+    if (selectedProducts.size === 0) {
+        selectedOpt.disabled = true;
+        if (scopeSelect.value === 'selected') scopeSelect.value = 'all';
+    } else {
+        selectedOpt.disabled = false;
+    }
+    document.getElementById('b2bProgress').style.display = 'none';
+    document.getElementById('applyB2BBtn').disabled = false;
+    modal.classList.add('active');
+}
+
+function closeB2BModal() {
+    document.getElementById('b2bModal').classList.remove('active');
+}
+
+async function applyBulkB2B() {
+    const discount = parseFloat(document.getElementById('b2bDiscount').value);
+    const minQty = parseInt(document.getElementById('b2bMinQty').value);
+    const scope = document.getElementById('b2bScope').value;
+
+    if (!discount || discount <= 0 || discount >= 100) {
+        AdminConfig.showToast('Remise invalide (1-99%)', 'error');
+        return;
+    }
+    if (!minQty || minQty < 1) {
+        AdminConfig.showToast('Quantité minimum invalide', 'error');
+        return;
+    }
+
+    document.getElementById('applyB2BBtn').disabled = true;
+    document.getElementById('b2bProgress').style.display = 'block';
+
+    try {
+        // Fetch all products matching scope
+        let products = [];
+
+        if (scope === 'selected') {
+            // Use already-selected IDs, fetch their data for price_tnd
+            const promises = Array.from(selectedProducts).map(id => AdminAPI.getProduct(id));
+            products = await Promise.all(promises);
+        } else {
+            // Fetch all published products (all pages)
+            let page = 1;
+            while (true) {
+                const resp = await AdminAPI.getProducts({ page, page_size: 100, is_active: true });
+                const batch = resp.results || resp;
+                products = products.concat(batch);
+                if (!resp.next) break;
+                page++;
+            }
+            if (scope === 'no_b2b') {
+                products = products.filter(p => !p.b2b_price_tnd);
+            }
+        }
+
+        const total = products.length;
+        let done = 0;
+        let errors = 0;
+
+        for (const product of products) {
+            const priceTnd = parseFloat(product.price_tnd) || 0;
+            const b2bPrice = +(priceTnd * (1 - discount / 100)).toFixed(3);
+
+            try {
+                await AdminAPI.updateProduct(product.id, {
+                    b2b_price_tnd: b2bPrice,
+                    b2b_min_quantity: minQty
+                });
+            } catch (e) {
+                errors++;
+            }
+
+            done++;
+            const pct = Math.round((done / total) * 100);
+            document.getElementById('b2bProgressBar').style.width = pct + '%';
+            document.getElementById('b2bProgressText').textContent =
+                `${done}/${total} produits mis à jour...`;
+        }
+
+        const msg = errors > 0
+            ? `Terminé avec ${errors} erreur(s) sur ${total} produits`
+            : `${total} produits mis à jour avec -${discount}% (min ${minQty})`;
+        AdminConfig.showToast(msg, errors > 0 ? 'warning' : 'success');
+        closeB2BModal();
+        loadProducts();
+    } catch (error) {
+        AdminConfig.showToast('Erreur: ' + error.message, 'error');
+        document.getElementById('applyB2BBtn').disabled = false;
+    }
+}
+
 // Expose functions to global scope for onclick handlers
 window.duplicateProduct = duplicateProduct;
 window.showDeleteModal = showDeleteModal;
 window.closeDeleteModal = closeDeleteModal;
 window.confirmDelete = confirmDelete;
+window.openB2BModal = openB2BModal;
+window.closeB2BModal = closeB2BModal;
+window.applyBulkB2B = applyBulkB2B;

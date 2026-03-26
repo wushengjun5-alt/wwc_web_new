@@ -87,17 +87,43 @@ class WWC_Checkout {
     }
 
     /**
-     * Calculate shipping cost
+     * Calculate shipping cost.
+     *
+     * Tries to fetch live rates from the Django API (/api/v1/shipping-rates/?country=XX).
+     * Falls back to hardcoded values if the API is unavailable.
+     *
+     * @param string $country  Two-letter ISO country code.
+     * @param float  $total    Order subtotal (used to check free-shipping threshold).
+     * @param object $api      Optional WWC_API_Client instance. Pass null to use defaults.
+     * @return float           Shipping cost (0 = free).
      */
-    public static function calculate_shipping($country, $total) {
-        // Fixed shipping rates
+    public static function calculate_shipping($country, $total, $api = null) {
+        // Try to fetch live rate from Django API
+        if ($api) {
+            $data = $api->request('/shipping-rates/?country_code=' . urlencode($country));
+            if (!is_wp_error($data) && !empty($data['results'])) {
+                foreach ($data['results'] as $rate) {
+                    if (
+                        isset($rate['country_code'], $rate['rate_tnd'], $rate['free_threshold_tnd'], $rate['is_active'])
+                        && strtoupper($rate['country_code']) === strtoupper($country)
+                        && $rate['is_active']
+                    ) {
+                        $threshold = (float) $rate['free_threshold_tnd'];
+                        if ($threshold > 0 && $total >= $threshold) {
+                            return 0.0;
+                        }
+                        return (float) $rate['rate_tnd'];
+                    }
+                }
+            }
+        }
+
+        // Fallback: hardcoded rates
         $rates = [
-            'TN' => 7.00,   // 7 TND for Tunisia
-            'FR' => 15.00,  // 15 EUR for France
+            'TN' => 7.00,
+            'FR' => 15.00,
             'default' => 20.00,
         ];
-
-        // Free shipping threshold
         $free_shipping_threshold = [
             'TN' => 100.00,
             'FR' => 50.00,
@@ -105,12 +131,37 @@ class WWC_Checkout {
         ];
 
         $threshold = $free_shipping_threshold[$country] ?? $free_shipping_threshold['default'];
-
         if ($total >= $threshold) {
-            return 0;
+            return 0.0;
         }
 
         return $rates[$country] ?? $rates['default'];
+    }
+
+    /**
+     * Get all active shipping countries from the API.
+     * Returns associative array [code => name], falling back to hardcoded list.
+     *
+     * @param object $api WWC_API_Client instance.
+     * @return array
+     */
+    public static function get_shipping_countries_from_api($api = null) {
+        if ($api) {
+            $data = $api->request('/shipping-rates/?is_active=true&page_size=100');
+            if (!is_wp_error($data) && !empty($data['results'])) {
+                $countries = [];
+                foreach ($data['results'] as $rate) {
+                    if (!empty($rate['country_code']) && !empty($rate['country_name'])) {
+                        $countries[$rate['country_code']] = $rate['country_name'];
+                    }
+                }
+                if ($countries) {
+                    return $countries;
+                }
+            }
+        }
+        // Fallback
+        return self::get_shipping_countries();
     }
 
     /**

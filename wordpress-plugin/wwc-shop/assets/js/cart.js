@@ -381,10 +381,84 @@
     // Initialize when document is ready
     $(document).ready(function() {
         WWC_Cart.init();
+        WWC_LangSwitcher.init();
     });
 
     // Expose to global scope
     window.WWC_Cart = WWC_Cart;
+
+    // ============================================
+    // Language Switcher
+    // ============================================
+
+    const WWC_LangSwitcher = {
+
+        init: function() {
+            const $switcher = $('#wwc-lang-switcher');
+            if (!$switcher.length) return;
+
+            // Set initial RTL state
+            this.applyLang(wwcShop.lang || 'fr');
+
+            // Toggle dropdown
+            $switcher.on('click', '.wwc-lang-current', function() {
+                const $btn = $(this);
+                const expanded = $btn.attr('aria-expanded') === 'true';
+                $btn.attr('aria-expanded', !expanded);
+                $switcher.toggleClass('open');
+            });
+
+            // Close on outside click
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#wwc-lang-switcher').length) {
+                    $switcher.removeClass('open');
+                    $switcher.find('.wwc-lang-current').attr('aria-expanded', 'false');
+                }
+            });
+
+            // Language option click
+            $(document).on('click', '.wwc-lang-option', function() {
+                const lang = $(this).data('lang');
+                WWC_LangSwitcher.setLang(lang);
+            });
+        },
+
+        setLang: function(lang) {
+            console.log('[WWC Lang] switching to:', lang);
+
+            // Set cookie directly in JS
+            var expires = new Date();
+            expires.setFullYear(expires.getFullYear() + 1);
+            document.cookie = 'wwc_lang=' + encodeURIComponent(lang)
+                + '; expires=' + expires.toUTCString()
+                + '; path=/; SameSite=Lax';
+
+            console.log('[WWC Lang] cookie set, document.cookie now:', document.cookie);
+
+            // Fire-and-forget AJAX to sync preferred_language on customer profile
+            $.post(wwcShop.ajaxUrl, {
+                action: 'wwc_set_language',
+                nonce: wwcShop.nonce,
+                lang: lang
+            });
+
+            // Reload — PHP will read the new cookie
+            window.location.reload();
+        },
+
+        applyLang: function(lang) {
+            // Set RTL for Arabic
+            if (lang === 'ar') {
+                $('html').attr('dir', 'rtl').attr('lang', 'ar');
+                $('body').addClass('wwc-rtl');
+            } else {
+                $('html').removeAttr('dir').attr('lang', lang);
+                $('body').removeClass('wwc-rtl');
+            }
+        }
+    };
+
+    window.WWC_LangSwitcher = WWC_LangSwitcher;
 
     // Debug helper: run this in the browser console to test the API connection:
     // jQuery.post(wwcShop.ajaxUrl, {action:'wwc_debug_api'}).then(r => console.table(r))

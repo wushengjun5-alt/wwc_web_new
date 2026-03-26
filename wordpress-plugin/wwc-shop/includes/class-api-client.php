@@ -35,6 +35,16 @@ class WWC_API_Client {
     }
 
     /**
+     * Get the active language for API requests.
+     * Reads from the wwc_lang cookie; defaults to 'fr'.
+     */
+    public function get_lang() {
+        $allowed = ['fr', 'en', 'ar'];
+        $lang    = sanitize_text_field($_COOKIE['wwc_lang'] ?? 'fr');
+        return in_array($lang, $allowed, true) ? $lang : 'fr';
+    }
+
+    /**
      * Make API request
      *
      * @param string $endpoint API endpoint
@@ -45,6 +55,11 @@ class WWC_API_Client {
      */
     public function request($endpoint, $method = 'GET', $data = [], $use_cache = true) {
         $url = $this->api_url . '/api/v1/' . ltrim($endpoint, '/');
+
+        // Append language param to all requests
+        if ($method === 'GET') {
+            $data['lang'] = $this->get_lang();
+        }
 
         // Check cache for GET requests
         if ($method === 'GET' && $use_cache) {
@@ -198,10 +213,41 @@ class WWC_API_Client {
     }
 
     /**
-     * Get JWT token from cookie
+     * Get JWT token from cookie, only if it is structurally valid and not expired.
+     * A JWT has three base64url parts separated by dots. The payload contains 'exp'.
+     * If the token is missing, malformed, or expired we return null so the request
+     * goes out as a guest (X-Session-Key only) instead of sending a bad token.
      */
     private function get_jwt_token() {
-        return $_COOKIE['wwc_access_token'] ?? null;
+        $token = $_COOKIE['wwc_access_token'] ?? null;
+        if (!$token) {
+            return null;
+        }
+
+        // Basic structural check: three dot-separated segments
+        $parts = explode('.', $token);
+        if (count($parts) !== 3) {
+            return null;
+        }
+
+        // Decode payload (second segment) — base64url, no padding required
+        $payload_json = base64_decode(strtr($parts[1], '-_', '+/'));
+        if (!$payload_json) {
+            return null;
+        }
+        $payload = json_decode($payload_json, true);
+        if (!is_array($payload)) {
+            return null;
+        }
+
+        // Check expiry
+        if (isset($payload['exp']) && $payload['exp'] < time()) {
+            // Token expired — clear the stale cookie so we don't keep sending it
+            $this->clear_tokens();
+            return null;
+        }
+
+        return $token;
     }
 
     // ============================================

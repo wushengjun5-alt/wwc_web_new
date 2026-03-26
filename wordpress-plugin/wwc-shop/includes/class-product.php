@@ -54,22 +54,22 @@ class WWC_Product {
 
         if (!empty($product['is_natural'])) {
             $badges[] = '<span class="wwc-badge wwc-badge-natural">' .
-                       esc_html__('100% NATURELLE', 'wwc-shop') . '</span>';
+                       WWC_I18n::t('100% NATURELLE') . '</span>';
         }
 
         if (!empty($product['is_organic'])) {
             $badges[] = '<span class="wwc-badge wwc-badge-organic">' .
-                       esc_html__('COSMÉTIQUE BIO', 'wwc-shop') . '</span>';
+                       WWC_I18n::t('COSMÉTIQUE BIO') . '</span>';
         }
 
         if (!empty($product['is_handmade'])) {
             $badges[] = '<span class="wwc-badge wwc-badge-handmade">' .
-                       esc_html__('FAIT MAIN', 'wwc-shop') . '</span>';
+                       WWC_I18n::t('FAIT MAIN') . '</span>';
         }
 
         if (!empty($product['is_vegan'])) {
             $badges[] = '<span class="wwc-badge wwc-badge-vegan">' .
-                       esc_html__('VEGAN', 'wwc-shop') . '</span>';
+                       WWC_I18n::t('VEGAN') . '</span>';
         }
 
         return implode('', $badges);
@@ -85,7 +85,7 @@ class WWC_Product {
 
         $impact_text = sprintf(
             /* translators: 1: quantity, 2: item type, 3: school name */
-            __('Grâce à cet achat, %1$d %2$s peuvent être fournies à des enfants de %3$s', 'wwc-shop'),
+            WWC_I18n::t('Grâce à cet achat, %1$d %2$s peuvent être fournies à des enfants de %3$s'),
             $product['impact_quantity'],
             $product['impact_item'],
             $product['impact_school']
@@ -139,43 +139,59 @@ class WWC_Product {
         if (!empty($product['is_in_stock'])) {
             if (!empty($product['is_low_stock'])) {
                 return '<span class="wwc-stock wwc-stock-low">' .
-                       esc_html__('Stock limité', 'wwc-shop') . '</span>';
+                       WWC_I18n::t('Stock limité') . '</span>';
             }
             return '<span class="wwc-stock wwc-stock-in">' .
-                   esc_html__('En stock', 'wwc-shop') . '</span>';
+                   WWC_I18n::t('En stock') . '</span>';
         }
 
         return '<span class="wwc-stock wwc-stock-out">' .
-               esc_html__('Rupture de stock', 'wwc-shop') . '</span>';
+               WWC_I18n::t('Rupture de stock') . '</span>';
     }
 
     /**
-     * Get localized name
+     * Get the active UI language from the wwc_lang cookie.
+     */
+    public static function get_active_lang() {
+        $allowed = ['fr', 'en', 'ar'];
+        $lang    = sanitize_text_field($_COOKIE['wwc_lang'] ?? 'fr');
+        return in_array($lang, $allowed, true) ? $lang : 'fr';
+    }
+
+    /**
+     * Get localized name.
+     * The API already returns the resolved name for the requested language,
+     * so the 'name' field is already correct. This method is kept for
+     * compatibility and for cases where raw multilingual data is available.
      */
     public static function get_name($product, $lang = null) {
         if ($lang === null) {
-            $lang = substr(get_locale(), 0, 2);
+            $lang = self::get_active_lang();
         }
 
-        $name_field = "name_{$lang}";
-        if (!empty($product[$name_field])) {
-            return $product[$name_field];
+        if ($lang !== 'fr') {
+            $name_field = "name_{$lang}";
+            if (!empty($product[$name_field])) {
+                return $product[$name_field];
+            }
         }
 
         return $product['name'] ?? '';
     }
 
     /**
-     * Get localized description
+     * Get localized description.
      */
     public static function get_description($product, $lang = null) {
         if ($lang === null) {
-            $lang = substr(get_locale(), 0, 2);
+            $lang = self::get_active_lang();
         }
 
-        $desc_field = "description_{$lang}";
-        if (!empty($product[$desc_field])) {
-            return $product[$desc_field];
+        if ($lang !== 'fr') {
+            $desc_field = "description_{$lang}";
+            if (!empty($product[$desc_field])) {
+                return $product[$desc_field];
+            }
         }
 
         return $product['description'] ?? '';
