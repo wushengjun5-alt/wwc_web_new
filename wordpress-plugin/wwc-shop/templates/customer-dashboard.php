@@ -21,7 +21,7 @@ if (!$api->is_authenticated()) {
 $dashboard_data = $api->get_customer_dashboard();
 
 if (is_wp_error($dashboard_data)) {
-    echo '<p class="wwc-error">' . esc_html__('Impossible de charger les données du tableau de bord.', 'wwc-shop') . '</p>';
+    echo '<p class="wwc-error">' . WWC_I18n::t('Impossible de charger les données du tableau de bord.') . '</p>';
     return;
 }
 
@@ -36,16 +36,16 @@ $impact_summary = $dashboard_data['impact_summary'] ?? [];
     <div class="wwc-dashboard-header">
         <h1><?php
             printf(
-                esc_html__('Bonjour, %s', 'wwc-shop'),
+                WWC_I18n::t('Bonjour, %s'),
                 esc_html($customer['first_name'] ?? wp_get_current_user()->display_name)
             );
         ?></h1>
-        <p><?php esc_html_e('Bienvenue dans votre espace personnel. Suivez votre impact et vos commandes.', 'wwc-shop'); ?></p>
+        <p><?php WWC_I18n::e('Bienvenue dans votre espace personnel. Suivez votre impact et vos commandes.'); ?></p>
     </div>
 
     <!-- Impact Summary -->
     <div class="wwc-dashboard-impact">
-        <h2>💝 <?php esc_html_e('Votre Impact', 'wwc-shop'); ?></h2>
+        <h2>💝 <?php WWC_I18n::e('Votre Impact'); ?></h2>
 
         <div class="wwc-impact-cards">
             <div class="wwc-impact-card wwc-impact-main">
@@ -53,7 +53,7 @@ $impact_summary = $dashboard_data['impact_summary'] ?? [];
                     <?php echo esc_html(number_format($impact_summary['total_items'] ?? 0)); ?>
                 </span>
                 <span class="wwc-impact-label">
-                    <?php esc_html_e('items fournis aux étudiants', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e('items fournis aux étudiants'); ?>
                 </span>
             </div>
 
@@ -62,7 +62,7 @@ $impact_summary = $dashboard_data['impact_summary'] ?? [];
                     <?php echo esc_html($impact_summary['total_orders'] ?? 0); ?>
                 </span>
                 <span class="wwc-impact-label">
-                    <?php esc_html_e('commandes', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e('commandes'); ?>
                 </span>
             </div>
 
@@ -71,14 +71,14 @@ $impact_summary = $dashboard_data['impact_summary'] ?? [];
                     <?php echo esc_html($impact_summary['total_purchases'] ?? '0'); ?> DT
                 </span>
                 <span class="wwc-impact-label">
-                    <?php esc_html_e('d\'achats', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e("d'achats"); ?>
                 </span>
             </div>
         </div>
 
         <?php if (!empty($impact_summary['breakdown'])): ?>
         <div class="wwc-impact-breakdown">
-            <h3><?php esc_html_e('Détail de votre impact', 'wwc-shop'); ?></h3>
+            <h3><?php WWC_I18n::e('Détail de votre impact'); ?></h3>
             <ul>
                 <?php foreach ($impact_summary['breakdown'] as $item => $quantity): ?>
                 <li>
@@ -94,24 +94,24 @@ $impact_summary = $dashboard_data['impact_summary'] ?? [];
 
     <!-- Recent Orders -->
     <div class="wwc-dashboard-orders">
-        <h2><?php esc_html_e('Commandes récentes', 'wwc-shop'); ?></h2>
+        <h2><?php WWC_I18n::e('Commandes récentes'); ?></h2>
 
         <?php if (empty($recent_orders)): ?>
             <p class="wwc-no-orders">
-                <?php esc_html_e('Vous n\'avez pas encore passé de commande.', 'wwc-shop'); ?>
+                <?php WWC_I18n::e("Vous n'avez pas encore passé de commande."); ?>
                 <a href="<?php echo esc_url(home_url('/shop/')); ?>">
-                    <?php esc_html_e('Découvrir nos produits', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e('Découvrir nos produits'); ?>
                 </a>
             </p>
         <?php else: ?>
             <table class="wwc-orders-table">
                 <thead>
                     <tr>
-                        <th><?php esc_html_e('Commande', 'wwc-shop'); ?></th>
-                        <th><?php esc_html_e('Date', 'wwc-shop'); ?></th>
-                        <th><?php esc_html_e('Statut', 'wwc-shop'); ?></th>
-                        <th><?php esc_html_e('Total', 'wwc-shop'); ?></th>
-                        <th><?php esc_html_e('Impact', 'wwc-shop'); ?></th>
+                        <th><?php WWC_I18n::e('Commande'); ?></th>
+                        <th><?php WWC_I18n::e('Date'); ?></th>
+                        <th><?php WWC_I18n::e('Statut'); ?></th>
+                        <th><?php WWC_I18n::e('Total'); ?></th>
+                        <th><?php WWC_I18n::e('Impact'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -140,10 +140,10 @@ $impact_summary = $dashboard_data['impact_summary'] ?? [];
     <!-- Account Actions -->
     <div class="wwc-dashboard-actions">
         <a href="<?php echo esc_url(home_url('/boutique/')); ?>" class="wwc-btn wwc-btn-primary">
-            <?php esc_html_e('Continuer vos achats', 'wwc-shop'); ?>
+            <?php WWC_I18n::e('Continuer vos achats'); ?>
         </a>
         <button type="button" class="wwc-btn wwc-btn-secondary wwc-logout-btn">
-            <?php esc_html_e('Déconnexion', 'wwc-shop'); ?>
+            <?php WWC_I18n::e('Déconnexion'); ?>
         </button>
     </div>
 

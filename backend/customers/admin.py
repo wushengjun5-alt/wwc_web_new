@@ -3,8 +3,11 @@ Admin configuration for Customers app
 """
 
 from django.contrib import admin
+from django.db.models import Count, Sum, Q
 from django.utils.html import format_html
 from .models import Customer, CustomerAddress, Wishlist
+
+CONFIRMED_STATUSES = ['paid', 'processing', 'shipped', 'delivered']
 
 
 class CustomerAddressInline(admin.TabularInline):
@@ -15,8 +18,8 @@ class CustomerAddressInline(admin.TabularInline):
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
     list_display = [
-        'user', 'customer_type_badge', 'company_name', 'total_orders',
-        'total_purchases_display', 'total_impact_items', 'created_at'
+        'user', 'customer_type_badge', 'company_name', 'live_total_orders',
+        'live_total_purchases', 'total_impact_items', 'created_at'
     ]
     list_filter = ['customer_type', 'preferred_currency', 'preferred_language', 'newsletter_subscribed']
     search_fields = ['user__username', 'user__email', 'company_name', 'phone']
@@ -73,9 +76,30 @@ class CustomerAdmin(admin.ModelAdmin):
         )
     customer_type_badge.short_description = 'Type'
 
-    def total_purchases_display(self, obj):
-        return f"{obj.total_purchases} {obj.preferred_currency}"
-    total_purchases_display.short_description = 'Total Purchases'
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(
+            _live_orders=Count(
+                'user__orders',
+                filter=Q(user__orders__status__in=CONFIRMED_STATUSES),
+                distinct=True,
+            ),
+            _live_purchases=Sum(
+                'user__orders__total',
+                filter=Q(user__orders__status__in=CONFIRMED_STATUSES),
+            ),
+        )
+
+    def live_total_orders(self, obj):
+        return getattr(obj, '_live_orders', 0) or 0
+    live_total_orders.short_description = 'Commandes'
+    live_total_orders.admin_order_field = '_live_orders'
+
+    def live_total_purchases(self, obj):
+        val = getattr(obj, '_live_purchases', 0) or 0
+        return f"{val:.2f} {obj.preferred_currency}"
+    live_total_purchases.short_description = 'Total achats'
+    live_total_purchases.admin_order_field = '_live_purchases'
 
     actions = ['recalculate_impact']
 

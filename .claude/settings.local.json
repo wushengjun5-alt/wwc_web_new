@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import pptx; print\\(''ok''\\)\")",
+      "Bash(pip install:*)",
+      "Bash(python generate_presentation.py)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(filepath=\"C:/Users/wushengj/OneDrive - Brother/Documents/GitHub/wwc_web_new/frontend/admin/$f\")",
+      "Read(//c/Users/wushengj/OneDrive - Brother/Documents/GitHub/wwc_web_new/wordpress-plugin/wwc-shop/includes/**)",
+      "Bash(echo \"$f: has Dons\")",
+      "Bash(where python:*)",
+      "Bash(where python3:*)",
+      "Bash(where py.exe)",
+      "Bash(grep -E \"\\\\.html$|\\\\.js$|\\\\.css$\")",
+      "Bash(\"/c/Users/wushengj/AppData/Local/Programs/Python/Python312/python.exe\" manage.py shell -c \":*)",
+      "Bash(\"/c/Users/wushengj/AppData/Local/Programs/Python/Python312/python.exe\" -c \"\nwith open\\('/tmp/e2e_out.txt', encoding='utf-8', errors='replace'\\) as f:\n    lines = f.readlines\\(\\)\nprint\\('Total lines:', len\\(lines\\)\\)\nfor line in lines:\n    l = line.rstrip\\(\\)\n    if len\\(l\\) > 150:\n        continue\n    if any\\(k in l for k in ['padding', 'font-family', 'DOCTYPE', 'charset', 'color:#', 'display:', '<li>', '<ol>', '<code', '<td', '<tr', '<table', '<ul>', '<head>', '<html', '</html', '<body', '</body', '<style', '<meta', 'font-size', 'border:', 'background']\\):\n        continue\n    print\\(l\\)\n\" 2>&1)",
+      "Bash(\"/c/Users/wushengj/AppData/Local/Programs/Python/Python312/python.exe\" -X utf8 e2e_tests.py --verbose)"
+    ]
+  }
+}

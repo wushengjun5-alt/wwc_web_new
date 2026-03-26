@@ -9,24 +9,24 @@ defined('ABSPATH') || exit;
 ?>
 
 <div class="wwc-cart-page">
-    <h1><?php esc_html_e('Mon Panier', 'wwc-shop'); ?></h1>
+    <h1><?php WWC_I18n::e('Mon Panier'); ?></h1>
 
     <div class="wwc-cart-page-content" id="wwc-cart-page-content">
         <div class="wwc-cart-loading">
             <span class="wwc-spinner"></span>
-            <?php esc_html_e('Chargement...', 'wwc-shop'); ?>
+            <?php WWC_I18n::e('Chargement...'); ?>
         </div>
     </div>
 
     <div class="wwc-cart-page-summary" id="wwc-cart-page-summary" style="display: none;">
         <div class="wwc-cart-page-totals">
             <div class="wwc-cart-row">
-                <span><?php esc_html_e('Sous-total', 'wwc-shop'); ?></span>
+                <span><?php WWC_I18n::e('Sous-total'); ?></span>
                 <span id="wwc-page-subtotal">0 DT</span>
             </div>
             <div class="wwc-cart-row">
-                <span><?php esc_html_e('Livraison', 'wwc-shop'); ?></span>
-                <span><?php esc_html_e('Calculée à l\'étape suivante', 'wwc-shop'); ?></span>
+                <span><?php WWC_I18n::e('Livraison'); ?></span>
+                <span><?php WWC_I18n::e("Calculée à l'étape suivante"); ?></span>
             </div>
         </div>
 
@@ -36,10 +36,10 @@ defined('ABSPATH') || exit;
 
         <div class="wwc-cart-page-actions">
             <a href="<?php echo esc_url(home_url('/shop/')); ?>" class="wwc-btn wwc-btn-secondary">
-                <?php esc_html_e('Continuer vos achats', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Continuer vos achats'); ?>
             </a>
             <a href="<?php echo esc_url(home_url('/checkout/')); ?>" class="wwc-btn wwc-btn-primary">
-                <?php esc_html_e('Passer la commande', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Passer la commande'); ?>
             </a>
         </div>
     </div>
@@ -71,9 +71,9 @@ jQuery(document).ready(function($) {
             $content.html(
                 '<div class="wwc-cart-empty">' +
                 '<div class="wwc-cart-empty-icon">🛒</div>' +
-                '<p><?php esc_html_e('Votre panier est vide', 'wwc-shop'); ?></p>' +
+                '<p><?php WWC_I18n::e('Votre panier est vide'); ?></p>' +
                 '<a href="<?php echo esc_url(home_url('/shop/')); ?>" class="wwc-btn wwc-btn-primary">' +
-                '<?php esc_html_e('Continuer vos achats', 'wwc-shop'); ?></a>' +
+                '<?php WWC_I18n::e('Continuer vos achats'); ?></a>' +
                 '</div>'
             );
             $summary.hide();
@@ -82,10 +82,10 @@ jQuery(document).ready(function($) {
 
         var html = '<table class="wwc-cart-table">' +
             '<thead><tr>' +
-            '<th><?php esc_html_e('Produit', 'wwc-shop'); ?></th>' +
-            '<th><?php esc_html_e('Prix', 'wwc-shop'); ?></th>' +
-            '<th><?php esc_html_e('Quantité', 'wwc-shop'); ?></th>' +
-            '<th><?php esc_html_e('Total', 'wwc-shop'); ?></th>' +
+            '<th><?php WWC_I18n::e('Produit'); ?></th>' +
+            '<th><?php WWC_I18n::e('Prix'); ?></th>' +
+            '<th><?php WWC_I18n::e('Quantité'); ?></th>' +
+            '<th><?php WWC_I18n::e('Total'); ?></th>' +
             '<th></th>' +
             '</tr></thead><tbody>';
 
@@ -116,7 +116,7 @@ jQuery(document).ready(function($) {
 
         // Impact summary
         if (cart.total_impact && Object.keys(cart.total_impact).length > 0) {
-            var impactHtml = '<div class="wwc-impact-badge">💝 <?php esc_html_e('Votre impact avec cette commande:', 'wwc-shop'); ?><ul>';
+            var impactHtml = '<div class="wwc-impact-badge">💝 <?php WWC_I18n::e('Votre impact avec cette commande:'); ?><ul>';
             for (var item in cart.total_impact) {
                 impactHtml += '<li>' + cart.total_impact[item] + ' ' + item + '</li>';
             }

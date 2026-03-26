@@ -9,10 +9,27 @@ defined('ABSPATH') || exit;
 
 $api = wwc_shop()->api;
 $impact_summary = $api->get_impact_summary();
+$api_url = get_option('wwc_api_url', 'https://api.wallahwecan.org');
+$api_ok  = !is_wp_error($impact_summary);
 ?>
 
 <div class="wrap">
     <h1><?php esc_html_e('WWC Shop Dashboard', 'wwc-shop'); ?></h1>
+
+    <?php if ($api_ok): ?>
+    <div class="notice notice-success inline"><p>✅ <?php printf(esc_html__('API connected: %s', 'wwc-shop'), esc_html($api_url)); ?></p></div>
+    <?php else: ?>
+    <div class="notice notice-error inline">
+        <p>❌ <strong><?php esc_html_e('Cannot reach Django API', 'wwc-shop'); ?></strong></p>
+        <p><?php printf(
+            esc_html__('Current API URL: %s — %s', 'wwc-shop'),
+            '<code>' . esc_html($api_url) . '</code>',
+            '<a href="' . esc_url(admin_url('admin.php?page=wwc-shop-settings')) . '">' . esc_html__('Update in Settings', 'wwc-shop') . '</a>'
+        ); ?></p>
+        <p><em><?php echo esc_html($impact_summary->get_error_message()); ?></em></p>
+        <p><?php esc_html_e('If running locally, set the API URL to: http://127.0.0.1:8000', 'wwc-shop'); ?></p>
+    </div>
+    <?php endif; ?>
 
     <div class="wwc-admin-dashboard">
 

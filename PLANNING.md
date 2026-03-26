@@ -1,7 +1,7 @@
 # WWC Shop - Development Planning Document
 
 **Project**: Wallah We Can E-Commerce Platform
-**Last Updated**: 2026-03-19
+**Last Updated**: 2026-03-22
 **Purpose**: Track what has been built, what is pending, and the full development roadmap.
 
 ---
@@ -148,27 +148,27 @@ An e-commerce platform for Wallah We Can's GreenSchool initiative. Parents of st
 
 ### HIGH PRIORITY - Important Features Missing
 
-- [ ] **Composable Box builder UI** - The `ComposableBox` model and `[wwc_composer_box]` shortcode are not implemented in templates; no JS box-builder interface exists
+- [x] **Composable Box builder UI** - `frontend/box-builder.html` full multi-step builder at `/shop/box-builder/`; calls `/api/v1/cart/add-box/`
 - [ ] **Product search UI** - No search bar / search results page template; API supports `search_fields` but no frontend
 - [ ] **Product filtering UI** - No filter sidebar (price range, badges, in-stock toggle) in templates
 - [ ] **Pagination** - API returns paginated results but product grid template needs pagination controls
 - [ ] **Order confirmation page** - No `checkout/success/` page template for post-payment redirect
 - [ ] **Order tracking page** - No template for customers to view individual order detail
 - [ ] **Password reset flow** - No forgot-password or reset-password endpoints or templates
-- [ ] **Email verification** - `email_verified` field exists on Customer model but no verification flow
-- [ ] **Stock update on cancel/refund** - When an order is cancelled, stock is not restored
+- [x] **Email verification** - `_send_email_verification()` on register; `EmailVerificationView` + `verify-email.html`
+- [x] **Stock update on cancel/refund** - Django signal in `orders/signals.py` restores stock when order moves to `cancelled` or `refunded`
 - [ ] **Admin order management** - No Django admin views or API endpoints for managing order status (shipping, tracking number updates)
 
 ### MEDIUM PRIORITY - Quality & Completeness
 
-- [ ] **Multilingual support implementation** - Models have `name_fr/en/ar` fields but no language-switching UI or `django-modeltranslation` / WPML integration
+- [x] **Multilingual support implementation** - `?lang=` param on all API ViewSets; serializers resolve correct language field; WordPress API client sends `lang` cookie value; language switcher widget in WP footer; language stored in `wwc_lang` cookie; synced to `customer.preferred_language` on auth; RTL for Arabic
 - [ ] **Real exchange rate** - TND/EUR conversion is hardcoded at 0.30; need a live rate or configurable rate in settings
 - [ ] **Shipping cost calculation in API** - Checkout view hardcodes `shipping_cost = 7.00`; should use country-aware logic matching `WWC_Checkout::calculate_shipping()`
-- [ ] **B2B registration flow** - No dedicated B2B signup form or company verification process
-- [ ] **Product reviews submission UI** - `add_review` API endpoint exists but no review form in `single-product.php`
-- [ ] **Wishlist UI** - Wishlist model and API exist but no wishlist page template or add-to-wishlist button in product templates
+- [x] **B2B registration flow** - Registration form collects company info; `b2b_status` exposed in CustomerSerializer; server-side B2B price enforcement (requires `approved` status); rejection reason + `b2b_approved_at` audit fields added; admin UI prompts for rejection reason and shows it in the table
+- [x] **Product reviews submission UI** - Star rating form added to `single-product.php`; AJAX handler `wwc_add_review` registered; `product.js` `initReviewForm()` implemented
+- [x] **Wishlist UI** - Add-to-wishlist button in `single-product.php` with heart toggle; `product.js` `initWishlist()` implemented; wishlist section in `account.html`
 - [ ] **Cart count badge in header** - Cart sidebar exists but updating the cart count in the WP header requires theme integration
-- [ ] **API error handling in JS** - `cart.js` and `product.js` need robust error messaging UI (toasts/alerts)
+- [x] **API error handling in JS** - `cart.js` and `product.js` have proper error messaging; `frontend/cart.html`, `index.html`, `product.html` all check `response.ok` and extract real API error messages; `account.html` handles non-401 errors
 - [ ] **CSS responsiveness audit** - `shop.css` needs review for mobile breakpoints
 
 ### LOW PRIORITY - Nice to Have
@@ -211,20 +211,23 @@ An e-commerce platform for Wallah We Can's GreenSchool initiative. Parents of st
 
 **Goal**: Full shopping experience with account management.
 
-| Task | Component | Notes |
-|------|-----------|-------|
-| Auth UI (register/login/logout) | WP Plugin | Registration form, login form, integrate with WP user system |
-| Password reset flow | Backend + WP | Django email-based reset or WP native |
-| Email verification | Backend | Send verification email on registration |
-| Composable Box builder | WP Plugin + Backend | Multi-step box builder UI with JS |
-| Product search page | WP Plugin | Search bar + results template |
-| Product filter sidebar | WP Plugin | Price range, badges, in-stock filters |
-| Pagination in product grid | WP Plugin | API pagination support already exists |
-| Order detail page | WP Plugin | Template for single order view |
-| Wishlist page + buttons | WP Plugin | Template + add/remove AJAX calls |
-| Product review form | WP Plugin | Submit review form in product detail |
-| Cart count in WP header | WP Plugin | Theme hook or widget |
-| Admin order management API | Backend | Endpoints to update order status, add tracking number |
+| Task | Component | Status | Notes |
+|------|-----------|--------|-------|
+| Auth UI (register/login/logout) | WP Plugin | DONE | `templates/auth-login.php`, `auth-register.php`, `auth-forgot-password.php`, `auth-reset-password.php`; `class-auth.php` AJAX; `auth.js` |
+| Password reset flow | Backend + WP | DONE | Django `PasswordResetRequestView` + `PasswordResetConfirmView`; WP forms + JS wired |
+| Email verification | Backend | DONE | `_send_email_verification()` called on register; `EmailVerificationView` GET/POST at `/api/v1/auth/verify-email/`; `frontend/verify-email.html` + `/shop/verify-email/` route |
+| Composable Box builder | WP Plugin + Backend | DONE | `frontend/box-builder.html` full multi-step builder; calls `/api/v1/cart/add-box/` |
+| Product search page | WP Plugin | DONE | Filter sidebar in `product-grid.php` includes search input; shortcode reads `?s=` param |
+| Product filter sidebar | WP Plugin | DONE | Filter sidebar in `product-grid.php`: category, price range, badges, in-stock, ordering; enable with `[wwc_products filters="true"]` |
+| Pagination in product grid | WP Plugin | DONE | Pagination controls in `product-grid.php`; shortcode reads `?page=` param |
+| Order detail page | WP Plugin | DONE | `account.html` renders full order detail with items, totals, address, tracking |
+| Wishlist page + buttons | WP Plugin | DONE | `account.html` wishlist section; heart button in `single-product.php`; `wwc_toggle_wishlist` AJAX |
+| Product review form | WP Plugin | DONE | Star rating form in `single-product.php`; `wwc_add_review` AJAX; `product.js` handler |
+| Cart count in WP header | WP Plugin | DONE | `wp_nav_menu_items` filter appends badge; JS `updateCartCount()` keeps it live |
+| Admin order management API | Backend | DONE | `AdminOrderListView` + `AdminOrderDetailView` in `admin_views.py`; PATCH updates status + tracking; auto-sets `shipped_at`/`delivered_at`; sends shipping email |
+| Admin order management UI | WP Plugin | DONE | `admin/class-orders-admin.php`: orders list with status filter + search, order detail with status/tracking update form |
+| Stock restore on cancel/refund | Backend | DONE | `orders/signals.py` + `orders/apps.py` |
+| Admin API connection status | WP Plugin | DONE | Dashboard banner shows API health + error details |
 
 **Deliverable**: Complete customer journey including account, wishlist, reviews, composable boxes.
 
@@ -240,7 +243,7 @@ An e-commerce platform for Wallah We Can's GreenSchool initiative. Parents of st
 | B2B registration + approval | Backend + WP | Company form, admin approval workflow |
 | Coupon system | Backend + WP | `Coupon` model, validation API, apply-coupon UI |
 | Real exchange rate | Backend | Daily TND/EUR rate fetch via external API or admin-configurable |
-| Stock restore on cancel/refund | Backend | Signal or webhook handler to restore inventory |
+| Stock restore on cancel/refund | Backend | DONE — `orders/signals.py` |
 | Shipping management in admin | Backend | Configurable rates per country, free-shipping thresholds in DB |
 | SEO meta output | WP Plugin | Output `meta_title`/`meta_description` in WP `wp_head` |
 | Analytics events | WP Plugin | GTM / GA4 events: view_item, add_to_cart, purchase |
@@ -294,6 +297,13 @@ An e-commerce platform for Wallah We Can's GreenSchool initiative. Parents of st
 
 ```
 wwc_web_new/
+├── frontend/                          # Standalone HTML frontend served by Django at /shop/
+│   ├── index.html                     # Product listing + cart sidebar
+│   ├── product.html                   # Product detail page
+│   ├── cart.html                      # Cart page
+│   ├── checkout.html                  # Checkout form
+│   ├── account.html                   # Customer dashboard, orders, wishlist
+│   └── login.html                     # Login/register page
 ├── backend/
 │   ├── api/
 │   │   ├── admin_auth.py          # API key auth for admin endpoints

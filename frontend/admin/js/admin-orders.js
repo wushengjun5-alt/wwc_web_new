@@ -30,6 +30,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         return;
     }
 
+    // Pre-fill search from ?customer= URL param (link from customers page)
+    const urlParams = new URLSearchParams(window.location.search);
+    const customerEmail = urlParams.get('customer');
+    if (customerEmail) {
+        document.getElementById('searchInput').value = customerEmail;
+    }
+
     loadOrders();
     setupEventListeners();
 });

@@ -17,8 +17,8 @@ defined('ABSPATH') || exit;
 <div class="wwc-cart-sidebar" id="wwc-cart-sidebar">
 
     <div class="wwc-cart-header">
-        <h3><?php esc_html_e('Mon Panier', 'wwc-shop'); ?></h3>
-        <button class="wwc-cart-close" id="wwc-cart-close" type="button" aria-label="<?php esc_attr_e('Fermer', 'wwc-shop'); ?>">
+        <h3><?php WWC_I18n::e('Mon Panier'); ?></h3>
+        <button class="wwc-cart-close" id="wwc-cart-close" type="button" aria-label="<?php echo WWC_I18n::attr('Fermer'); ?>">
             ✕
         </button>
     </div>
@@ -27,7 +27,7 @@ defined('ABSPATH') || exit;
         <!-- Cart items loaded via AJAX -->
         <div class="wwc-cart-loading">
             <span class="wwc-spinner"></span>
-            <?php esc_html_e('Chargement...', 'wwc-shop'); ?>
+            <?php WWC_I18n::e('Chargement...'); ?>
         </div>
     </div>
 
@@ -38,20 +38,20 @@ defined('ABSPATH') || exit;
 
         <div class="wwc-cart-totals">
             <div class="wwc-cart-subtotal">
-                <span><?php esc_html_e('Sous-total', 'wwc-shop'); ?></span>
+                <span><?php WWC_I18n::e('Sous-total'); ?></span>
                 <span id="wwc-cart-subtotal-amount">0 DT</span>
             </div>
             <p class="wwc-cart-shipping-note">
-                <?php esc_html_e('Frais de livraison calculés à la caisse', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Frais de livraison calculés à la caisse'); ?>
             </p>
         </div>
 
         <div class="wwc-cart-actions">
             <a href="<?php echo esc_url(home_url('/cart/')); ?>" class="wwc-btn wwc-btn-secondary">
-                <?php esc_html_e('Voir le panier', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Voir le panier'); ?>
             </a>
             <a href="<?php echo esc_url(home_url('/checkout/')); ?>" class="wwc-btn wwc-btn-primary">
-                <?php esc_html_e('Passer la commande', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Passer la commande'); ?>
             </a>
         </div>
     </div>
@@ -73,7 +73,7 @@ defined('ABSPATH') || exit;
                 <button class="wwc-qty-btn wwc-qty-plus" data-item-id="{{id}}" type="button">+</button>
             </div>
         </div>
-        <button class="wwc-cart-item-remove" data-item-id="{{id}}" type="button" aria-label="<?php esc_attr_e('Supprimer', 'wwc-shop'); ?>">
+        <button class="wwc-cart-item-remove" data-item-id="{{id}}" type="button" aria-label="<?php echo WWC_I18n::attr('Supprimer'); ?>">
             🗑️
         </button>
     </div>
@@ -83,9 +83,9 @@ defined('ABSPATH') || exit;
 <script type="text/template" id="wwc-cart-empty-template">
     <div class="wwc-cart-empty">
         <div class="wwc-cart-empty-icon">🛒</div>
-        <p><?php esc_html_e('Votre panier est vide', 'wwc-shop'); ?></p>
+        <p><?php WWC_I18n::e('Votre panier est vide'); ?></p>
         <a href="<?php echo esc_url(home_url('/shop/')); ?>" class="wwc-btn wwc-btn-primary">
-            <?php esc_html_e('Continuer vos achats', 'wwc-shop'); ?>
+            <?php WWC_I18n::e('Continuer vos achats'); ?>
         </a>
     </div>
 </script>

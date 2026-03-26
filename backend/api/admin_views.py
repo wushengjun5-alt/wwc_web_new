@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from products.models import Product, ProductImage, ProductCategory, Producer
-from orders.models import Order, Coupon, ImpactEvent
+from orders.models import Order, Coupon, ImpactEvent, ShippingRate, SiteSettings
 from customers.models import Customer
 from donations.models import Country, DonationProject, Donation as DonationModel
 from .admin_serializers import (
@@ -449,6 +449,7 @@ class AdminStatsView(APIView):
             'pending_orders': pending_orders,
             'total_revenue': str(total_revenue),
             'total_customers': Customer.objects.count(),
+            'pending_b2b': Customer.objects.filter(customer_type='company', b2b_status='pending_approval').count(),
             'active_coupons': Coupon.objects.filter(is_active=True).count(),
             'total_coupons': Coupon.objects.count(),
             'total_impact_events': ImpactEvent.objects.count(),
@@ -579,6 +580,7 @@ class AdminOrderDetailView(APIView):
     def patch(self, request, order_number):
         order = get_object_or_404(Order, order_number=order_number)
         updated_fields = []
+        send_shipping_email = False
 
         new_status = request.data.get('status')
         if new_status is not None:
@@ -594,6 +596,7 @@ class AdminOrderDetailView(APIView):
             if new_status == 'shipped' and not order.shipped_at:
                 order.shipped_at = timezone.now()
                 updated_fields.append('shipped_at')
+                send_shipping_email = True
             elif new_status == 'delivered' and not order.delivered_at:
                 order.delivered_at = timezone.now()
                 updated_fields.append('delivered_at')
@@ -607,6 +610,14 @@ class AdminOrderDetailView(APIView):
             return Response({'error': 'Aucun champ à mettre à jour.'}, status=status.HTTP_400_BAD_REQUEST)
 
         order.save(update_fields=updated_fields)
+
+        # Send shipping notification email after save
+        if send_shipping_email:
+            try:
+                from .payments import _send_shipping_confirmation_email
+                _send_shipping_confirmation_email(order)
+            except Exception:
+                pass  # Non-blocking — email failure should not fail the API response
 
         return Response({
             'order_number': order.order_number,
@@ -668,6 +679,91 @@ class AdminCustomerListView(APIView):
             'page_size': page_size,
             'results': data,
         })
+
+
+# ============================================
+# Admin B2B Approval
+# ============================================
+
+class AdminB2BApprovalView(APIView):
+    """
+    List pending B2B requests and approve/reject them.
+    GET  /api/v1/admin/b2b/          — list all B2B customers with status
+    POST /api/v1/admin/b2b/<id>/     — approve or reject
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def get(self, request):
+        status_filter = request.query_params.get('status', 'pending_approval')
+        queryset = Customer.objects.filter(
+            customer_type='company'
+        ).select_related('user').order_by('-user__date_joined')
+
+        if status_filter and status_filter != 'all':
+            queryset = queryset.filter(b2b_status=status_filter)
+
+        data = [{
+            'id': c.id,
+            'email': c.user.email,
+            'first_name': c.user.first_name,
+            'last_name': c.user.last_name,
+            'company_name': c.company_name or '',
+            'company_tax_id': c.company_tax_id or '',
+            'phone': c.phone or '',
+            'b2b_status': c.b2b_status,
+            'b2b_rejection_reason': c.b2b_rejection_reason or '',
+            'b2b_approved_at': c.b2b_approved_at.isoformat() if c.b2b_approved_at else None,
+            'date_joined': c.user.date_joined.isoformat(),
+        } for c in queryset]
+
+        return Response({'results': data, 'count': len(data)})
+
+    def post(self, request, customer_id):
+        action = request.data.get('action')  # 'approve' or 'reject'
+        if action not in ('approve', 'reject'):
+            return Response({'error': 'action must be approve or reject'}, status=400)
+
+        try:
+            customer = Customer.objects.select_related('user').get(pk=customer_id, customer_type='company')
+        except Customer.DoesNotExist:
+            return Response({'error': 'Not found'}, status=404)
+
+        from django.utils import timezone as tz
+        new_status = 'approved' if action == 'approve' else 'rejected'
+        rejection_reason = request.data.get('rejection_reason', '').strip()
+
+        customer.b2b_status = new_status
+        customer.b2b_approved_at = tz.now()
+        if action == 'reject' and rejection_reason:
+            customer.b2b_rejection_reason = rejection_reason
+        customer.save(update_fields=['b2b_status', 'b2b_approved_at', 'b2b_rejection_reason'])
+
+        # Email notification
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings
+            if action == 'approve':
+                subject = 'Votre compte professionnel WWC a été approuvé'
+                message = (
+                    f"Bonjour {customer.user.first_name},\n\n"
+                    f"Votre compte professionnel pour {customer.company_name or 'votre société'} "
+                    f"a été approuvé. Vous bénéficiez désormais des tarifs B2B sur notre boutique.\n\n"
+                    f"Reconnectez-vous pour voir vos prix préférentiels.\n\nL'équipe WWC"
+                )
+            else:
+                reason_line = f"\nMotif : {rejection_reason}\n" if rejection_reason else ""
+                message = (
+                    f"Bonjour {customer.user.first_name},\n\n"
+                    f"Nous n'avons pas pu approuver votre demande de compte professionnel pour le moment.{reason_line}"
+                    f"Contactez-nous à contact@wallahwecan.org pour plus d'informations.\n\nL'équipe WWC"
+                )
+                subject = 'Votre demande de compte professionnel WWC'
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [customer.user.email], fail_silently=True)
+        except Exception:
+            pass
+
+        return Response({'id': customer.id, 'b2b_status': new_status})
 
 
 # ============================================
@@ -916,27 +1012,34 @@ class AdminImpactEventDetailView(APIView):
 class AdminDonationCountryListView(APIView):
     authentication_classes = [AdminAPIKeyAuthentication]
     permission_classes = [IsAdminAPIKeyAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def _country_data(self, c, request):
+        image_url = request.build_absolute_uri(c.image.url) if c.image else None
+        return {
+            'id': c.id, 'name': c.name, 'name_en': c.name_en, 'slug': c.slug,
+            'flag_emoji': c.flag_emoji, 'image': image_url,
+            'description': c.description, 'is_active': c.is_active, 'order': c.order,
+            'project_count': c.projects.count(),
+        }
 
     def get(self, request):
         countries = Country.objects.all().order_by('order', 'name')
-        data = [{
-            'id': c.id, 'name': c.name, 'name_en': c.name_en, 'slug': c.slug,
-            'flag_emoji': c.flag_emoji, 'description': c.description,
-            'is_active': c.is_active, 'order': c.order,
-            'project_count': c.projects.count(),
-        } for c in countries]
-        return Response(data)
+        return Response([self._country_data(c, request) for c in countries])
 
     def post(self, request):
         d = request.data
         try:
-            c = Country.objects.create(
+            c = Country(
                 name=d['name'], name_en=d.get('name_en', ''), name_ar=d.get('name_ar', ''),
                 slug=d['slug'], flag_emoji=d.get('flag_emoji', '🌍'),
                 description=d.get('description', ''), is_active=d.get('is_active', True),
                 order=d.get('order', 0),
             )
-            return Response({'id': c.id, 'name': c.name}, status=status.HTTP_201_CREATED)
+            if 'image' in request.FILES:
+                c.image = request.FILES['image']
+            c.save()
+            return Response(self._country_data(c, request), status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -944,15 +1047,19 @@ class AdminDonationCountryListView(APIView):
 class AdminDonationCountryDetailView(APIView):
     authentication_classes = [AdminAPIKeyAuthentication]
     permission_classes = [IsAdminAPIKeyAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def patch(self, request, pk):
         c = get_object_or_404(Country, pk=pk)
         for field in ['name', 'name_en', 'name_ar', 'slug', 'flag_emoji', 'description', 'is_active', 'order']:
             if field in request.data:
                 setattr(c, field, request.data[field])
+        if 'image' in request.FILES:
+            c.image = request.FILES['image']
         try:
             c.save()
-            return Response({'message': 'Pays mis à jour.'})
+            image_url = request.build_absolute_uri(c.image.url) if c.image else None
+            return Response({'message': 'Pays mis à jour.', 'image': image_url})
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -964,6 +1071,20 @@ class AdminDonationCountryDetailView(APIView):
 class AdminDonationProjectListView(APIView):
     authentication_classes = [AdminAPIKeyAuthentication]
     permission_classes = [IsAdminAPIKeyAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def _project_data(self, p, request):
+        image_url = request.build_absolute_uri(p.image.url) if p.image else None
+        return {
+            'id': p.id, 'title': p.title, 'title_en': p.title_en,
+            'country': {'id': p.country.id, 'name': p.country.name, 'flag_emoji': p.country.flag_emoji},
+            'category': p.category, 'school': p.school, 'image': image_url,
+            'goal_amount': str(p.goal_amount), 'raised_amount': str(p.raised_amount),
+            'progress_percent': p.progress_percent, 'donor_count': p.donor_count,
+            'currency': p.currency, 'deadline': p.deadline.isoformat() if p.deadline else None,
+            'is_active': p.is_active, 'is_featured': p.is_featured,
+            'created_at': p.created_at.isoformat(),
+        }
 
     def get(self, request):
         queryset = DonationProject.objects.all().select_related('country').order_by('-created_at')
@@ -980,23 +1101,13 @@ class AdminDonationProjectListView(APIView):
         page = int(request.query_params.get('page', 1))
         total = queryset.count()
         items = queryset[(page-1)*page_size : page*page_size]
-
-        data = [{
-            'id': p.id, 'title': p.title, 'title_en': p.title_en,
-            'country': {'id': p.country.id, 'name': p.country.name, 'flag_emoji': p.country.flag_emoji},
-            'category': p.category, 'school': p.school,
-            'goal_amount': str(p.goal_amount), 'raised_amount': str(p.raised_amount),
-            'progress_percent': p.progress_percent, 'donor_count': p.donor_count,
-            'currency': p.currency, 'deadline': p.deadline.isoformat() if p.deadline else None,
-            'is_active': p.is_active, 'is_featured': p.is_featured,
-            'created_at': p.created_at.isoformat(),
-        } for p in items]
-        return Response({'count': total, 'page': page, 'page_size': page_size, 'results': data})
+        return Response({'count': total, 'page': page, 'page_size': page_size,
+                         'results': [self._project_data(p, request) for p in items]})
 
     def post(self, request):
         d = request.data
         try:
-            p = DonationProject.objects.create(
+            p = DonationProject(
                 country_id=d['country_id'], title=d['title'], title_en=d.get('title_en', ''),
                 description=d.get('description', ''), description_en=d.get('description_en', ''),
                 school=d.get('school', ''), category=d.get('category', 'other'),
@@ -1004,7 +1115,10 @@ class AdminDonationProjectListView(APIView):
                 deadline=d.get('deadline') or None,
                 is_active=d.get('is_active', True), is_featured=d.get('is_featured', False),
             )
-            return Response({'id': p.id, 'title': p.title}, status=status.HTTP_201_CREATED)
+            if 'image' in request.FILES:
+                p.image = request.FILES['image']
+            p.save()
+            return Response(self._project_data(p, request), status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1012,13 +1126,16 @@ class AdminDonationProjectListView(APIView):
 class AdminDonationProjectDetailView(APIView):
     authentication_classes = [AdminAPIKeyAuthentication]
     permission_classes = [IsAdminAPIKeyAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get(self, request, pk):
         p = get_object_or_404(DonationProject, pk=pk)
+        image_url = request.build_absolute_uri(p.image.url) if p.image else None
         return Response({
             'id': p.id, 'title': p.title, 'title_en': p.title_en,
             'description': p.description, 'description_en': p.description_en,
             'country_id': p.country_id, 'school': p.school, 'category': p.category,
+            'image': image_url,
             'goal_amount': str(p.goal_amount), 'raised_amount': str(p.raised_amount),
             'progress_percent': p.progress_percent, 'donor_count': p.donor_count,
             'currency': p.currency, 'deadline': p.deadline.isoformat() if p.deadline else None,
@@ -1035,9 +1152,12 @@ class AdminDonationProjectDetailView(APIView):
             p.country_id = request.data['country_id']
         if 'deadline' in request.data:
             p.deadline = request.data['deadline'] or None
+        if 'image' in request.FILES:
+            p.image = request.FILES['image']
         try:
             p.save()
-            return Response({'message': 'Projet mis à jour.'})
+            image_url = request.build_absolute_uri(p.image.url) if p.image else None
+            return Response({'message': 'Projet mis à jour.', 'image': image_url})
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1058,6 +1178,9 @@ class AdminDonationListView(APIView):
         status_filter = request.query_params.get('status', '')
         if status_filter:
             queryset = queryset.filter(status=status_filter)
+        payment_method = request.query_params.get('payment_method', '')
+        if payment_method:
+            queryset = queryset.filter(payment_method=payment_method)
 
         page_size = int(request.query_params.get('page_size', 20))
         page = int(request.query_params.get('page', 1))
@@ -1089,5 +1212,136 @@ class AdminDonationDetailView(APIView):
         try:
             d.save()
             return Response({'message': 'Don mis à jour.'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============================================
+# Admin Shipping Rate Management
+# ============================================
+
+class AdminShippingRateListView(APIView):
+    """
+    List and create shipping rates.
+    GET  /api/v1/admin/shipping-rates/
+    POST /api/v1/admin/shipping-rates/
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def _serialize(self, sr):
+        return {
+            'id': sr.id,
+            'country_code': sr.country_code,
+            'country_name': sr.country_name,
+            'rate_tnd': str(sr.rate_tnd),
+            'free_threshold_tnd': str(sr.free_threshold_tnd),
+            'is_active': sr.is_active,
+            'updated_at': sr.updated_at.isoformat(),
+        }
+
+    def get(self, request):
+        rates = ShippingRate.objects.all()
+        return Response({'results': [self._serialize(r) for r in rates]})
+
+    def post(self, request):
+        data = request.data
+        try:
+            sr = ShippingRate.objects.create(
+                country_code=data['country_code'].strip().upper(),
+                country_name=data.get('country_name', ''),
+                rate_tnd=data.get('rate_tnd', 0),
+                free_threshold_tnd=data.get('free_threshold_tnd', 0),
+                is_active=data.get('is_active', True),
+            )
+            return Response(self._serialize(sr), status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminShippingRateDetailView(APIView):
+    """
+    Retrieve, update, or delete a shipping rate.
+    GET    /api/v1/admin/shipping-rates/<id>/
+    PATCH  /api/v1/admin/shipping-rates/<id>/
+    DELETE /api/v1/admin/shipping-rates/<id>/
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def _serialize(self, sr):
+        return {
+            'id': sr.id,
+            'country_code': sr.country_code,
+            'country_name': sr.country_name,
+            'rate_tnd': str(sr.rate_tnd),
+            'free_threshold_tnd': str(sr.free_threshold_tnd),
+            'is_active': sr.is_active,
+            'updated_at': sr.updated_at.isoformat(),
+        }
+
+    def get(self, request, pk):
+        sr = get_object_or_404(ShippingRate, pk=pk)
+        return Response(self._serialize(sr))
+
+    def patch(self, request, pk):
+        sr = get_object_or_404(ShippingRate, pk=pk)
+        data = request.data
+        for field in ('country_name', 'rate_tnd', 'free_threshold_tnd', 'is_active'):
+            if field in data:
+                setattr(sr, field, data[field])
+        if 'country_code' in data:
+            sr.country_code = data['country_code'].strip().upper()
+        try:
+            sr.save()
+            return Response(self._serialize(sr))
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        sr = get_object_or_404(ShippingRate, pk=pk)
+        sr.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ============================================
+# Admin Site Settings (Exchange Rate)
+# ============================================
+
+class AdminSiteSettingsView(APIView):
+    """
+    Get and update site-wide settings (currently: TND→EUR exchange rate).
+    GET  /api/v1/admin/settings/
+    PUT  /api/v1/admin/settings/
+    """
+    authentication_classes = [AdminAPIKeyAuthentication]
+    permission_classes = [IsAdminAPIKeyAuthenticated]
+
+    def _get_or_create(self):
+        obj = SiteSettings.objects.first()
+        if not obj:
+            obj = SiteSettings.objects.create()
+        return obj
+
+    def get(self, request):
+        obj = self._get_or_create()
+        return Response({
+            'tnd_to_eur_rate': str(obj.tnd_to_eur_rate),
+            'updated_at': obj.updated_at.isoformat(),
+        })
+
+    def put(self, request):
+        obj = self._get_or_create()
+        rate = request.data.get('tnd_to_eur_rate')
+        if rate is None:
+            return Response({'error': 'tnd_to_eur_rate is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            obj.tnd_to_eur_rate = rate
+            obj.save()
+            return Response({
+                'tnd_to_eur_rate': str(obj.tnd_to_eur_rate),
+                'updated_at': obj.updated_at.isoformat(),
+                'message': 'Taux mis à jour.',
+            })
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

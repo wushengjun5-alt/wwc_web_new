@@ -29,31 +29,31 @@ if ($order_number) {
 
         <div class="wwc-success-header">
             <div class="wwc-success-icon">&#10003;</div>
-            <h1><?php esc_html_e('Merci pour votre commande !', 'wwc-shop'); ?></h1>
+            <h1><?php WWC_I18n::e('Merci pour votre commande !'); ?></h1>
             <p class="wwc-success-order-number">
                 <?php
                 printf(
-                    esc_html__('Numéro de commande : %s', 'wwc-shop'),
+                    WWC_I18n::t('Numéro de commande : %s'),
                     '<strong>' . esc_html($order['order_number']) . '</strong>'
                 );
                 ?>
             </p>
-            <p><?php esc_html_e('Un email de confirmation a été envoyé à votre adresse.', 'wwc-shop'); ?></p>
+            <p><?php WWC_I18n::e('Un email de confirmation a été envoyé à votre adresse.'); ?></p>
         </div>
 
         <?php if ($method === 'bank_transfer'): ?>
         <!-- Bank Transfer Instructions -->
         <div class="wwc-bank-transfer-instructions">
-            <h2><?php esc_html_e('Instructions de virement bancaire', 'wwc-shop'); ?></h2>
-            <p><?php esc_html_e('Votre commande est en attente de paiement. Veuillez effectuer le virement avec les informations suivantes :', 'wwc-shop'); ?></p>
+            <h2><?php WWC_I18n::e('Instructions de virement bancaire'); ?></h2>
+            <p><?php WWC_I18n::e('Votre commande est en attente de paiement. Veuillez effectuer le virement avec les informations suivantes :'); ?></p>
 
             <div class="wwc-bank-details">
                 <div class="wwc-bank-row">
-                    <span class="wwc-bank-label"><?php esc_html_e('Bénéficiaire', 'wwc-shop'); ?></span>
+                    <span class="wwc-bank-label"><?php WWC_I18n::e('Bénéficiaire'); ?></span>
                     <span class="wwc-bank-value">Wallah We Can</span>
                 </div>
                 <div class="wwc-bank-row">
-                    <span class="wwc-bank-label"><?php esc_html_e('Banque', 'wwc-shop'); ?></span>
+                    <span class="wwc-bank-label"><?php WWC_I18n::e('Banque'); ?></span>
                     <span class="wwc-bank-value">Banque de Tunisie</span>
                 </div>
                 <div class="wwc-bank-row">
@@ -61,24 +61,24 @@ if ($order_number) {
                     <span class="wwc-bank-value">TN59 XXXX XXXX XXXX XXXX XXXX</span>
                 </div>
                 <div class="wwc-bank-row wwc-bank-row--highlight">
-                    <span class="wwc-bank-label"><?php esc_html_e('Référence (obligatoire)', 'wwc-shop'); ?></span>
+                    <span class="wwc-bank-label"><?php WWC_I18n::e('Référence (obligatoire)'); ?></span>
                     <span class="wwc-bank-value"><?php echo esc_html($order['order_number']); ?></span>
                 </div>
                 <div class="wwc-bank-row wwc-bank-row--highlight">
-                    <span class="wwc-bank-label"><?php esc_html_e('Montant', 'wwc-shop'); ?></span>
+                    <span class="wwc-bank-label"><?php WWC_I18n::e('Montant'); ?></span>
                     <span class="wwc-bank-value"><?php echo esc_html($order['total']); ?> <?php echo esc_html($order['currency']); ?></span>
                 </div>
             </div>
 
             <p class="wwc-bank-note">
-                <?php esc_html_e('Votre commande sera traitée dès réception du virement. Pensez à indiquer le numéro de commande comme référence.', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Votre commande sera traitée dès réception du virement. Pensez à indiquer le numéro de commande comme référence.'); ?>
             </p>
         </div>
         <?php endif; ?>
 
         <!-- Order Summary -->
         <div class="wwc-success-order-summary">
-            <h2><?php esc_html_e('Récapitulatif', 'wwc-shop'); ?></h2>
+            <h2><?php WWC_I18n::e('Récapitulatif'); ?></h2>
 
             <?php if (!empty($order['items'])): ?>
             <div class="wwc-success-items">
@@ -94,7 +94,7 @@ if ($order_number) {
                 <?php endforeach; ?>
             </div>
             <div class="wwc-success-total">
-                <span><?php esc_html_e('Total', 'wwc-shop'); ?></span>
+                <span><?php WWC_I18n::e('Total'); ?></span>
                 <span><?php echo esc_html($order['total']); ?> <?php echo esc_html($order['currency']); ?></span>
             </div>
             <?php endif; ?>
@@ -103,14 +103,14 @@ if ($order_number) {
         <!-- Impact Summary -->
         <?php if (!empty($order['impact_summary'])): ?>
         <div class="wwc-success-impact">
-            <h2><?php esc_html_e('Votre impact', 'wwc-shop'); ?></h2>
-            <p><?php esc_html_e('Grâce à votre achat, vous contribuez directement à l\'initiative GreenSchool :', 'wwc-shop'); ?></p>
+            <h2><?php WWC_I18n::e('Votre impact'); ?></h2>
+            <p><?php WWC_I18n::e("Grâce à votre achat, vous contribuez directement à l'initiative GreenSchool :"); ?></p>
             <ul class="wwc-impact-list">
                 <?php foreach ($order['impact_summary'] as $item_type => $qty): ?>
                 <li>
                     <strong><?php echo esc_html($qty); ?></strong>
                     <?php echo esc_html($item_type); ?>
-                    <?php esc_html_e('fourni(e)s à des étudiants', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e('fourni(e)s à des étudiants'); ?>
                 </li>
                 <?php endforeach; ?>
             </ul>
@@ -119,11 +119,11 @@ if ($order_number) {
 
         <div class="wwc-success-actions">
             <a href="<?php echo esc_url(home_url('/shop/')); ?>" class="wwc-btn wwc-btn-primary">
-                <?php esc_html_e('Continuer mes achats', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Continuer mes achats'); ?>
             </a>
             <?php if (is_user_logged_in()): ?>
             <a href="<?php echo esc_url(home_url('/mon-compte/')); ?>" class="wwc-btn wwc-btn-secondary">
-                <?php esc_html_e('Voir mes commandes', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Voir mes commandes'); ?>
             </a>
             <?php endif; ?>
         </div>
@@ -132,13 +132,13 @@ if ($order_number) {
 
         <div class="wwc-success-header">
             <div class="wwc-success-icon">&#10003;</div>
-            <h1><?php esc_html_e('Commande confirmée !', 'wwc-shop'); ?></h1>
-            <p><?php esc_html_e('Merci pour votre achat. Vous recevrez bientôt un email de confirmation.', 'wwc-shop'); ?></p>
+            <h1><?php WWC_I18n::e('Commande confirmée !'); ?></h1>
+            <p><?php WWC_I18n::e('Merci pour votre achat. Vous recevrez bientôt un email de confirmation.'); ?></p>
         </div>
 
         <div class="wwc-success-actions">
             <a href="<?php echo esc_url(home_url('/shop/')); ?>" class="wwc-btn wwc-btn-primary">
-                <?php esc_html_e('Continuer mes achats', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Continuer mes achats'); ?>
             </a>
         </div>
 

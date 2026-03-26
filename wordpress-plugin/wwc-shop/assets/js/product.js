@@ -20,6 +20,7 @@
             this.initAccordions();
             this.initShare();
             this.initWishlist();
+            this.initReviewForm();
         },
 
         /**
@@ -135,19 +136,106 @@
          * Initialize wishlist functionality
          */
         initWishlist: function() {
-            $('.wwc-wishlist').on('click', function() {
+            $(document).on('click', '.wwc-wishlist', function() {
                 const $button = $(this);
                 const productId = $button.data('product-id');
 
-                // Toggle heart icon
-                const $icon = $button.find('.wwc-icon');
-                if ($icon.text() === '🤍') {
-                    $icon.text('❤️');
-                    // TODO: Add to wishlist API call
-                } else {
-                    $icon.text('🤍');
-                    // TODO: Remove from wishlist API call
-                }
+                if ($button.prop('disabled')) return;
+                $button.prop('disabled', true);
+
+                $.ajax({
+                    url: wwcShop.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'wwc_toggle_wishlist',
+                        nonce: wwcShop.nonce,
+                        product_id: productId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            const $icon = $button.find('.wwc-icon');
+                            $icon.text(response.data.in_wishlist ? '❤️' : '🤍');
+                            if (window.WWC_Cart) {
+                                WWC_Cart.showNotification(response.data.message, 'success');
+                            }
+                        } else {
+                            // Not logged in or error
+                            if (window.WWC_Cart) {
+                                const msg = (response.data && response.data.message)
+                                    ? response.data.message
+                                    : wwcShop.i18n.error;
+                                WWC_Cart.showNotification(msg, 'error');
+                            }
+                        }
+                    },
+                    error: function() {
+                        if (window.WWC_Cart) {
+                            WWC_Cart.showNotification(wwcShop.i18n.error, 'error');
+                        }
+                    },
+                    complete: function() {
+                        $button.prop('disabled', false);
+                    }
+                });
+            });
+        },
+
+        /**
+         * Initialize review form submission
+         */
+        initReviewForm: function() {
+            $(document).on('submit', '#wwc-review-form', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const $btn = $form.find('#wwc-review-submit');
+                const $msg = $('#wwc-review-message');
+                const originalText = $btn.text();
+
+                $btn.prop('disabled', true).text('...');
+
+                $.ajax({
+                    url: wwcShop.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'wwc_add_review',
+                        nonce: wwcShop.nonce,
+                        product_slug: $form.data('product-slug'),
+                        rating: $form.find('input[name="rating"]:checked').val(),
+                        comment: $form.find('textarea[name="comment"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $msg.removeClass('wwc-message--error')
+                                .addClass('wwc-message--success')
+                                .text(response.data.message).show();
+                            $form[0].reset();
+                            // Reset star display
+                            $form.find('.wwc-star-label').css('color', '#ccc');
+                        } else {
+                            const msg = (response.data && response.data.message)
+                                ? response.data.message : wwcShop.i18n.error;
+                            $msg.removeClass('wwc-message--success')
+                                .addClass('wwc-message--error')
+                                .text(msg).show();
+                        }
+                    },
+                    error: function() {
+                        $msg.removeClass('wwc-message--success')
+                            .addClass('wwc-message--error')
+                            .text(wwcShop.i18n.error).show();
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text(originalText);
+                    }
+                });
+            });
+
+            // Star rating hover/click interaction
+            $(document).on('change', '#wwc-review-form input[name="rating"]', function() {
+                const val = parseInt($(this).val());
+                $(this).closest('form').find('.wwc-star-label').each(function(i) {
+                    $(this).css('color', i < val ? '#f4b400' : '#ccc');
+                });
             });
         }
     };

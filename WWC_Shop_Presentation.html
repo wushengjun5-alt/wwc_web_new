@@ -1,0 +1,3415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WWC Shop — Présentation Complète du Projet</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #e04403;
+    --orange-light: #f5590a;
+    --navy: #1c345e;
+    --navy-light: #2a4a80;
+    --gray-bg: #f8f9fa;
+    --white: #ffffff;
+    --green: #28a745;
+    --text: #333;
+    --text-light: #666;
+    --border: #e0e0e0;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Noto Sans', sans-serif;
+    background: var(--gray-bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--navy);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0 0 24px 0;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+  #sidebar-header {
+    background: var(--orange);
+    padding: 18px 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    color: white;
+    letter-spacing: 0.5px;
+  }
+  #sidebar-header span { display: block; font-size: 10px; font-weight: 500; opacity: 0.85; margin-top: 2px; }
+  #sidebar nav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    font-size: 11.5px;
+    font-family: 'Noto Sans', sans-serif;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    line-height: 1.3;
+  }
+  #sidebar nav a:hover, #sidebar nav a.active {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-left-color: var(--orange);
+  }
+  #sidebar nav a .num {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  #sidebar nav a.active .num { background: var(--orange); }
+
+  /* ── MAIN CONTENT ── */
+  #main {
+    flex: 1;
+    padding: 32px 40px;
+    max-width: calc(100vw - 240px);
+    overflow-x: hidden;
+  }
+
+  /* ── SECTION CARDS ── */
+  .section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 24px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .section-num {
+    background: var(--orange);
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--navy);
+  }
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+  .section-body { padding: 28px 32px; }
+
+  /* ── COVER ── */
+  #s1 .cover-inner {
+    background: linear-gradient(135deg, var(--navy) 0%, #2a4a80 50%, #1c345e 100%);
+    padding: 64px 48px;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  #s1 .cover-inner::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    background: var(--orange);
+    border-radius: 50%;
+    opacity: 0.12;
+  }
+  #s1 .cover-inner::after {
+    content: '';
+    position: absolute; bottom: -80px; left: -40px;
+    width: 300px; height: 300px;
+    background: var(--orange);
+    border-radius: 50%;
+    opacity: 0.08;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: var(--orange);
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+  }
+  .cover-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+  .cover-title span { color: var(--orange); }
+  .cover-subtitle {
+    font-size: 18px;
+    opacity: 0.85;
+    margin-bottom: 32px;
+    position: relative; z-index: 1;
+  }
+  .cover-meta {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    font-size: 13px;
+    opacity: 0.7;
+    position: relative; z-index: 1;
+  }
+  .cover-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ── TYPOGRAPHY HELPERS ── */
+  h2 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; color: var(--navy); margin-bottom: 12px; }
+  h3 { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 15px; color: var(--navy); margin-bottom: 8px; }
+  p { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── GRID HELPERS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--gray-bg);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid var(--border);
+  }
+  .card-orange { border-left: 4px solid var(--orange); }
+  .card-navy { border-left: 4px solid var(--navy); }
+  .card-green { border-left: 4px solid var(--green); }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-icon {
+    width: 20px; height: 20px;
+    background: var(--green);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .check-partial { background: #fd7e14; }
+  .check-missing { background: #aaa; }
+
+  /* ── BADGES / STATUS ── */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-green { background: #d4edda; color: #155724; }
+  .badge-orange { background: #fff3cd; color: #856404; }
+  .badge-blue { background: #d1ecf1; color: #0c5460; }
+  .badge-red { background: #f8d7da; color: #721c24; }
+  .badge-gray { background: #e2e3e5; color: #383d41; }
+
+  /* ── TECH ARCH DIAGRAM ── */
+  .arch-box {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .arch-box.orange { border-color: var(--orange); background: #fff5f2; color: var(--orange); }
+  .arch-box.navy { border-color: var(--navy); background: #f0f3f8; color: var(--navy); }
+  .arch-box.green { border-color: var(--green); background: #f0fff4; color: var(--green); }
+  .arch-arrow {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: var(--text-light);
+    padding: 4px 0;
+  }
+
+  /* ── JOURNEY STEPS ── */
+  .journey-steps {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .journey-step {
+    flex: 1;
+    min-width: 120px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 16px 12px;
+    text-align: center;
+    position: relative;
+  }
+  .journey-step:first-child { border-radius: 10px 0 0 10px; }
+  .journey-step:last-child { border-radius: 0 10px 10px 0; }
+  .journey-step.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .journey-step.active .step-label { color: rgba(255,255,255,0.8); }
+  .journey-step::after {
+    content: '→';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--orange);
+    z-index: 2;
+    font-weight: bold;
+  }
+  .journey-step:last-child::after { display: none; }
+  .step-icon { font-size: 24px; margin-bottom: 6px; }
+  .step-name { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 11px; color: var(--navy); }
+  .journey-step.active .step-name { color: white; }
+  .step-label { font-size: 10px; color: var(--text-light); margin-top: 3px; }
+
+  /* ── MOCKUP WRAPPER ── */
+  .mockup-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin-top: 8px;
+  }
+  .mockup-browser-bar {
+    background: #f0f0f0;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .browser-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .browser-dot.red { background: #ff5f56; }
+  .browser-dot.yellow { background: #ffbd2e; }
+  .browser-dot.green { background: #27c93f; }
+  .browser-url {
+    flex: 1;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--text-light);
+    margin: 0 8px;
+  }
+
+  /* ── MOCK UI COMPONENTS ── */
+  .mock-header {
+    background: var(--navy);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    height: 52px;
+    gap: 24px;
+  }
+  .mock-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    color: white;
+    font-size: 16px;
+  }
+  .mock-logo span { color: var(--orange); }
+  .mock-nav {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+  }
+  .mock-nav a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 12px;
+    font-family: 'Noto Sans', sans-serif;
+  }
+  .mock-nav a:hover { color: white; }
+  .mock-cart-btn {
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .mock-hero {
+    background: linear-gradient(135deg, var(--orange) 0%, #c03800 100%);
+    padding: 48px 32px;
+    color: white;
+    text-align: center;
+  }
+  .mock-hero h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .mock-hero p { font-size: 14px; opacity: 0.9; margin-bottom: 20px; }
+  .mock-btn {
+    display: inline-block;
+    background: white;
+    color: var(--orange);
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+  }
+  .mock-btn-orange {
+    background: var(--orange);
+    color: white;
+  }
+  .mock-btn-outline {
+    background: transparent;
+    color: var(--orange);
+    border: 2px solid var(--orange);
+  }
+  .mock-products-section {
+    padding: 28px 24px;
+    background: var(--gray-bg);
+  }
+  .mock-products-section h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--navy);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .mock-product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .mock-product-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .mock-product-img {
+    background: #e8e8e8;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #aaa;
+  }
+  .mock-product-info { padding: 12px; }
+  .mock-product-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .mock-product-price {
+    color: var(--orange);
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .mock-add-btn {
+    width: 100%;
+    background: var(--navy);
+    color: white;
+    border: none;
+    padding: 7px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .mock-footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.7);
+    padding: 18px 24px;
+    display: flex;
+    gap: 32px;
+    font-size: 11px;
+  }
+  .mock-footer-col h4 {
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .mock-footer-col a {
+    display: block;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    font-size: 11px;
+    line-height: 1.8;
+  }
+
+  /* ── IMG PLACEHOLDER ── */
+  .img-placeholder {
+    background: #e8e8e8;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #bbb;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .mock-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+    color: var(--text);
+    margin-bottom: 10px;
+    outline: none;
+  }
+  .mock-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .mock-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+    margin-bottom: 10px;
+  }
+
+  /* ── ADDRESS TILE ── */
+  .address-tile {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color 0.2s;
+  }
+  .address-tile.selected {
+    border-color: var(--orange);
+    background: #fff5f2;
+  }
+  .address-tile .radio-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .address-tile.selected .radio-dot {
+    border-color: var(--orange);
+    background: var(--orange);
+  }
+  .address-tile.selected .radio-dot::after {
+    content: '';
+    width: 6px; height: 6px;
+    background: white;
+    border-radius: 50%;
+  }
+  .address-tile-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--navy);
+    margin-bottom: 3px;
+  }
+  .address-tile-text {
+    font-size: 11px;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+
+  /* ── ADMIN LAYOUT ── */
+  .admin-layout {
+    display: flex;
+    min-height: 420px;
+    font-size: 13px;
+  }
+  .admin-sidebar {
+    width: 180px;
+    background: var(--navy);
+    flex-shrink: 0;
+    padding: 16px 0;
+  }
+  .admin-sidebar-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    color: white;
+    font-size: 13px;
+    padding: 0 16px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 8px;
+  }
+  .admin-nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 16px;
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .admin-nav-item:hover, .admin-nav-item.active {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-left: 3px solid var(--orange);
+  }
+  .admin-main { flex: 1; background: var(--gray-bg); padding: 20px; overflow: hidden; }
+  .admin-stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .admin-stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .stat-label { font-size: 10px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-value { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; color: var(--navy); }
+  .stat-change { font-size: 10px; color: var(--green); margin-top: 4px; }
+
+  /* ── TABLE ── */
+  .mock-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mock-table th {
+    background: var(--gray-bg);
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .mock-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .mock-table tr:last-child td { border-bottom: none; }
+  .mock-table tr:hover td { background: #fafafa; }
+
+  /* ── TABS ── */
+  .mock-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 16px; }
+  .mock-tab {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .mock-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+  /* ── ORDER CARD ── */
+  .order-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .order-card-id { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 13px; color: var(--navy); }
+  .order-card-date { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+  .order-card-amount { font-weight: 700; color: var(--orange); font-size: 14px; margin-left: auto; }
+
+  /* ── PHASE TIMELINE ── */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 12px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-item { position: relative; margin-bottom: 24px; }
+  .timeline-dot {
+    position: absolute;
+    left: -28px; top: 4px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    color: white;
+    font-weight: 700;
+  }
+  .timeline-dot.done { background: var(--green); }
+  .timeline-dot.current { background: var(--orange); }
+  .timeline-dot.next { background: var(--navy); }
+  .timeline-dot.future { background: #aaa; }
+  .timeline-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .timeline-items-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .timeline-tag {
+    background: var(--gray-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+    color: var(--text);
+  }
+  .timeline-tag.done { background: #d4edda; border-color: #b8dfc4; color: #155724; }
+  .timeline-tag.current { background: #fff3cd; border-color: #f5c518; color: #7a5c00; }
+
+  /* ── GAP TABLE ── */
+  .gap-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .gap-table th {
+    background: var(--navy);
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .gap-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .gap-table tr:nth-child(even) td { background: #fafafa; }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    background: #e8f4fd;
+    border: 1px solid #bee3f8;
+    border-left: 4px solid #3498db;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .warning-box {
+    background: #fff9e6;
+    border: 1px solid #ffe082;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .success-box {
+    background: #f0fff4;
+    border: 1px solid #b2f5c3;
+    border-left: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  /* ── STEP GUIDE ── */
+  .step-guide { counter-reset: guide-counter; }
+  .step-guide-item {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .step-guide-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .step-guide-num {
+    background: var(--navy);
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-guide-text h4 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--navy);
+    margin-bottom: 4px;
+  }
+  .step-guide-text p { margin: 0; font-size: 13px; }
+
+  /* ── PRINT ── */
+  @media print {
+    #sidebar { display: none; }
+    #main { max-width: 100%; padding: 16px; }
+    .section { break-inside: avoid; page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════════════════ -->
+<aside id="sidebar">
+  <div id="sidebar-header">
+    WWC Shop<span>Présentation du Projet</span>
+  </div>
+  <nav>
+    <a href="#s1"><span class="num">1</span>Page de Couverture</a>
+    <a href="#s2"><span class="num">2</span>Mission &amp; Vision</a>
+    <a href="#s3"><span class="num">3</span>Ce qui a été Construit</a>
+    <a href="#s4"><span class="num">4</span>Architecture Technique</a>
+    <a href="#s5"><span class="num">5</span>Parcours Client</a>
+    <a href="#s6"><span class="num">6</span>Maquette — Accueil</a>
+    <a href="#s7"><span class="num">7</span>Maquette — Produit</a>
+    <a href="#s8"><span class="num">8</span>Maquette — Panier</a>
+    <a href="#s9"><span class="num">9</span>Maquette — Paiement</a>
+    <a href="#s10"><span class="num">10</span>Maquette — Mon Compte</a>
+    <a href="#s11"><span class="num">11</span>Maquette — Admin</a>
+    <a href="#s12"><span class="num">12</span>Maquette — Produits Admin</a>
+    <a href="#s13"><span class="num">13</span>Guide Utilisateur (staff)</a>
+    <a href="#s14"><span class="num">14</span>Fonctionnalités B2B</a>
+    <a href="#s15"><span class="num">15</span>Intégration Stripe</a>
+    <a href="#s16"><span class="num">16</span>Analyse des Manques</a>
+    <a href="#s17"><span class="num">17</span>Architecture — Guide Dev</a>
+    <a href="#s18"><span class="num">18</span>Feuille de Route</a>
+    <a href="#s19"><span class="num">19</span>Guide de Transmission</a>
+    <a href="#s20"><span class="num">20</span>Prochaines Étapes (tech)</a>
+    <a href="#s21"><span class="num">21</span>Manuel Non-Technique</a>
+    <a href="#s22"><span class="num">22</span>Conclusion</a>
+  </nav>
+</aside>
+
+<!-- ════════════════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ── SECTION 1 · COVER ── -->
+<section class="section" id="s1">
+  <div class="cover-inner">
+    <div class="cover-badge">Wallah We Can — GreenSchool Initiative</div>
+    <div class="cover-title">WWC Shop —<br><span>Présentation Complète</span><br>du Projet</div>
+    <div class="cover-subtitle">Guide Utilisateur · Fonctionnalités · Prochaines Étapes</div>
+    <div class="cover-meta">
+      <span>📅 Mars 2026</span>
+      <span>🏪 Boutique e-commerce</span>
+      <span>🌍 Commerce équitable</span>
+      <span>💳 Paiements Stripe</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 2 · MISSION ── -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div>
+      <div class="section-title">Mission &amp; Vision</div>
+      <div class="section-subtitle">Qui est WWC et pourquoi cette boutique ?</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="grid-2">
+      <div>
+        <h2>Qui est Wallah We Can ?</h2>
+        <p>Wallah We Can (WWC) est une association caritative axée sur l'initiative <strong>GreenSchool</strong>. Les parents d'élèves travaillent sur des fermes pour produire des biens artisanaux — huiles essentielles, produits naturels, aliments biologiques — issus de régions rurales de Tunisie et d'autres pays en développement.</p>
+        <p>Chaque achat effectué sur la boutique soutient directement les élèves de l'école Sidi Mechreg en finançant des repas, du matériel scolaire et d'autres ressources essentielles.</p>
+        <div class="success-box">
+          <strong>Tagline central :</strong> « Grâce à votre achat de [produit], 6 barres énergétiques seront fournies aux élèves de Sidi Mechreg. »
+        </div>
+      </div>
+      <div>
+        <h2>Ce que cette boutique accomplit</h2>
+        <div class="card card-orange" style="margin-bottom:12px">
+          <h3 style="color:var(--orange)">🛒 Commerce équitable numérique</h3>
+          <p style="margin:0;font-size:13px">Une vitrine en ligne permettant aux artisans tunisiens et africains de vendre leurs produits directement à des clients en Europe et dans le monde entier.</p>
+        </div>
+        <div class="card card-navy" style="margin-bottom:12px">
+          <h3 style="color:var(--navy)">📊 Impact transparent</h3>
+          <p style="margin:0;font-size:13px">Chaque produit affiche son impact social concret : nombre de repas financés, matériel fourni, école bénéficiaire.</p>
+        </div>
+        <div class="card card-green">
+          <h3 style="color:var(--green)">🏢 Support B2B</h3>
+          <p style="margin:0;font-size:13px">Les entreprises peuvent commander en gros avec des tarifs professionnels, des factures dédiées et un flux d'approbation distinct.</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px">
+      <h2>Produits proposés</h2>
+      <div class="grid-4">
+        <div class="card" style="text-align:center;padding:14px 10px">
+          <div style="font-size:28px;margin-bottom:6px">🌿</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy)">SOINS</div>
+          <div style="font-size:11px;color:var(--text-light)">Huiles, crèmes naturelles</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px 10px">
+          <div style="font-size:28px;margin-bottom:6px">🥗</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy)">NUTRITION</div>
+          <div style="font-size:11px;color:var(--text-light)">Produits alimentaires bio</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px 10px">
+          <div style="font-size:28px;margin-bottom:6px">🧘</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy)">BIEN-ÊTRE</div>
+          <div style="font-size:11px;color:var(--text-light)">Diffuseurs, tisanes</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px 10px">
+          <div style="font-size:28px;margin-bottom:6px">🏠</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy)">MAISON</div>
+          <div style="font-size:11px;color:var(--text-light)">Artisanat, déco</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px 10px">
+          <div style="font-size:28px;margin-bottom:6px">🎁</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy)">COFFRETS</div>
+          <div style="font-size:11px;color:var(--text-light)">Coffrets cadeaux</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px 10px">
+          <div style="font-size:28px;margin-bottom:6px">🏢</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy)">ENTREPRISES</div>
+          <div style="font-size:11px;color:var(--text-light)">Cadeaux corporate</div>
+        </div>
+        <div class="card" style="text-align:center;padding:14px 10px;grid-column:span 2">
+          <div style="font-size:28px;margin-bottom:6px">📦</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy)">COMPOSER MA BOX</div>
+          <div style="font-size:11px;color:var(--text-light)">Boxes personnalisables au choix du client</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 3 · WHAT'S BEEN BUILT ── -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div>
+      <div class="section-title">Ce qui a été Construit — Vue d'ensemble</div>
+      <div class="section-subtitle">Résumé de toutes les fonctionnalités majeures réalisées</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="grid-2">
+      <div>
+        <h2>🔧 Backend &amp; API</h2>
+        <ul class="checklist">
+          <li><span class="check-icon">✓</span><div><strong>Modèles de données complets</strong> — Produits, Commandes, Clients, Producteurs, Panier, Donations, Adresses</div></li>
+          <li><span class="check-icon">✓</span><div><strong>API REST Django</strong> — Plus de 40 endpoints, authentification JWT, filtres avancés</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Paiements Stripe</strong> — PaymentIntent + Checkout Session + webhook de confirmation</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Gestion des commandes</strong> — Cycle de vie complet : en attente → payé → traitement → expédié → livré</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Tarification double devise</strong> — Prix en TND (virement) + EUR (Stripe)</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Gestion du stock</strong> — Décompte automatique, restauration sur annulation</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Profils B2B</strong> — Prix de gros, quantités minimales, flux d'approbation</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Événements d'impact</strong> — Traçabilité transparente des achats vers les bénéficiaires</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Admin API sécurisée</strong> — Clé API pour le tableau de bord WordPress</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Email de confirmation</strong> — Envoi automatique lors d'une commande confirmée</div></li>
+        </ul>
+      </div>
+      <div>
+        <h2>🖥️ Frontend &amp; Interface</h2>
+        <ul class="checklist">
+          <li><span class="check-icon">✓</span><div><strong>Page d'accueil</strong> — Héro, grille de produits, section impact, footer</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Page produit</strong> — Images, description, avis, bouton favoris, info producteur</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Panier glissant + page panier</strong> — Ajout/modification/suppression en AJAX temps réel</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Tunnel de paiement</strong> — Adresse livraison/facturation en tuiles radio, résumé de commande</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Espace client</strong> — Commandes, adresses sauvegardées, favoris, paramètres</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Tableau de bord admin</strong> — Statistiques, gestion commandes/produits/clients</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Inscription/Connexion</strong> — Authentification JWT, réinitialisation mot de passe</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Page impact</strong> — Visualisation des événements financés par les achats</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Page donation</strong> — Formulaire de don direct avec Stripe</div></li>
+          <li><span class="check-icon">✓</span><div><strong>Profils producteurs</strong> — Pages dédiées aux artisans avec leur histoire</div></li>
+          <li><span class="check-icon check-partial">~</span><div><strong>Box personnalisée</strong> — Modèle backend prêt, interface partielle</div></li>
+          <li><span class="check-icon check-missing">—</span><div><strong>Multi-langue</strong> — Champs FR/EN/AR dans la DB, pas encore de sélecteur UI</div></li>
+        </ul>
+        <div style="margin-top:12px;font-size:12px;display:flex;gap:16px">
+          <span><span class="check-icon" style="display:inline-flex;width:16px;height:16px;font-size:9px;vertical-align:middle">✓</span> Terminé</span>
+          <span><span class="check-icon check-partial" style="display:inline-flex;width:16px;height:16px;font-size:9px;vertical-align:middle">~</span> Partiel</span>
+          <span><span class="check-icon check-missing" style="display:inline-flex;width:16px;height:16px;font-size:9px;vertical-align:middle">—</span> À faire</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 4 · ARCHITECTURE ── -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div>
+      <div class="section-title">Architecture Technique (simplifiée)</div>
+      <div class="section-subtitle">Comment les différents composants s'articulent</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="info-box">
+      <strong>Pour les non-techniciens :</strong> Imaginez la boutique comme un restaurant. Le <strong>frontend</strong> (HTML/JS) est la salle à manger visible par les clients. Le <strong>backend Django</strong> est la cuisine qui traite les commandes. <strong>Stripe</strong> est le terminal de paiement. La <strong>base de données</strong> est le livre de comptes.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 60px 1fr 60px 1fr;gap:0;align-items:center;margin-bottom:24px">
+      <div class="arch-box orange">
+        <div style="font-size:28px;margin-bottom:8px">🌐</div>
+        <div>Frontend HTML/JS</div>
+        <div style="font-size:10px;font-weight:400;margin-top:4px;color:#c04400">Interface client<br>Pages boutique<br>Tableau de bord admin</div>
+      </div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-box navy">
+        <div style="font-size:28px;margin-bottom:8px">⚙️</div>
+        <div>Backend Django</div>
+        <div style="font-size:10px;font-weight:400;margin-top:4px;color:#2a4a80">API REST<br>Logique métier<br>Base de données SQLite/Postgres</div>
+      </div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-box green">
+        <div style="font-size:28px;margin-bottom:8px">💳</div>
+        <div>Stripe</div>
+        <div style="font-size:10px;font-weight:400;margin-top:4px;color:#1a7a30">Paiements sécurisés<br>Webhooks<br>Dashboard financier</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px">
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:22px;margin-bottom:6px">🔑</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:var(--navy)">JWT Auth</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:3px">Tokens sécurisés pour les connexions clients</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:22px;margin-bottom:6px">🗄️</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:var(--navy)">Base de données</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:3px">SQLite (dev) / PostgreSQL (prod)</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:22px;margin-bottom:6px">📧</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:var(--navy)">Emails</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:3px">Confirmation de commande automatique</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:22px;margin-bottom:6px">🔒</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;color:var(--navy)">HTTPS/SSL</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:3px">Sécurisation requise en production</div>
+      </div>
+    </div>
+    <div style="margin-top:20px">
+      <h2>Stack technologique en détail</h2>
+      <div class="grid-2">
+        <div>
+          <table style="width:100%;font-size:13px;border-collapse:collapse">
+            <tr style="background:var(--gray-bg)"><th style="padding:8px;text-align:left;font-family:'Montserrat',sans-serif;font-size:11px;border:1px solid var(--border)">Composant</th><th style="padding:8px;text-align:left;font-family:'Montserrat',sans-serif;font-size:11px;border:1px solid var(--border)">Technologie</th></tr>
+            <tr><td style="padding:8px;border:1px solid var(--border)">Langage backend</td><td style="padding:8px;border:1px solid var(--border)"><strong>Python 3.12 + Django 5</strong></td></tr>
+            <tr><td style="padding:8px;border:1px solid var(--border)">API</td><td style="padding:8px;border:1px solid var(--border)"><strong>Django REST Framework</strong></td></tr>
+            <tr><td style="padding:8px;border:1px solid var(--border)">Authentification</td><td style="padding:8px;border:1px solid var(--border)"><strong>JWT (SimpleJWT)</strong></td></tr>
+            <tr><td style="padding:8px;border:1px solid var(--border)">Base de données</td><td style="padding:8px;border:1px solid var(--border)"><strong>SQLite → PostgreSQL</strong></td></tr>
+          </table>
+        </div>
+        <div>
+          <table style="width:100%;font-size:13px;border-collapse:collapse">
+            <tr style="background:var(--gray-bg)"><th style="padding:8px;text-align:left;font-family:'Montserrat',sans-serif;font-size:11px;border:1px solid var(--border)">Composant</th><th style="padding:8px;text-align:left;font-family:'Montserrat',sans-serif;font-size:11px;border:1px solid var(--border)">Technologie</th></tr>
+            <tr><td style="padding:8px;border:1px solid var(--border)">Frontend</td><td style="padding:8px;border:1px solid var(--border)"><strong>HTML5 + CSS3 + JavaScript</strong></td></tr>
+            <tr><td style="padding:8px;border:1px solid var(--border)">Plugin CMS</td><td style="padding:8px;border:1px solid var(--border)"><strong>WordPress Plugin (PHP)</strong></td></tr>
+            <tr><td style="padding:8px;border:1px solid var(--border)">Paiements</td><td style="padding:8px;border:1px solid var(--border)"><strong>Stripe (EUR) + Virement (TND)</strong></td></tr>
+            <tr><td style="padding:8px;border:1px solid var(--border)">Emails async</td><td style="padding:8px;border:1px solid var(--border)"><strong>Celery + Redis (configuré)</strong></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 5 · CUSTOMER JOURNEY ── -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div>
+      <div class="section-title">Parcours Client — Customer Journey Map</div>
+      <div class="section-subtitle">De la découverte à la confirmation de commande</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="journey-steps" style="margin-bottom:28px">
+      <div class="journey-step">
+        <div class="step-icon">🏠</div>
+        <div class="step-name">ACCUEIL</div>
+        <div class="step-label">Découverte</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-icon">🔍</div>
+        <div class="step-name">BOUTIQUE</div>
+        <div class="step-label">Exploration</div>
+      </div>
+      <div class="journey-step active">
+        <div class="step-icon">🛍️</div>
+        <div class="step-name">PRODUIT</div>
+        <div class="step-label">Sélection</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-icon">🛒</div>
+        <div class="step-name">PANIER</div>
+        <div class="step-label">Récapitulatif</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-icon">💳</div>
+        <div class="step-name">PAIEMENT</div>
+        <div class="step-label">Commande</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-icon">✅</div>
+        <div class="step-name">CONFIRMATION</div>
+        <div class="step-label">Succès</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-icon">👤</div>
+        <div class="step-name">MON COMPTE</div>
+        <div class="step-label">Suivi</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <h2>Étapes détaillées</h2>
+        <div class="step-guide">
+          <div class="step-guide-item">
+            <div class="step-guide-num">1</div>
+            <div class="step-guide-text">
+              <h4>Page d'accueil</h4>
+              <p>Le client arrive sur la boutique. Il voit un héro accrocheur, les produits mis en avant, et un aperçu de l'impact social de ses futurs achats.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">2</div>
+            <div class="step-guide-text">
+              <h4>Navigation dans la boutique</h4>
+              <p>Il peut filtrer par catégorie (Soins, Nutrition…), rechercher un produit par mot-clé, filtrer par prix ou badge (bio, vegan…).</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">3</div>
+            <div class="step-guide-text">
+              <h4>Page produit</h4>
+              <p>Détails complets : photos, description, ingrédients, impact social, avis clients, profil du producteur. Ajout au panier avec sélection de quantité.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">4</div>
+            <div class="step-guide-text">
+              <h4>Panier</h4>
+              <p>Récapitulatif des articles sélectionnés. Le client peut modifier les quantités, supprimer des articles, voir les frais de port et le total.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="step-guide" style="margin-top:0">
+          <div class="step-guide-item" style="margin-top:0;padding-top:0">
+            <div class="step-guide-num">5</div>
+            <div class="step-guide-text">
+              <h4>Tunnel de paiement</h4>
+              <p>Saisie des coordonnées, sélection de l'adresse de livraison (sauvegardée ou nouvelle), adresse de facturation, mode de paiement (Stripe carte ou virement bancaire).</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">6</div>
+            <div class="step-guide-text">
+              <h4>Confirmation de commande</h4>
+              <p>Page de succès affichant le numéro de commande (WWC-YYYYMMDD-XXXX). Un email de confirmation est envoyé automatiquement.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">7</div>
+            <div class="step-guide-text">
+              <h4>Espace client — Mon Compte</h4>
+              <p>Le client peut suivre l'état de sa commande (En cours, Expédié, Livré), voir ses adresses sauvegardées, gérer sa liste de favoris et ses paramètres.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">8</div>
+            <div class="step-guide-text">
+              <h4>Impact visible</h4>
+              <p>Sur la page Impact, le client peut voir concrètement comment son achat a contribué : « Grâce à vos achats, 42 repas ont été fournis ce mois-ci. »</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 6 · HOMEPAGE MOCK-UP ── -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <div>
+      <div class="section-title">Maquette — Page d'Accueil</div>
+      <div class="section-subtitle">Aperçu visuel de la boutique en ligne</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="mockup-wrapper">
+      <div class="mockup-browser-bar">
+        <div class="browser-dot red"></div>
+        <div class="browser-dot yellow"></div>
+        <div class="browser-dot green"></div>
+        <div class="browser-url">https://wwcshop.org/boutique</div>
+      </div>
+      <!-- Mock Header -->
+      <div class="mock-header">
+        <div class="mock-logo">WWC <span>Shop</span></div>
+        <div class="mock-nav">
+          <a href="#">Boutique</a>
+          <a href="#">Catégories ▾</a>
+          <a href="#">Impact</a>
+          <a href="#">Faire un Don</a>
+          <a href="#">Producteurs</a>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button style="background:transparent;border:none;color:rgba(255,255,255,0.8);font-size:18px;cursor:pointer">♡</button>
+          <button class="mock-cart-btn">🛒 Panier <span style="background:var(--navy);color:white;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">3</span></button>
+          <button style="background:transparent;border:1px solid rgba(255,255,255,0.4);color:rgba(255,255,255,0.8);padding:5px 12px;border-radius:5px;font-size:11px;cursor:pointer">Connexion</button>
+        </div>
+      </div>
+      <!-- Mock Hero -->
+      <div class="mock-hero">
+        <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:0.8;margin-bottom:8px">🌿 Commerce équitable · Impact social</div>
+        <h1>Produits Artisanaux<br>du Monde Entier</h1>
+        <p>Chaque achat soutient directement les élèves de l'école GreenSchool à Sidi Mechreg, Tunisie.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button class="mock-btn">Découvrir la boutique</button>
+          <button style="background:transparent;border:2px solid white;color:white;padding:10px 24px;border-radius:6px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;cursor:pointer">Notre Impact ↗</button>
+        </div>
+        <div style="display:flex;gap:32px;justify-content:center;margin-top:24px;font-size:12px;opacity:0.85">
+          <span>✓ Produits 100% naturels</span>
+          <span>✓ Livraison Europe</span>
+          <span>✓ Paiement sécurisé</span>
+        </div>
+      </div>
+      <!-- Mock Products Section -->
+      <div class="mock-products-section">
+        <h2>Produits en Vedette</h2>
+        <div style="text-align:center;color:var(--text-light);font-size:12px;margin-bottom:16px">Fabriqués à la main par nos producteurs partenaires</div>
+        <div class="mock-product-grid">
+          <div class="mock-product-card">
+            <div class="mock-product-img">📷</div>
+            <div style="position:absolute;top:8px;left:8px;background:var(--orange);color:white;font-size:9px;font-weight:700;padding:3px 7px;border-radius:10px;font-family:'Montserrat',sans-serif">BIO</div>
+            <div class="mock-product-info">
+              <div class="mock-product-name">Huile d'Argan Bio — 100ml</div>
+              <div style="font-size:10px;color:var(--text-light);margin-bottom:4px">par Fatima Zahra · Maroc</div>
+              <div class="mock-product-price">€18.50</div>
+              <div style="font-size:10px;color:var(--green);margin-bottom:6px">↗ Finance 3 repas scolaires</div>
+              <button class="mock-add-btn">+ Ajouter au panier</button>
+            </div>
+          </div>
+          <div class="mock-product-card" style="position:relative">
+            <div class="mock-product-img">📷</div>
+            <div style="position:absolute;top:8px;left:8px;background:var(--navy);color:white;font-size:9px;font-weight:700;padding:3px 7px;border-radius:10px;font-family:'Montserrat',sans-serif">VEDETTE</div>
+            <div class="mock-product-info">
+              <div class="mock-product-name">Café Éthiopien Yirgacheffe</div>
+              <div style="font-size:10px;color:var(--text-light);margin-bottom:4px">par Abebe Girma · Éthiopie</div>
+              <div class="mock-product-price">€12.00</div>
+              <div style="font-size:10px;color:var(--green);margin-bottom:6px">↗ Finance 2 barres énergétiques</div>
+              <button class="mock-add-btn">+ Ajouter au panier</button>
+            </div>
+          </div>
+          <div class="mock-product-card" style="position:relative">
+            <div class="mock-product-img">📷</div>
+            <div style="position:absolute;top:8px;left:8px;background:#28a745;color:white;font-size:9px;font-weight:700;padding:3px 7px;border-radius:10px;font-family:'Montserrat',sans-serif">NOUVEAU</div>
+            <div class="mock-product-info">
+              <div class="mock-product-name">Savon au Lait de Chèvre</div>
+              <div style="font-size:10px;color:var(--text-light);margin-bottom:4px">par Aicha Ben Ali · Tunisie</div>
+              <div class="mock-product-price">€8.90</div>
+              <div style="font-size:10px;color:var(--green);margin-bottom:6px">↗ Finance 1 livre scolaire</div>
+              <button class="mock-add-btn">+ Ajouter au panier</button>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px">
+          <button class="mock-btn mock-btn-outline" style="font-size:12px;padding:8px 20px">Voir tous les produits →</button>
+        </div>
+      </div>
+      <!-- Impact Banner -->
+      <div style="background:var(--navy);padding:20px 24px;color:white;text-align:center">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;margin-bottom:8px">Notre Impact en Chiffres</div>
+        <div style="display:flex;justify-content:center;gap:48px">
+          <div><div style="font-size:24px;font-weight:800;color:var(--orange)">1,240</div><div style="font-size:11px;opacity:0.7">Repas financés</div></div>
+          <div><div style="font-size:24px;font-weight:800;color:var(--orange)">380</div><div style="font-size:11px;opacity:0.7">Commandes livrées</div></div>
+          <div><div style="font-size:24px;font-weight:800;color:var(--orange)">24</div><div style="font-size:11px;opacity:0.7">Producteurs partenaires</div></div>
+          <div><div style="font-size:24px;font-weight:800;color:var(--orange)">€4,280</div><div style="font-size:11px;opacity:0.7">Reversés ce mois</div></div>
+        </div>
+      </div>
+      <!-- Mock Footer -->
+      <div class="mock-footer">
+        <div class="mock-footer-col" style="flex:2">
+          <h4>WWC Shop</h4>
+          <div style="font-size:11px;opacity:0.7;max-width:200px;line-height:1.6">Boutique éthique soutenant l'initiative GreenSchool de Wallah We Can. Chaque achat compte.</div>
+        </div>
+        <div class="mock-footer-col">
+          <h4>Boutique</h4>
+          <a href="#">Tous les produits</a>
+          <a href="#">Coffrets cadeaux</a>
+          <a href="#">Composer ma Box</a>
+          <a href="#">Producteurs</a>
+        </div>
+        <div class="mock-footer-col">
+          <h4>Association</h4>
+          <a href="#">Notre Mission</a>
+          <a href="#">Impact</a>
+          <a href="#">Faire un Don</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="mock-footer-col">
+          <h4>Aide</h4>
+          <a href="#">Livraison</a>
+          <a href="#">Retours</a>
+          <a href="#">Mon Compte</a>
+          <a href="#">FAQ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 7 · PRODUCT PAGE MOCK-UP ── -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <div>
+      <div class="section-title">Maquette — Page Produit</div>
+      <div class="section-subtitle">Vue détaillée d'un produit avec ajout au panier</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="mockup-wrapper">
+      <div class="mockup-browser-bar">
+        <div class="browser-dot red"></div><div class="browser-dot yellow"></div><div class="browser-dot green"></div>
+        <div class="browser-url">https://wwcshop.org/produit/cafe-ethiopien-yirgacheffe</div>
+      </div>
+      <div class="mock-header">
+        <div class="mock-logo">WWC <span>Shop</span></div>
+        <div class="mock-nav"><a href="#">Boutique</a><a href="#">Catégories</a><a href="#">Impact</a><a href="#">Faire un Don</a></div>
+        <button class="mock-cart-btn">🛒 Panier (3)</button>
+      </div>
+      <div style="padding:16px 24px;background:white">
+        <!-- Breadcrumb -->
+        <div style="font-size:11px;color:var(--text-light);margin-bottom:16px">
+          <a href="#" style="color:var(--orange);text-decoration:none">Accueil</a> ›
+          <a href="#" style="color:var(--orange);text-decoration:none">Boutique</a> ›
+          <a href="#" style="color:var(--orange);text-decoration:none">Nutrition</a> ›
+          <span style="color:var(--text)">Café Éthiopien Yirgacheffe</span>
+        </div>
+        <!-- Product Detail -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:24px">
+          <!-- Left: Images -->
+          <div>
+            <div class="img-placeholder" style="height:280px;font-size:48px;margin-bottom:10px">📷</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+              <div class="img-placeholder" style="height:60px;font-size:18px;border:2px solid var(--orange)">📷</div>
+              <div class="img-placeholder" style="height:60px;font-size:18px">📷</div>
+              <div class="img-placeholder" style="height:60px;font-size:18px">📷</div>
+              <div class="img-placeholder" style="height:60px;font-size:18px">📷</div>
+            </div>
+          </div>
+          <!-- Right: Info -->
+          <div>
+            <div style="display:flex;gap:6px;margin-bottom:10px">
+              <span class="badge badge-green">BIO</span>
+              <span class="badge badge-blue">ARTISANAL</span>
+              <span class="badge" style="background:#e8f5e9;color:#2e7d32">EN STOCK</span>
+            </div>
+            <h1 style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:22px;color:var(--navy);margin-bottom:8px">Café Éthiopien Yirgacheffe</h1>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:12px;padding:4px 10px;font-size:11px;font-weight:600;color:#856404;display:flex;align-items:center;gap:5px">
+                <span style="font-size:14px">👨‍🌾</span> Abebe Girma · Éthiopie
+              </div>
+              <div style="font-size:11px;color:#888">⭐⭐⭐⭐⭐ (28 avis)</div>
+            </div>
+            <div style="font-size:28px;font-weight:800;color:var(--orange);font-family:'Montserrat',sans-serif;margin-bottom:4px">€12.00</div>
+            <div style="font-size:12px;color:var(--text-light);margin-bottom:14px">ou 36.00 TND · Prix TTC, livraison en sus</div>
+            <div style="background:var(--gray-bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+              <span style="font-size:20px">🌱</span>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--navy)">Impact de votre achat</div>
+                <div style="font-size:11px;color:var(--text-light)">Finance 2 barres énergétiques pour les élèves de Sidi Mechreg</div>
+              </div>
+            </div>
+            <div style="margin-bottom:14px">
+              <label class="mock-label">Quantité</label>
+              <div style="display:flex;align-items:center;gap:0;border:1px solid #ccc;border-radius:6px;overflow:hidden;width:120px">
+                <button style="width:34px;height:34px;background:var(--gray-bg);border:none;font-size:16px;cursor:pointer;font-weight:700">−</button>
+                <input type="text" value="1" style="width:52px;height:34px;border:none;text-align:center;font-size:14px;font-weight:600;outline:none">
+                <button style="width:34px;height:34px;background:var(--gray-bg);border:none;font-size:16px;cursor:pointer;font-weight:700">+</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:16px">
+              <button style="flex:1;background:var(--orange);color:white;border:none;padding:12px;border-radius:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;cursor:pointer">🛒 Ajouter au panier</button>
+              <button style="width:44px;height:44px;background:white;border:1px solid #ccc;border-radius:8px;font-size:20px;cursor:pointer">♡</button>
+            </div>
+            <div style="font-size:12px;color:var(--text-light);display:flex;flex-direction:column;gap:4px">
+              <span>🚚 Livraison gratuite dès €50 (France)</span>
+              <span>↩️ Retour sous 14 jours</span>
+              <span>🔒 Paiement 100% sécurisé</span>
+            </div>
+          </div>
+        </div>
+        <!-- Description tabs -->
+        <div class="mock-tabs">
+          <div class="mock-tab active">Description</div>
+          <div class="mock-tab">Ingrédients</div>
+          <div class="mock-tab">Producteur</div>
+          <div class="mock-tab">Avis (28)</div>
+        </div>
+        <div style="font-size:13px;line-height:1.7;color:var(--text);margin-bottom:16px">
+          <p>Ce café d'exception provient des hauts plateaux de la région Yirgacheffe en Éthiopie, à plus de 1800m d'altitude. Les cerises de café sont récoltées à la main par les familles partenaires du programme GreenSchool. Le séchage naturel préserve les arômes floraux caractéristiques de ce terroir unique.</p>
+          <p><strong>Notes de dégustation :</strong> Fleurs de jasmin, fruits rouges, pointe de citrus. Corps léger, acidité vive et agréable.</p>
+        </div>
+        <!-- Producer Section -->
+        <div style="background:var(--gray-bg);border-radius:8px;padding:16px;display:flex;gap:14px;align-items:flex-start">
+          <div class="img-placeholder" style="width:60px;height:60px;border-radius:50%;font-size:22px;flex-shrink:0">📷</div>
+          <div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--navy)">Abebe Girma</div>
+            <div style="font-size:11px;color:var(--text-light);margin-bottom:6px">Producteur de café · Région Yirgacheffe, Éthiopie</div>
+            <div style="font-size:12px;color:var(--text)">Père de 4 enfants dont 2 scolarisés au programme GreenSchool. Sa coopérative regroupe 18 familles productrices certifiées agriculture biologique depuis 2019.</div>
+            <a href="#" style="font-size:11px;color:var(--orange);text-decoration:none;font-weight:600;margin-top:6px;display:inline-block">Voir tous ses produits →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 8 · CART MOCK-UP ── -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <div class="section-num">8</div>
+    <div>
+      <div class="section-title">Maquette — Page Panier</div>
+      <div class="section-subtitle">Récapitulatif des articles avant le paiement</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="mockup-wrapper">
+      <div class="mockup-browser-bar">
+        <div class="browser-dot red"></div><div class="browser-dot yellow"></div><div class="browser-dot green"></div>
+        <div class="browser-url">https://wwcshop.org/panier</div>
+      </div>
+      <div class="mock-header">
+        <div class="mock-logo">WWC <span>Shop</span></div>
+        <div class="mock-nav"><a href="#">Boutique</a><a href="#">Catégories</a><a href="#">Impact</a></div>
+        <button class="mock-cart-btn">🛒 Panier (3)</button>
+      </div>
+      <div style="padding:24px;background:white">
+        <h1 style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:20px;color:var(--navy);margin-bottom:20px">Mon Panier</h1>
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:24px">
+          <div>
+            <!-- Cart Table -->
+            <table class="mock-table" style="width:100%">
+              <thead>
+                <tr>
+                  <th style="width:60px">Image</th>
+                  <th>Produit</th>
+                  <th style="width:100px;text-align:center">Quantité</th>
+                  <th style="width:90px;text-align:right">Prix unit.</th>
+                  <th style="width:90px;text-align:right">Total</th>
+                  <th style="width:40px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="img-placeholder" style="width:48px;height:48px;border-radius:6px;font-size:18px">📷</div></td>
+                  <td>
+                    <div style="font-weight:600;font-size:13px;color:var(--navy)">Café Éthiopien Yirgacheffe</div>
+                    <div style="font-size:11px;color:var(--text-light)">par Abebe Girma</div>
+                    <div style="font-size:10px;color:var(--green)">↗ Finance 4 barres énergétiques</div>
+                  </td>
+                  <td style="text-align:center">
+                    <div style="display:flex;align-items:center;justify-content:center;gap:0;border:1px solid #ccc;border-radius:5px;overflow:hidden;width:80px;margin:0 auto">
+                      <button style="width:26px;height:26px;background:var(--gray-bg);border:none;cursor:pointer;font-weight:700">−</button>
+                      <input type="text" value="2" style="width:28px;height:26px;border:none;text-align:center;font-size:13px;outline:none">
+                      <button style="width:26px;height:26px;background:var(--gray-bg);border:none;cursor:pointer;font-weight:700">+</button>
+                    </div>
+                  </td>
+                  <td style="text-align:right;font-size:13px">€12.00</td>
+                  <td style="text-align:right;font-weight:700;font-size:13px;color:var(--orange)">€24.00</td>
+                  <td style="text-align:center"><button style="background:none;border:none;color:#ccc;cursor:pointer;font-size:16px">✕</button></td>
+                </tr>
+                <tr>
+                  <td><div class="img-placeholder" style="width:48px;height:48px;border-radius:6px;font-size:18px">📷</div></td>
+                  <td>
+                    <div style="font-weight:600;font-size:13px;color:var(--navy)">Huile d'Argan Bio — 100ml</div>
+                    <div style="font-size:11px;color:var(--text-light)">par Fatima Zahra</div>
+                    <div style="font-size:10px;color:var(--green)">↗ Finance 3 repas scolaires</div>
+                  </td>
+                  <td style="text-align:center">
+                    <div style="display:flex;align-items:center;justify-content:center;gap:0;border:1px solid #ccc;border-radius:5px;overflow:hidden;width:80px;margin:0 auto">
+                      <button style="width:26px;height:26px;background:var(--gray-bg);border:none;cursor:pointer;font-weight:700">−</button>
+                      <input type="text" value="1" style="width:28px;height:26px;border:none;text-align:center;font-size:13px;outline:none">
+                      <button style="width:26px;height:26px;background:var(--gray-bg);border:none;cursor:pointer;font-weight:700">+</button>
+                    </div>
+                  </td>
+                  <td style="text-align:right;font-size:13px">€18.50</td>
+                  <td style="text-align:right;font-weight:700;font-size:13px;color:var(--orange)">€18.50</td>
+                  <td style="text-align:center"><button style="background:none;border:none;color:#ccc;cursor:pointer;font-size:16px">✕</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top:16px;display:flex;gap:12px;align-items:center">
+              <input type="text" placeholder="Code promo" style="border:1px solid #ccc;border-radius:6px;padding:8px 12px;font-size:13px;width:160px;outline:none">
+              <button style="background:var(--navy);color:white;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Appliquer</button>
+              <a href="#" style="font-size:13px;color:var(--orange);text-decoration:none;margin-left:auto">← Continuer les achats</a>
+            </div>
+          </div>
+          <!-- Order Summary -->
+          <div style="background:var(--gray-bg);border-radius:8px;padding:18px;height:fit-content">
+            <h3 style="margin-bottom:14px">Récapitulatif</h3>
+            <table style="width:100%;font-size:13px">
+              <tr><td style="padding:6px 0;color:var(--text-light)">Sous-total</td><td style="text-align:right;font-weight:600">€42.50</td></tr>
+              <tr><td style="padding:6px 0;color:var(--text-light)">Livraison</td><td style="text-align:right;font-weight:600">€7.00</td></tr>
+              <tr><td style="padding:6px 0;color:var(--text-light);font-size:11px" colspan="2"><em>Livraison gratuite dès €50 — il vous manque €7.50 !</em></td></tr>
+              <tr style="border-top:2px solid var(--border)">
+                <td style="padding:10px 0 6px;font-weight:700;font-size:15px;font-family:'Montserrat',sans-serif">Total</td>
+                <td style="text-align:right;font-weight:700;font-size:18px;color:var(--orange);font-family:'Montserrat',sans-serif">€49.50</td>
+              </tr>
+            </table>
+            <div style="margin-top:8px;margin-bottom:12px;font-size:11px;color:var(--text-light)">dont TVA incluse</div>
+            <button style="width:100%;background:var(--orange);color:white;border:none;padding:13px;border-radius:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;cursor:pointer">Procéder au paiement →</button>
+            <div style="margin-top:12px;font-size:11px;color:var(--text-light);text-align:center">
+              🔒 Paiement sécurisé SSL · Stripe &amp; Virement
+            </div>
+            <div style="margin-top:12px;display:flex;justify-content:center;gap:8px">
+              <span style="background:#f0f0f0;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#555">VISA</span>
+              <span style="background:#f0f0f0;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#555">MC</span>
+              <span style="background:#f0f0f0;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#555">Virement</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── SECTION 9 · CHECKOUT MOCK-UP ── -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <div class="section-num">9</div>
+    <div>
+      <div class="section-title">Maquette — Page de Paiement (Checkout)</div>
+      <div class="section-subtitle">L'interface la plus importante — adresses en tuiles radio, résumé de commande</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="info-box"><strong>Point clé :</strong> L'adresse de livraison est présentée sous forme de <strong>tuiles radio</strong> — le client voit son adresse sauvegardée en un clic, ou peut saisir une nouvelle adresse. Même principe pour l'adresse de facturation.</div>
+    <div class="mockup-wrapper">
+      <div class="mockup-browser-bar">
+        <div class="browser-dot red"></div><div class="browser-dot yellow"></div><div class="browser-dot green"></div>
+        <div class="browser-url">https://wwcshop.org/paiement</div>
+      </div>
+      <div class="mock-header">
+        <div class="mock-logo">WWC <span>Shop</span></div>
+        <div class="mock-nav"><a href="#">← Retour au panier</a></div>
+        <div style="color:rgba(255,255,255,0.6);font-size:12px">🔒 Paiement sécurisé</div>
+      </div>
+      <div style="padding:20px 24px;background:var(--gray-bg)">
+        <!-- Steps indicator -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-light)">
+            <div style="width:22px;height:22px;background:#28a745;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">✓</div> Panier
+          </div>
+          <div style="width:40px;height:1px;background:var(--border);margin:0 6px"></div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--orange)">
+            <div style="width:22px;height:22px;background:var(--orange);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">2</div> Livraison &amp; Paiement
+          </div>
+          <div style="width:40px;height:1px;background:var(--border);margin:0 6px"></div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-light)">
+            <div style="width:22px;height:22px;background:#ccc;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">3</div> Confirmation
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:20px">
+          <!-- LEFT: Form -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <!-- Contact -->
+            <div style="background:white;border-radius:8px;padding:18px;box-shadow:var(--shadow)">
+              <h3 style="margin-bottom:14px;font-size:14px;border-bottom:1px solid var(--border);padding-bottom:8px">📧 Coordonnées</h3>
+              <div class="grid-2">
+                <div>
+                  <label class="mock-label">Prénom</label>
+                  <input class="mock-input" type="text" value="Marie" readonly>
+                </div>
+                <div>
+                  <label class="mock-label">Nom</label>
+                  <input class="mock-input" type="text" value="Dupont" readonly>
+                </div>
+              </div>
+              <label class="mock-label">Email</label>
+              <input class="mock-input" type="email" value="marie.dupont@email.com" readonly>
+              <label class="mock-label">Téléphone</label>
+              <input class="mock-input" type="tel" value="+33 6 12 34 56 78" readonly>
+            </div>
+            <!-- Shipping Address -->
+            <div style="background:white;border-radius:8px;padding:18px;box-shadow:var(--shadow)">
+              <h3 style="margin-bottom:14px;font-size:14px;border-bottom:1px solid var(--border);padding-bottom:8px">📍 Adresse de Livraison</h3>
+              <!-- Tile 1: saved address SELECTED -->
+              <div class="address-tile selected">
+                <div class="radio-dot"></div>
+                <div>
+                  <div class="address-tile-title">📍 Mon adresse principale</div>
+                  <div class="address-tile-text">
+                    <strong>Marie Dupont</strong><br>
+                    12 Rue de la Paix<br>
+                    75001 Paris, France
+                  </div>
+                </div>
+              </div>
+              <!-- Tile 2: new address -->
+              <div class="address-tile">
+                <div class="radio-dot"></div>
+                <div>
+                  <div class="address-tile-title">➕ Utiliser une adresse différente</div>
+                  <div class="address-tile-text">Saisir une nouvelle adresse de livraison</div>
+                </div>
+              </div>
+            </div>
+            <!-- Billing Address -->
+            <div style="background:white;border-radius:8px;padding:18px;box-shadow:var(--shadow)">
+              <h3 style="margin-bottom:14px;font-size:14px;border-bottom:1px solid var(--border);padding-bottom:8px">📄 Adresse de Facturation</h3>
+              <div class="address-tile selected">
+                <div class="radio-dot"></div>
+                <div>
+                  <div class="address-tile-title">✓ Même que l'adresse de livraison</div>
+                  <div class="address-tile-text">Utiliser 12 Rue de la Paix, 75001 Paris</div>
+                </div>
+              </div>
+              <div class="address-tile">
+                <div class="radio-dot"></div>
+                <div>
+                  <div class="address-tile-title">📄 Adresse de facturation différente</div>
+                  <div class="address-tile-text">Saisir une adresse distincte (ex : siège social)</div>
+                </div>
+              </div>
+            </div>
+            <!-- Payment Method -->
+            <div style="background:white;border-radius:8px;padding:18px;box-shadow:var(--shadow)">
+              <h3 style="margin-bottom:14px;font-size:14px;border-bottom:1px solid var(--border);padding-bottom:8px">💳 Mode de Paiement</h3>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="border:2px solid var(--orange);border-radius:8px;padding:12px 14px;background:#fff5f2;display:flex;align-items:center;gap:10px">
+                  <input type="radio" checked style="accent-color:var(--orange)">
+                  <div>
+                    <div style="font-weight:700;font-size:13px;color:var(--navy)">💳 Carte bancaire (Stripe)</div>
+                    <div style="font-size:11px;color:var(--text-light)">Paiement sécurisé via Stripe — Visa, Mastercard, Amex</div>
+                  </div>
+                  <div style="margin-left:auto;display:flex;gap:6px">
+                    <span style="background:#f0f0f0;padding:3px 7px;border-radius:3px;font-size:10px;font-weight:700;color:#555">VISA</span>
+                    <span style="background:#f0f0f0;padding:3px 7px;border-radius:3px;font-size:10px;font-weight:700;color:#555">MC</span>
+                  </div>
+                </div>
+                <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+                  <input type="radio" style="accent-color:var(--orange)">
+                  <div>
+                    <div style="font-weight:600;font-size:13px;color:var(--navy)">🏦 Virement bancaire</div>
+                    <div style="font-size:11px;color:var(--text-light)">Pour les paiements en TND — coordonnées envoyées par email</div>
+                  </div>
+                </div>
+                <div style="border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+                  <input type="radio" style="accent-color:var(--orange)">
+                  <div>
+                    <div style="font-weight:600;font-size:13px;color:var(--navy)">🚚 Contre remboursement</div>
+                    <div style="font-size:11px;color:var(--text-light)">Paiement à la livraison (Tunisie uniquement)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- RIGHT: Order Summary -->
+          <div>
+            <div style="background:white;border-radius:8px;padding:18px;box-shadow:var(--shadow);position:sticky;top:16px">
+              <h3 style="margin-bottom:14px;font-size:14px;border-bottom:1px solid var(--border);padding-bottom:8px">🛒 Récapitulatif de la commande</h3>
+              <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center">
+                <div class="img-placeholder" style="width:40px;height:40px;border-radius:5px;font-size:14px;flex-shrink:0">📷</div>
+                <div style="flex:1">
+                  <div style="font-size:12px;font-weight:600;color:var(--navy)">Café Éthiopien ×2</div>
+                  <div style="font-size:11px;color:var(--text-light)">Abebe Girma</div>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:var(--orange)">€24.00</div>
+              </div>
+              <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center">
+                <div class="img-placeholder" style="width:40px;height:40px;border-radius:5px;font-size:14px;flex-shrink:0">📷</div>
+                <div style="flex:1">
+                  <div style="font-size:12px;font-weight:600;color:var(--navy)">Huile d'Argan ×1</div>
+                  <div style="font-size:11px;color:var(--text-light)">Fatima Zahra</div>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:var(--orange)">€18.50</div>
+              </div>
+              <div style="border-top:1px solid var(--border);padding-top:12px">
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+                  <span style="color:var(--text-light)">Sous-total</span><span>€42.50</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+                  <span style="color:var(--text-light)">Livraison (France)</span><span>€7.00</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:10px">
+                  <span style="color:var(--text-light)">TVA (20%)</span><span>incluse</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;font-family:'Montserrat',sans-serif;color:var(--navy);border-top:2px solid var(--border);padding-top:10px">
+                  <span>Total</span><span style="color:var(--orange)">€49.50</span>
+                </div>
+              </div>
+              <div style="background:var(--gray-bg);border-radius:6px;padding:10px;margin:12px 0;font-size:11px;color:var(--navy)">
+                🌱 <strong>Votre impact :</strong> Cette commande financera <strong>5 barres énergétiques</strong> pour des élèves de GreenSchool.
+              </div>
+              <button style="width:100%;background:var(--orange);color:white;border:none;padding:13px;border-radius:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;cursor:pointer">Confirmer la commande →</button>
+              <div style="margin-top:10px;font-size:10px;color:var(--text-light);text-align:center">🔒 Chiffrement SSL 256 bits · Données protégées</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 10 · ACCOUNT MOCK-UP ── -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <div>
+      <div class="section-title">Maquette — Espace Client (Mon Compte)</div>
+      <div class="section-subtitle">Suivi des commandes, adresses, liste de souhaits</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="mockup-wrapper">
+      <div class="mockup-browser-bar">
+        <div class="browser-dot red"></div><div class="browser-dot yellow"></div><div class="browser-dot green"></div>
+        <div class="browser-url">https://wwcshop.org/mon-compte</div>
+      </div>
+      <div class="mock-header">
+        <div class="mock-logo">WWC <span>Shop</span></div>
+        <div class="mock-nav"><a href="#">Boutique</a><a href="#">Impact</a></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:30px;height:30px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:13px">M</div>
+          <span style="color:white;font-size:12px">Marie Dupont</span>
+          <a href="#" style="color:rgba(255,255,255,0.6);font-size:11px">Déconnexion</a>
+        </div>
+      </div>
+      <div style="padding:20px 24px;background:var(--gray-bg)">
+        <!-- Welcome banner -->
+        <div style="background:var(--navy);border-radius:8px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:16px;color:white">
+          <div style="width:48px;height:48px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0">M</div>
+          <div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px">Bonjour, Marie ! 👋</div>
+            <div style="font-size:12px;opacity:0.7">Client depuis janvier 2024 · Impact total : 42 barres énergétiques financées</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:16px">
+            <div style="text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--orange);font-family:'Montserrat',sans-serif">8</div>
+              <div style="font-size:10px;opacity:0.7">Commandes</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--orange);font-family:'Montserrat',sans-serif">42</div>
+              <div style="font-size:10px;opacity:0.7">Repas financés</div>
+            </div>
+          </div>
+        </div>
+        <!-- Tabs -->
+        <div class="mock-tabs" style="background:white;padding:0 16px;border-radius:8px 8px 0 0;border:1px solid var(--border);border-bottom:none">
+          <div class="mock-tab">Mon Compte</div>
+          <div class="mock-tab active">Mes Commandes</div>
+          <div class="mock-tab">Mes Adresses</div>
+          <div class="mock-tab">Favoris (3)</div>
+          <div class="mock-tab">Paramètres</div>
+        </div>
+        <div style="background:white;border-radius:0 0 8px 8px;border:1px solid var(--border);border-top:none;padding:16px">
+          <!-- Order 1 - delivered, WITH detail open -->
+          <div class="order-card" style="flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:16px;padding:14px 16px">
+              <div>
+                <div class="order-card-id">#WWC-20240315-0012</div>
+                <div class="order-card-date">15 mars 2024 · 3 articles</div>
+              </div>
+              <span class="badge badge-green" style="margin-left:auto">✓ Livré</span>
+              <div class="order-card-amount">€49.50</div>
+              <button style="background:var(--navy);color:white;border:none;padding:6px 12px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">▲ Masquer</button>
+            </div>
+            <!-- Order detail expanded -->
+            <div style="border-top:1px solid var(--border);padding:16px;background:var(--gray-bg)">
+              <div class="grid-2" style="margin-bottom:14px">
+                <div style="background:white;border-radius:6px;padding:12px;border:1px solid var(--border)">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-light);margin-bottom:8px;letter-spacing:0.5px">📍 Adresse de Livraison</div>
+                  <div style="font-size:12px;line-height:1.6"><strong>Marie Dupont</strong><br>12 Rue de la Paix<br>75001 Paris<br>France</div>
+                </div>
+                <div style="background:white;border-radius:6px;padding:12px;border:1px solid var(--border)">
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-light);margin-bottom:8px;letter-spacing:0.5px">📄 Adresse de Facturation</div>
+                  <div style="font-size:12px;line-height:1.6"><strong>Marie Dupont</strong><br>12 Rue de la Paix<br>75001 Paris<br>France</div>
+                </div>
+              </div>
+              <table class="mock-table" style="background:white;border-radius:6px;overflow:hidden">
+                <thead><tr><th>Produit</th><th>Qté</th><th style="text-align:right">Prix</th><th style="text-align:right">Total</th></tr></thead>
+                <tbody>
+                  <tr><td>Café Éthiopien Yirgacheffe</td><td>2</td><td style="text-align:right">€12.00</td><td style="text-align:right;font-weight:700">€24.00</td></tr>
+                  <tr><td>Huile d'Argan Bio 100ml</td><td>1</td><td style="text-align:right">€18.50</td><td style="text-align:right;font-weight:700">€18.50</td></tr>
+                  <tr><td colspan="3" style="text-align:right;color:var(--text-light)">Livraison</td><td style="text-align:right;font-weight:700">€7.00</td></tr>
+                  <tr style="background:var(--gray-bg)"><td colspan="3" style="text-align:right;font-weight:700">Total</td><td style="text-align:right;font-weight:800;color:var(--orange)">€49.50</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Order 2 - in progress -->
+          <div class="order-card" style="margin-top:10px">
+            <div>
+              <div class="order-card-id">#WWC-20240401-0031</div>
+              <div class="order-card-date">1 avril 2024 · 1 article</div>
+            </div>
+            <span class="badge badge-orange" style="margin-left:auto">⏳ En cours</span>
+            <div class="order-card-amount">€18.50</div>
+            <button style="background:var(--gray-bg);color:var(--navy);border:1px solid var(--border);padding:6px 12px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">Voir le détail ▼</button>
+          </div>
+          <!-- Order 3 - shipped -->
+          <div class="order-card" style="margin-top:10px">
+            <div>
+              <div class="order-card-id">#WWC-20240420-0058</div>
+              <div class="order-card-date">20 avril 2024 · 2 articles</div>
+            </div>
+            <span class="badge badge-blue" style="margin-left:auto">🚚 Expédié</span>
+            <div class="order-card-amount">€27.40</div>
+            <button style="background:var(--gray-bg);color:var(--navy);border:1px solid var(--border);padding:6px 12px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">Voir le détail ▼</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 11 · ADMIN DASHBOARD ── -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <div class="section-num">11</div>
+    <div>
+      <div class="section-title">Maquette — Tableau de Bord Administrateur</div>
+      <div class="section-subtitle">Interface réservée à l'équipe WWC pour gérer la boutique</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="mockup-wrapper">
+      <div class="mockup-browser-bar">
+        <div class="browser-dot red"></div><div class="browser-dot yellow"></div><div class="browser-dot green"></div>
+        <div class="browser-url">https://wwcshop.org/admin</div>
+      </div>
+      <div class="admin-layout">
+        <!-- Admin Sidebar -->
+        <div class="admin-sidebar">
+          <div class="admin-sidebar-logo">⚙️ WWC Admin</div>
+          <div class="admin-nav-item active" style="border-left:3px solid var(--orange)">📊 Tableau de bord</div>
+          <div class="admin-nav-item">📦 Commandes</div>
+          <div class="admin-nav-item">🛍️ Produits</div>
+          <div class="admin-nav-item">👥 Clients</div>
+          <div class="admin-nav-item">💚 Donations</div>
+          <div class="admin-nav-item">🗂️ Catégories</div>
+          <div class="admin-nav-item">👨‍🌾 Producteurs</div>
+          <div class="admin-nav-item" style="margin-top:auto;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px">⚙️ Paramètres</div>
+          <div class="admin-nav-item">🔙 Voir la boutique</div>
+        </div>
+        <!-- Admin Main -->
+        <div class="admin-main">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+              <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:var(--navy)">Tableau de Bord</div>
+              <div style="font-size:11px;color:var(--text-light)">Lundi 22 mars 2026 · Bonjour, Admin !</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button style="background:var(--orange);color:white;border:none;padding:7px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">+ Nouveau produit</button>
+              <button style="background:white;color:var(--navy);border:1px solid var(--border);padding:7px 14px;border-radius:6px;font-size:11px;cursor:pointer">📊 Export</button>
+            </div>
+          </div>
+          <!-- Stat Cards -->
+          <div class="admin-stat-cards">
+            <div class="admin-stat-card" style="border-top:3px solid var(--orange)">
+              <div class="stat-label">Commandes aujourd'hui</div>
+              <div class="stat-value">12</div>
+              <div class="stat-change">↑ +4 vs hier</div>
+            </div>
+            <div class="admin-stat-card" style="border-top:3px solid var(--navy)">
+              <div class="stat-label">CA du mois</div>
+              <div class="stat-value">€4,280</div>
+              <div class="stat-change">↑ +12% vs mois préc.</div>
+            </div>
+            <div class="admin-stat-card" style="border-top:3px solid #28a745">
+              <div class="stat-label">Clients actifs</div>
+              <div class="stat-value">156</div>
+              <div class="stat-change">↑ +8 ce mois</div>
+            </div>
+            <div class="admin-stat-card" style="border-top:3px solid #9b59b6">
+              <div class="stat-label">Dons ce mois</div>
+              <div class="stat-value">€890</div>
+              <div class="stat-change">↑ +23% vs mois préc.</div>
+            </div>
+          </div>
+          <!-- Recent Orders -->
+          <div style="background:white;border-radius:8px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy)">Commandes Récentes</div>
+              <a href="#" style="font-size:11px;color:var(--orange);text-decoration:none">Voir tout →</a>
+            </div>
+            <table class="mock-table">
+              <thead><tr><th>N° Commande</th><th>Client</th><th>Produits</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600;font-size:12px">WWC-20260322-0012</td>
+                  <td style="font-size:12px">Marie Dupont</td>
+                  <td style="font-size:12px">Café Éthiopien ×2, Huile d'Argan ×1</td>
+                  <td style="font-weight:700;color:var(--orange);font-size:12px">€49.50</td>
+                  <td><span class="badge badge-green">Payé</span></td>
+                  <td><button style="background:var(--navy);color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Voir</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;font-size:12px">WWC-20260322-0011</td>
+                  <td style="font-size:12px">Ahmed Benali</td>
+                  <td style="font-size:12px">Savon Lait Chèvre ×3</td>
+                  <td style="font-weight:700;color:var(--orange);font-size:12px">€26.70</td>
+                  <td><span class="badge badge-orange">En attente</span></td>
+                  <td><button style="background:var(--navy);color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Voir</button></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600;font-size:12px">WWC-20260321-0010</td>
+                  <td style="font-size:12px">Sophie Leclerc</td>
+                  <td style="font-size:12px">Coffret Bien-Être ×1</td>
+                  <td style="font-weight:700;color:var(--orange);font-size:12px">€65.00</td>
+                  <td><span class="badge badge-blue">Expédié</span></td>
+                  <td><button style="background:var(--navy);color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Voir</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 12 · ADMIN PRODUCTS ── -->
+<section class="section" id="s12">
+  <div class="section-header">
+    <div class="section-num">12</div>
+    <div>
+      <div class="section-title">Maquette — Gestion des Produits (Admin)</div>
+      <div class="section-subtitle">Ajout, modification et gestion du catalogue produits</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="mockup-wrapper">
+      <div class="mockup-browser-bar">
+        <div class="browser-dot red"></div><div class="browser-dot yellow"></div><div class="browser-dot green"></div>
+        <div class="browser-url">https://wwcshop.org/admin/produits</div>
+      </div>
+      <div class="admin-layout">
+        <div class="admin-sidebar">
+          <div class="admin-sidebar-logo">⚙️ WWC Admin</div>
+          <div class="admin-nav-item">📊 Tableau de bord</div>
+          <div class="admin-nav-item">📦 Commandes</div>
+          <div class="admin-nav-item active" style="border-left:3px solid var(--orange)">🛍️ Produits</div>
+          <div class="admin-nav-item">👥 Clients</div>
+          <div class="admin-nav-item">💚 Donations</div>
+          <div class="admin-nav-item">🗂️ Catégories</div>
+          <div class="admin-nav-item">👨‍🌾 Producteurs</div>
+        </div>
+        <div class="admin-main">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:16px;color:var(--navy)">Gestion des Produits</div>
+            <button style="background:var(--orange);color:white;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">+ Nouveau produit</button>
+          </div>
+          <!-- Filter Bar -->
+          <div style="background:white;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;gap:10px;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+            <input type="text" placeholder="🔍 Rechercher un produit…" style="border:1px solid #ccc;border-radius:6px;padding:7px 12px;font-size:12px;flex:1;outline:none">
+            <select style="border:1px solid #ccc;border-radius:6px;padding:7px 10px;font-size:12px;outline:none">
+              <option>Toutes catégories</option>
+              <option>Soins</option><option>Nutrition</option><option>Bien-être</option>
+            </select>
+            <select style="border:1px solid #ccc;border-radius:6px;padding:7px 10px;font-size:12px;outline:none">
+              <option>Tous statuts</option>
+              <option>Actif</option><option>Inactif</option><option>Stock faible</option>
+            </select>
+            <button style="background:var(--navy);color:white;border:none;padding:7px 14px;border-radius:6px;font-size:12px;cursor:pointer">Filtrer</button>
+          </div>
+          <!-- Products Table -->
+          <div style="background:white;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.06);overflow:hidden">
+            <table class="mock-table" style="width:100%">
+              <thead>
+                <tr>
+                  <th style="width:50px">Image</th>
+                  <th>Nom du produit</th>
+                  <th>Catégorie</th>
+                  <th>Prix EUR</th>
+                  <th>Stock</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="img-placeholder" style="width:40px;height:40px;border-radius:5px;font-size:16px">📷</div></td>
+                  <td>
+                    <div style="font-weight:600;font-size:12px;color:var(--navy)">Café Éthiopien Yirgacheffe</div>
+                    <div style="font-size:10px;color:var(--text-light)">par Abebe Girma</div>
+                  </td>
+                  <td><span class="badge badge-blue">Nutrition</span></td>
+                  <td style="font-weight:700;color:var(--orange);font-size:12px">€12.00</td>
+                  <td>
+                    <div style="font-size:12px;font-weight:600;color:#28a745">48 unités</div>
+                  </td>
+                  <td><span class="badge badge-green">Actif</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px">
+                      <button style="background:var(--navy);color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Modifier</button>
+                      <button style="background:#f8d7da;color:#721c24;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Désact.</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="img-placeholder" style="width:40px;height:40px;border-radius:5px;font-size:16px">📷</div></td>
+                  <td>
+                    <div style="font-weight:600;font-size:12px;color:var(--navy)">Huile d'Argan Bio — 100ml</div>
+                    <div style="font-size:10px;color:var(--text-light)">par Fatima Zahra</div>
+                  </td>
+                  <td><span class="badge badge-green">Soins</span></td>
+                  <td style="font-weight:700;color:var(--orange);font-size:12px">€18.50</td>
+                  <td>
+                    <div style="font-size:12px;font-weight:600;color:#e04403">3 unités ⚠️</div>
+                  </td>
+                  <td><span class="badge badge-green">Actif</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px">
+                      <button style="background:var(--navy);color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Modifier</button>
+                      <button style="background:#f8d7da;color:#721c24;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Désact.</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><div class="img-placeholder" style="width:40px;height:40px;border-radius:5px;font-size:16px">📷</div></td>
+                  <td>
+                    <div style="font-weight:600;font-size:12px;color:var(--navy)">Coffret Bien-Être Premium</div>
+                    <div style="font-size:10px;color:var(--text-light)">Coffret composé</div>
+                  </td>
+                  <td><span class="badge badge-orange">Coffrets</span></td>
+                  <td style="font-weight:700;color:var(--orange);font-size:12px">€65.00</td>
+                  <td>
+                    <div style="font-size:12px;font-weight:600;color:var(--text)">12 unités</div>
+                  </td>
+                  <td><span class="badge badge-gray">Inactif</span></td>
+                  <td>
+                    <div style="display:flex;gap:4px">
+                      <button style="background:var(--navy);color:white;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Modifier</button>
+                      <button style="background:#d4edda;color:#155724;border:none;padding:4px 8px;border-radius:4px;font-size:10px;cursor:pointer">Activer</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 13 · USER GUIDE ── -->
+<section class="section" id="s13">
+  <div class="section-header">
+    <div class="section-num">13</div>
+    <div>
+      <div class="section-title">Guide Utilisateur — Actions pour le Staff WWC</div>
+      <div class="section-subtitle">Comment gérer la boutique au quotidien</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="grid-2">
+      <!-- Manage Orders -->
+      <div>
+        <h2>📦 Gérer les Commandes</h2>
+        <div class="step-guide">
+          <div class="step-guide-item">
+            <div class="step-guide-num">1</div>
+            <div class="step-guide-text">
+              <h4>Accéder aux commandes</h4>
+              <p>Dans le tableau de bord admin, cliquez sur <strong>Commandes</strong> dans le menu gauche. La liste affiche toutes les commandes triées par date.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">2</div>
+            <div class="step-guide-text">
+              <h4>Changer le statut</h4>
+              <p>Ouvrez une commande → cliquez sur <strong>Modifier le statut</strong> → sélectionnez : <em>En attente / Payé / En traitement / Expédié / Livré / Annulé</em>.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">3</div>
+            <div class="step-guide-text">
+              <h4>Ajouter un numéro de suivi</h4>
+              <p>Lors du passage au statut <strong>Expédié</strong>, un champ apparaît pour saisir le numéro de tracking. Le client reçoit un email automatique.</p>
+            </div>
+          </div>
+        </div>
+        <div class="warning-box" style="margin-top:12px">
+          <strong>⚠️ Important :</strong> Lorsque vous annulez une commande, le stock est automatiquement restauré. Pas besoin de le faire manuellement.
+        </div>
+      </div>
+      <!-- Manage Products -->
+      <div>
+        <h2>🛍️ Ajouter / Modifier un Produit</h2>
+        <div class="step-guide">
+          <div class="step-guide-item">
+            <div class="step-guide-num">1</div>
+            <div class="step-guide-text">
+              <h4>Nouveau produit</h4>
+              <p>Admin → Produits → cliquez sur le bouton orange <strong>+ Nouveau produit</strong>.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">2</div>
+            <div class="step-guide-text">
+              <h4>Remplir les informations</h4>
+              <p>Nom (FR/EN/AR), description, catégorie, producteur, prix EUR et TND, stock initial, badges (bio, vegan…), message d'impact social.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">3</div>
+            <div class="step-guide-text">
+              <h4>Ajouter des images</h4>
+              <p>Téléchargez jusqu'à 5 photos. La première image sera l'image principale affichée dans la boutique.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">4</div>
+            <div class="step-guide-text">
+              <h4>Activer le produit</h4>
+              <p>Cochez <strong>Actif</strong> pour le rendre visible dans la boutique. Laissez inactif pour le préparer sans le publier.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:24px">
+      <div class="grid-2">
+        <!-- Manage Customers -->
+        <div>
+          <h2>👥 Gérer les Clients</h2>
+          <div class="step-guide">
+            <div class="step-guide-item">
+              <div class="step-guide-num">1</div>
+              <div class="step-guide-text">
+                <h4>Consulter la liste</h4>
+                <p>Admin → Clients → liste de tous les clients avec leur type (B2C/B2B), date d'inscription et total de commandes.</p>
+              </div>
+            </div>
+            <div class="step-guide-item">
+              <div class="step-guide-num">2</div>
+              <div class="step-guide-text">
+                <h4>Approuver un client B2B</h4>
+                <p>Les demandes B2B apparaissent avec le statut <span class="badge badge-orange">En attente</span>. Cliquez sur le client → bouton <strong>Approuver</strong> pour activer les tarifs grossiste.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Donations -->
+        <div>
+          <h2>💚 Consulter les Donations</h2>
+          <div class="step-guide">
+            <div class="step-guide-item">
+              <div class="step-guide-num">1</div>
+              <div class="step-guide-text">
+                <h4>Liste des dons</h4>
+                <p>Admin → Donations → affiche tous les dons avec montant, donateur (ou anonyme), pays bénéficiaire et statut de paiement Stripe.</p>
+              </div>
+            </div>
+            <div class="step-guide-item">
+              <div class="step-guide-num">2</div>
+              <div class="step-guide-text">
+                <h4>Exporter les données</h4>
+                <p>Utilisez le bouton <strong>Export CSV</strong> pour télécharger les dons et les partager avec la comptabilité ou les bailleurs de fonds.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:24px">
+      <h2>📦 Utiliser le Box Builder (Composer Ma Box)</h2>
+      <div class="info-box">Le module <strong>Composer Ma Box</strong> permet aux clients de choisir leurs produits dans une sélection prédéfinie pour créer une box personnalisée. Le modèle de données est prêt côté serveur ; l'interface de configuration admin est en cours de développement (Phase 3).</div>
+      <div class="grid-2">
+        <div class="card card-orange">
+          <h3>Ce qui fonctionne déjà</h3>
+          <p>Les modèles <code>ComposableBox</code> sont en base de données. On peut créer des boxes depuis l'interface Django admin native (<strong>backend/admin/</strong>) en définissant les produits éligibles et les quantités min/max.</p>
+        </div>
+        <div class="card card-navy">
+          <h3>Ce qui reste à faire</h3>
+          <p>Une interface admin visuelle pour créer et gérer les boxes, et une page client interactive avec sélection des produits et aperçu en temps réel.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 14 · B2B ── -->
+<section class="section" id="s14">
+  <div class="section-header">
+    <div class="section-num">14</div>
+    <div>
+      <div class="section-title">Fonctionnalités B2B (Clients Professionnels)</div>
+      <div class="section-subtitle">Ce qui différencie un client entreprise d'un client particulier</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="grid-2">
+      <div>
+        <h2>Qu'est-ce qu'un client B2B ?</h2>
+        <p>Un client B2B (entreprise) peut s'inscrire pour obtenir des <strong>tarifs professionnels réduits</strong> sur les achats en gros. Ce profil est distinct du client particulier (B2C) et nécessite une validation manuelle par l'équipe WWC.</p>
+        <div class="card card-orange" style="margin-bottom:12px">
+          <h3 style="color:var(--orange)">Avantages B2B</h3>
+          <ul style="font-size:13px;line-height:1.8;padding-left:16px;margin:0">
+            <li>Prix de gros configurables par produit</li>
+            <li>Quantités minimales de commande</li>
+            <li>Adresse de facturation distincte (siège social)</li>
+            <li>Factures avec mentions légales entreprise</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <h2>Flux d'approbation B2B</h2>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot current">1</div>
+            <div class="timeline-title">Inscription B2B</div>
+            <p style="font-size:13px;margin:0">L'entreprise s'inscrit en sélectionnant le type « Professionnel » et renseigne son SIRET / numéro TVA.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot next">2</div>
+            <div class="timeline-title">Statut « En attente d'approbation »</div>
+            <p style="font-size:13px;margin:0">Le compte est créé mais limité aux tarifs B2C. Une notification est envoyée à l'admin WWC.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot next">3</div>
+            <div class="timeline-title">Validation manuelle</div>
+            <p style="font-size:13px;margin:0">L'admin WWC examine la demande dans Admin → Clients et clique sur <strong>Approuver</strong>.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot done">✓</div>
+            <div class="timeline-title">Compte B2B activé</div>
+            <p style="font-size:13px;margin:0">Le client accède aux tarifs professionnels et peut passer des commandes en gros.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px">
+      <h2>Différences techniques B2B vs B2C</h2>
+      <table class="gap-table">
+        <thead><tr><th>Fonctionnalité</th><th>B2C (Particulier)</th><th>B2B (Entreprise)</th></tr></thead>
+        <tbody>
+          <tr><td>Tarification</td><td>Prix public affiché</td><td>Prix de gros (champ <code>wholesale_price</code>)</td></tr>
+          <tr><td>Quantité minimum</td><td>1 unité</td><td>Quantité minimum configurable par produit</td></tr>
+          <tr><td>Adresse facturation</td><td>Même que livraison possible</td><td>Adresse siège social distincte</td></tr>
+          <tr><td>Paiement</td><td>Stripe + virement</td><td>Virement bancaire privilégié + délai de paiement</td></tr>
+          <tr><td>Statut compte</td><td>Actif immédiatement</td><td>Validation manuelle requise</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 15 · STRIPE ── -->
+<section class="section" id="s15">
+  <div class="section-header">
+    <div class="section-num">15</div>
+    <div>
+      <div class="section-title">Intégration Stripe — Paiements en Ligne</div>
+      <div class="section-subtitle">Comment fonctionnent les paiements sécurisés</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="grid-2">
+      <div>
+        <h2>Comment ça fonctionne ?</h2>
+        <div class="info-box">Stripe est le prestataire de paiement utilisé par des millions de boutiques (Amazon, Shopify…). WWC Shop l'intègre pour accepter les cartes bancaires de façon 100% sécurisée sans jamais stocker les numéros de carte.</div>
+        <div class="step-guide">
+          <div class="step-guide-item">
+            <div class="step-guide-num">1</div>
+            <div class="step-guide-text">
+              <h4>Le client paie</h4>
+              <p>À la fin du tunnel de paiement, il entre ses informations de carte sur une page sécurisée Stripe (chiffrement SSL).</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">2</div>
+            <div class="step-guide-text">
+              <h4>Stripe traite le paiement</h4>
+              <p>Stripe vérifie la carte, débite le montant en euros (EUR) et envoie une confirmation sécurisée à la boutique.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">3</div>
+            <div class="step-guide-text">
+              <h4>Webhook de confirmation</h4>
+              <p>Stripe envoie un signal automatique (webhook) à la boutique : « Paiement réussi ». La commande passe alors au statut <strong>Payé</strong> et l'email de confirmation est envoyé au client.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">4</div>
+            <div class="step-guide-text">
+              <h4>Virement vers WWC</h4>
+              <p>Stripe verse les fonds sur le compte bancaire WWC selon la fréquence paramétrée (quotidienne ou hebdomadaire).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2>Ce que WWC doit faire</h2>
+        <div class="success-box">
+          <strong>✓ Déjà configuré :</strong> L'intégration Stripe est complète. Les clés de test permettent de valider des paiements avec des cartes fictives.
+        </div>
+        <div class="warning-box">
+          <strong>⚠️ À faire avant le lancement :</strong>
+          <ol style="margin:8px 0 0 16px;font-size:13px;line-height:2">
+            <li>Créer un compte Stripe sur <strong>stripe.com</strong></li>
+            <li>Remplacer les clés TEST par les clés <strong>LIVE</strong> dans les paramètres</li>
+            <li>Configurer le webhook URL dans le dashboard Stripe</li>
+            <li>Vérifier le compte Stripe (KYC — document d'identité)</li>
+          </ol>
+        </div>
+        <h3 style="margin-top:16px">Modes Test vs Production</h3>
+        <table style="width:100%;font-size:12px;border-collapse:collapse;margin-top:8px">
+          <tr style="background:var(--gray-bg)">
+            <th style="padding:8px;border:1px solid var(--border);text-align:left">Mode</th>
+            <th style="padding:8px;border:1px solid var(--border);text-align:left">Usage</th>
+            <th style="padding:8px;border:1px solid var(--border);text-align:left">Carte test</th>
+          </tr>
+          <tr>
+            <td style="padding:8px;border:1px solid var(--border)"><span class="badge badge-orange">TEST</span></td>
+            <td style="padding:8px;border:1px solid var(--border)">Développement / validation</td>
+            <td style="padding:8px;border:1px solid var(--border)"><code>4242 4242 4242 4242</code></td>
+          </tr>
+          <tr>
+            <td style="padding:8px;border:1px solid var(--border)"><span class="badge badge-green">LIVE</span></td>
+            <td style="padding:8px;border:1px solid var(--border)">Production (vrais paiements)</td>
+            <td style="padding:8px;border:1px solid var(--border)">Carte réelle requise</td>
+          </tr>
+        </table>
+        <div style="margin-top:14px;font-size:13px">
+          <strong>Politique de devise :</strong><br>
+          Stripe traite uniquement les paiements en <strong>EUR</strong>. Les clients en Tunisie qui souhaitent payer en TND utilisent le virement bancaire (hors Stripe).
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 16 · GAP ANALYSIS ── -->
+<section class="section" id="s16">
+  <div class="section-header">
+    <div class="section-num">16</div>
+    <div>
+      <div class="section-title">Analyse des Manques — État Actuel</div>
+      <div class="section-subtitle">Vue honnête et à jour des fonctionnalités terminées, partielles, et restantes</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="success-box" style="margin-bottom:16px"><strong>Mise à jour Mars 2026 :</strong> Plusieurs points marqués "manquants" dans la version précédente sont maintenant terminés. Le tableau ci-dessous reflète l'état réel du code.</div>
+    <table class="gap-table" style="width:100%">
+      <thead>
+        <tr>
+          <th>Fonctionnalité</th>
+          <th>Statut</th>
+          <th>Priorité</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:#f0fff4">
+          <td><strong>Recherche produits + pagination</strong><br><span style="font-size:11px;color:var(--text-light)">Barre de recherche, filtres, pages</span></td>
+          <td><span class="badge badge-green">✓ Terminé</span></td>
+          <td><span class="badge badge-gray">—</span></td>
+          <td style="font-size:12px">Implémenté dans <code>frontend/index.html</code> — barre de recherche live, filtres par catégorie/prix/badge, pagination avec compteur de résultats.</td>
+        </tr>
+        <tr style="background:#f0fff4">
+          <td><strong>Page de suivi de commande</strong><br><span style="font-size:11px;color:var(--text-light)">Tracker 5 étapes, trilingue</span></td>
+          <td><span class="badge badge-green">✓ Terminé</span></td>
+          <td><span class="badge badge-gray">—</span></td>
+          <td style="font-size:12px"><code>frontend/order-detail.html</code> — page autonome avec tracker visuel 5 étapes, support FR/EN/AR + RTL, accessible via <code>/shop/order-detail/?order=WWC-...</code></td>
+        </tr>
+        <tr style="background:#f0fff4">
+          <td><strong>Taux de change configurable</strong><br><span style="font-size:11px;color:var(--text-light)">TND→EUR via interface admin</span></td>
+          <td><span class="badge badge-green">✓ Terminé</span></td>
+          <td><span class="badge badge-gray">—</span></td>
+          <td style="font-size:12px">Modèle <code>SiteSettings</code> avec champ <code>tnd_to_eur_rate</code>. Interface admin WP (<code>class-site-settings-admin.php</code>) pour modifier le taux sans toucher au code.</td>
+        </tr>
+        <tr style="background:#f0fff4">
+          <td><strong>Tarifs de livraison admin WP</strong><br><span style="font-size:11px;color:var(--text-light)">CRUD tarifs par pays depuis WP</span></td>
+          <td><span class="badge badge-green">✓ Terminé</span></td>
+          <td><span class="badge badge-gray">—</span></td>
+          <td style="font-size:12px"><code>class-shipping-admin.php</code> dans le plugin WP. Endpoint public <code>/api/v1/shipping-rates/</code> pour le checkout. Le checkout récupère les pays dynamiquement.</td>
+        </tr>
+        <tr style="background:#f0fff4">
+          <td><strong>Multi-langue FR/EN/AR</strong><br><span style="font-size:11px;color:var(--text-light)">Interface et contenu multilingues</span></td>
+          <td><span class="badge badge-orange">Partiel</span></td>
+          <td><span class="badge badge-blue">Moyenne</span></td>
+          <td style="font-size:12px">Champs <code>name_fr/en/ar</code> en DB. Page <code>order-detail.html</code> 100% trilingue avec RTL arabe. Sélecteur de langue présent dans la nav principale. Contenu produits : traduction à renseigner dans l'admin.</td>
+        </tr>
+        <tr>
+          <td><strong>Vérification email à l'inscription</strong><br><span style="font-size:11px;color:var(--text-light)">Email de confirmation de compte</span></td>
+          <td><span class="badge badge-orange">Partiel</span></td>
+          <td><span class="badge badge-orange">Haute</span></td>
+          <td style="font-size:12px">Page <code>frontend/verify-email.html</code> existe. Champ <code>email_verified</code> sur le modèle Customer. Il manque : envoyer l'email à l'inscription dans <code>UserRegistrationView.post()</code>.</td>
+        </tr>
+        <tr>
+          <td><strong>Emails transactionnels complets</strong><br><span style="font-size:11px;color:var(--text-light)">Confirmation, expédition, suivi</span></td>
+          <td><span class="badge badge-orange">Partiel</span></td>
+          <td><span class="badge badge-red">Critique</span></td>
+          <td style="font-size:12px">Email de confirmation commande ✓. Email d'expédition avec numéro de tracking : à implémenter dans <code>backend/api/payments.py</code> (webhook <code>payment_intent.succeeded</code>). Celery + Redis déjà configurés.</td>
+        </tr>
+        <tr>
+          <td><strong>Système de coupons / promotions</strong><br><span style="font-size:11px;color:var(--text-light)">Codes promo, réductions</span></td>
+          <td><span class="badge badge-orange">Partiel</span></td>
+          <td><span class="badge badge-blue">Moyenne</span></td>
+          <td style="font-size:12px">Modèle <code>Coupon</code> créé en DB. UI panier avec champ de saisie ✓. Admin gestion coupons ✓. Logique de validation dans <code>ApplyCouponView</code> est un stub à compléter (<code>backend/api/views.py</code>).</td>
+        </tr>
+        <tr>
+          <td><strong>Box Builder UI interactive</strong><br><span style="font-size:11px;color:var(--text-light)">Interface de composition de box</span></td>
+          <td><span class="badge badge-orange">Partiel</span></td>
+          <td><span class="badge badge-blue">Moyenne</span></td>
+          <td style="font-size:12px">Modèle <code>ComposableBox</code> en DB. Page <code>frontend/box-builder.html</code> existe. Interface interactive de sélection de produits à compléter.</td>
+        </tr>
+        <tr>
+          <td><strong>Analytics &amp; Rapports</strong><br><span style="font-size:11px;color:var(--text-light)">GA4, Meta Pixel, exports</span></td>
+          <td><span class="badge badge-gray">Manquant</span></td>
+          <td><span class="badge badge-blue">Moyenne</span></td>
+          <td style="font-size:12px">Aucun événement GA4/Meta Pixel intégré. Stats admin basiques présentes. Ajouter le script GA4 dans chaque page HTML + événements <code>add_to_cart</code>, <code>purchase</code>.</td>
+        </tr>
+        <tr>
+          <td><strong>Certificat SSL / HTTPS</strong><br><span style="font-size:11px;color:var(--text-light)">Obligatoire pour Stripe en production</span></td>
+          <td><span class="badge badge-gray">Non configuré</span></td>
+          <td><span class="badge badge-red">Critique</span></td>
+          <td style="font-size:12px">Stripe exige HTTPS. À configurer sur le serveur : <code>certbot --nginx -d votredomaine.com</code>. Let's Encrypt est gratuit.</td>
+        </tr>
+        <tr>
+          <td><strong>SEO avancé</strong><br><span style="font-size:11px;color:var(--text-light)">Meta tags, sitemap, Schema.org</span></td>
+          <td><span class="badge badge-gray">Manquant</span></td>
+          <td><span class="badge badge-gray">Faible</span></td>
+          <td style="font-size:12px">Champs <code>meta_title</code> et <code>meta_description</code> existent sur Product mais non injectés dans <code>&lt;head&gt;</code> WordPress.</td>
+        </tr>
+        <tr>
+          <td><strong>Application mobile</strong><br><span style="font-size:11px;color:var(--text-light)">iOS / Android</span></td>
+          <td><span class="badge badge-gray">Non démarré</span></td>
+          <td><span class="badge badge-gray">Faible</span></td>
+          <td style="font-size:12px">Hors scope actuel. L'API REST est 100% compatible React Native ou Flutter pour une future app mobile.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── SECTION 17 · ARCHITECTURE TECHNIQUE DÉTAILLÉE ── -->
+<section class="section" id="s17">
+  <div class="section-header">
+    <div class="section-num">17</div>
+    <div>
+      <div class="section-title">Architecture Technique Détaillée — Guide Développeur</div>
+      <div class="section-subtitle">Structure du code, endpoints API, modèles de données, variables d'environnement</div>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h2>📁 Structure des répertoires</h2>
+    <div class="grid-2" style="margin-bottom:24px">
+      <div style="background:#1e1e2e;border-radius:8px;padding:16px;font-family:monospace;font-size:11px;color:#cdd6f4;line-height:1.8">
+        <div style="color:#89b4fa;font-weight:700;margin-bottom:8px">wwc_web_new/</div>
+        <div style="color:#a6e3a1">├── backend/                 ← Django project</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── api/                 ← Main app</div>
+        <div style="padding-left:32px;color:#cdd6f4">├── views.py         ← All API logic</div>
+        <div style="padding-left:32px;color:#cdd6f4">├── admin_views.py   ← Admin-only endpoints</div>
+        <div style="padding-left:32px;color:#cdd6f4">├── payments.py      ← Stripe logic</div>
+        <div style="padding-left:32px;color:#cdd6f4">├── serializers.py   ← Data shapes</div>
+        <div style="padding-left:32px;color:#cdd6f4">└── urls.py          ← URL routing</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── orders/models.py     ← Order, Cart, ShippingRate</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── customers/models.py  ← Customer, Address</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── donations/models.py  ← Donation, Country</div>
+        <div style="padding-left:16px;color:#cdd6f4">└── wwc_shop/settings.py ← Django config</div>
+        <div style="color:#a6e3a1">├── frontend/                ← Standalone HTML</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── index.html           ← Product listing</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── product.html         ← Product detail</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── cart.html            ← Cart page</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── checkout.html        ← Checkout form</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── account.html         ← Customer portal</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── order-detail.html    ← Order tracker</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── order-success.html   ← Post-payment</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── verify-email.html    ← Email confirm</div>
+        <div style="padding-left:16px;color:#cdd6f4">└── admin/               ← Admin dashboard</div>
+        <div style="color:#a6e3a1">└── wordpress-plugin/wwc-shop/</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── includes/            ← Core PHP classes</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── admin/               ← WP admin pages</div>
+        <div style="padding-left:16px;color:#cdd6f4">├── templates/           ← PHP shortcode templates</div>
+        <div style="padding-left:16px;color:#cdd6f4">└── wwc-shop.php         ← Plugin entry point</div>
+      </div>
+      <div>
+        <h3>Fichiers clés à connaître</h3>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <tr style="background:var(--gray-bg)"><th style="padding:7px;border:1px solid var(--border)">Fichier</th><th style="padding:7px;border:1px solid var(--border)">Rôle</th></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">backend/api/views.py</td><td style="padding:7px;border:1px solid var(--border)">Toute la logique API publique (checkout, panier, auth, commandes)</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">backend/api/admin_views.py</td><td style="padding:7px;border:1px solid var(--border)">Endpoints admin (protégés par Api-Key header)</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">backend/api/payments.py</td><td style="padding:7px;border:1px solid var(--border)">Stripe CheckoutSession, webhook, PaymentStatus</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">backend/orders/models.py</td><td style="padding:7px;border:1px solid var(--border)">Order, OrderItem, Cart, CartItem, ShippingRate, SiteSettings, Coupon</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">backend/customers/models.py</td><td style="padding:7px;border:1px solid var(--border)">Customer, CustomerAddress, Wishlist</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">backend/wwc_shop/settings.py</td><td style="padding:7px;border:1px solid var(--border)">Toute la config Django (DB, email, Stripe, CORS, JWT)</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wp-plugin/includes/class-api-client.php</td><td style="padding:7px;border:1px solid var(--border)">Client HTTP PHP → appels vers l'API Django</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wp-plugin/includes/class-checkout.php</td><td style="padding:7px;border:1px solid var(--border)">Calcul livraison (appel API live + fallback), checkout WP</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wp-plugin/admin/class-shipping-admin.php</td><td style="padding:7px;border:1px solid var(--border)">Interface admin WP pour gérer les tarifs de livraison</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wp-plugin/admin/class-site-settings-admin.php</td><td style="padding:7px;border:1px solid var(--border)">Interface admin WP pour le taux de change TND/EUR</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <h2 style="margin-top:24px">🌐 Principaux Endpoints API</h2>
+    <div class="info-box">Tous les endpoints sont préfixés par <code>/api/v1/</code>. Les endpoints admin nécessitent le header <code>Authorization: Api-Key &lt;ADMIN_API_KEY&gt;</code>. Les endpoints client nécessitent <code>Authorization: Bearer &lt;JWT_TOKEN&gt;</code>.</div>
+    <table class="gap-table" style="font-size:12px">
+      <thead><tr><th>Méthode</th><th>URL</th><th>Auth</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>products/</code></td><td>Public</td><td>Liste des produits avec filtres (catégorie, prix, recherche, page)</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>products/{slug}/</code></td><td>Public</td><td>Détail d'un produit (avec images, impact, producteur)</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>categories/</code></td><td>Public</td><td>Liste des catégories de produits</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>producers/</code></td><td>Public</td><td>Liste des producteurs</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>producers/{slug}/</code></td><td>Public</td><td>Profil d'un producteur avec ses produits</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>shipping-rates/</code></td><td>Public</td><td>Tarifs de livraison (filtrables par <code>country_code</code>, <code>is_active</code>)</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>donations/countries/</code></td><td>Public</td><td>Pays bénéficiaires de donations</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>donations/donate/</code></td><td>Public</td><td>Créer un don (déclenche paiement Stripe)</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>auth/register/</code></td><td>Public</td><td>Créer un compte client</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>auth/login/</code></td><td>Public</td><td>Connexion → retourne <code>access</code> + <code>refresh</code> JWT tokens</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>auth/password-reset/</code></td><td>Public</td><td>Demande de réinitialisation de mot de passe</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>auth/verify-email/</code></td><td>Public</td><td>Vérifier l'email via le token reçu par email</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>cart/</code></td><td>JWT</td><td>Contenu du panier de l'utilisateur connecté</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>cart/add/</code></td><td>JWT</td><td>Ajouter un produit au panier</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>checkout/</code></td><td>JWT</td><td>Passer une commande (crée la commande + choix paiement)</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>coupons/apply/</code></td><td>JWT</td><td>Valider un code promo sur le panier</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>orders/</code></td><td>JWT</td><td>Commandes de l'utilisateur connecté</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>orders/{order_number}/</code></td><td>JWT</td><td>Détail d'une commande avec items + impact</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>customer/dashboard/</code></td><td>JWT</td><td>Stats client : commandes, impact total, adresses</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>payments/create-session/</code></td><td>JWT</td><td>Créer une session Stripe Checkout</td></tr>
+        <tr><td><span class="badge badge-blue">POST</span></td><td><code>payments/webhook/</code></td><td>Stripe sig</td><td>Webhook Stripe — met à jour statut commande</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>payments/status/{order}/</code></td><td>Public</td><td>Statut de paiement d'une commande</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>admin/stats/</code></td><td>Api-Key</td><td>Stats tableau de bord (CA, commandes, clients, dons)</td></tr>
+        <tr><td><span class="badge badge-green">GET</span></td><td><code>admin/orders/</code></td><td>Api-Key</td><td>Toutes les commandes avec filtres</td></tr>
+        <tr><td><span class="badge badge-blue">POST/PATCH</span></td><td><code>admin/orders/{num}/</code></td><td>Api-Key</td><td>Mettre à jour statut commande, ajouter tracking</td></tr>
+        <tr><td><span class="badge badge-blue">POST/PATCH/DELETE</span></td><td><code>admin/products/</code></td><td>Api-Key</td><td>CRUD produits</td></tr>
+        <tr><td><span class="badge badge-blue">PATCH</span></td><td><code>admin/b2b/{id}/</code></td><td>Api-Key</td><td>Approuver/refuser un client B2B</td></tr>
+        <tr><td><span class="badge badge-blue">GET/PATCH</span></td><td><code>admin/settings/</code></td><td>Api-Key</td><td>Lire/modifier SiteSettings (taux de change, etc.)</td></tr>
+        <tr><td><span class="badge badge-blue">GET/POST/PATCH/DELETE</span></td><td><code>admin/shipping-rates/</code></td><td>Api-Key</td><td>CRUD tarifs de livraison par pays</td></tr>
+        <tr><td><span class="badge badge-blue">GET/POST/PATCH/DELETE</span></td><td><code>admin/coupons/</code></td><td>Api-Key</td><td>CRUD coupons promotionnels</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid-2" style="margin-top:24px">
+      <div>
+        <h2>🔑 Variables d'environnement (Django)</h2>
+        <p style="font-size:13px;color:var(--text-light)">À définir dans <code>backend/.env</code> ou variables système en production :</p>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <tr style="background:var(--gray-bg)"><th style="padding:7px;border:1px solid var(--border)">Variable</th><th style="padding:7px;border:1px solid var(--border)">Description</th><th style="padding:7px;border:1px solid var(--border)">Exemple</th></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">SECRET_KEY</td><td style="padding:7px;border:1px solid var(--border)">Clé secrète Django (unique, longue)</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">django-insecure-xxx…</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">DEBUG</td><td style="padding:7px;border:1px solid var(--border)">False en production</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">False</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">ALLOWED_HOSTS</td><td style="padding:7px;border:1px solid var(--border)">Domaines autorisés</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wwcshop.org,api.wwcshop.org</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">DATABASE_URL</td><td style="padding:7px;border:1px solid var(--border)">URL PostgreSQL en prod</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">postgres://user:pass@localhost/wwc</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">STRIPE_SECRET_KEY</td><td style="padding:7px;border:1px solid var(--border)">Clé secrète Stripe</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">sk_live_… (prod) / sk_test_…</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">STRIPE_PUBLISHABLE_KEY</td><td style="padding:7px;border:1px solid var(--border)">Clé publique Stripe (frontend)</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">pk_live_… (prod) / pk_test_…</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">STRIPE_WEBHOOK_SECRET</td><td style="padding:7px;border:1px solid var(--border)">Secret webhook Stripe</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">whsec_…</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">ADMIN_API_KEY</td><td style="padding:7px;border:1px solid var(--border)">Clé pour les endpoints admin</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wwc-admin-secret-key-xyz</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">CORS_ALLOWED_ORIGINS</td><td style="padding:7px;border:1px solid var(--border)">Domaines WordPress autorisés</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">https://wwcshop.org</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">EMAIL_HOST</td><td style="padding:7px;border:1px solid var(--border)">Serveur SMTP</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">smtp.sendgrid.net</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">EMAIL_HOST_USER</td><td style="padding:7px;border:1px solid var(--border)">Identifiant SMTP</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">apikey</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">EMAIL_HOST_PASSWORD</td><td style="padding:7px;border:1px solid var(--border)">Mot de passe SMTP</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">SG.xxx…</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">DEFAULT_FROM_EMAIL</td><td style="padding:7px;border:1px solid var(--border)">Expéditeur des emails</td><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">shop@wallahwecan.org</td></tr>
+        </table>
+      </div>
+      <div>
+        <h2>⚙️ Config WordPress Plugin</h2>
+        <p style="font-size:13px;color:var(--text-light)">À renseigner dans WordPress → Réglages → WWC Shop :</p>
+        <table style="width:100%;font-size:12px;border-collapse:collapse;margin-bottom:20px">
+          <tr style="background:var(--gray-bg)"><th style="padding:7px;border:1px solid var(--border)">Paramètre WP</th><th style="padding:7px;border:1px solid var(--border)">Description</th></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wwc_api_url</td><td style="padding:7px;border:1px solid var(--border)">URL de l'API Django : <code>https://api.wwcshop.org/api/v1</code></td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wwc_api_key</td><td style="padding:7px;border:1px solid var(--border)">Clé JWT ou clé publique pour les requêtes client</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wwc_admin_api_key</td><td style="padding:7px;border:1px solid var(--border)">Même valeur que <code>ADMIN_API_KEY</code> dans Django</td></tr>
+          <tr><td style="padding:7px;border:1px solid var(--border);font-family:monospace;font-size:10px">wwc_stripe_publishable_key</td><td style="padding:7px;border:1px solid var(--border)">Clé publique Stripe (affichée dans le frontend WP)</td></tr>
+        </table>
+
+        <h2>🔐 Flux d'authentification</h2>
+        <div class="card card-navy" style="margin-bottom:10px">
+          <h3>Client (JWT)</h3>
+          <p style="font-size:12px;margin:0">1. <code>POST /auth/login/</code> → reçoit <code>access</code> (5min) + <code>refresh</code> (7j)<br>
+          2. Stockés dans <code>localStorage</code> (<code>wwc_access_token</code>, <code>wwc_refresh_token</code>)<br>
+          3. Chaque requête API : header <code>Authorization: Bearer &lt;access&gt;</code><br>
+          4. Si 401 → refresh automatique via <code>POST /auth/token/refresh/</code></p>
+        </div>
+        <div class="card card-orange">
+          <h3>Plugin WordPress (Api-Key)</h3>
+          <p style="font-size:12px;margin:0">Les pages admin WP appellent directement l'API Django avec le header <code>Authorization: Api-Key &lt;ADMIN_API_KEY&gt;</code>. Ce mécanisme est indépendant des tokens JWT clients. La clé est stockée dans les options WP (<code>wwc_admin_api_key</code>).</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:24px">🗄️ Modèles de données principaux</h2>
+    <div class="grid-3">
+      <div class="card card-orange">
+        <h3>Product</h3>
+        <p style="font-size:11px;font-family:monospace;line-height:1.8;margin:0">name_fr, name_en, name_ar<br>slug, description_fr/en/ar<br>price_eur, price_tnd<br>wholesale_price (B2B)<br>stock_quantity<br>category → ProductCategory<br>producer → Producer<br>images (multi)<br>impact_description<br>is_active, is_featured<br>badges (bio, vegan…)</p>
+      </div>
+      <div class="card card-navy">
+        <h3>Order + OrderItem</h3>
+        <p style="font-size:11px;font-family:monospace;line-height:1.8;margin:0">order_number (WWC-YYYYMMDD-N)<br>customer → Customer<br>status: pending/paid/processing/<br>  shipped/delivered/cancelled<br>payment_method: stripe/transfer/cod<br>shipping_address (JSON)<br>billing_address (JSON)<br>subtotal, shipping_cost, total<br>tracking_number<br>stripe_payment_intent_id<br>items → OrderItem[]</p>
+      </div>
+      <div class="card card-green">
+        <h3>Customer + Address</h3>
+        <p style="font-size:11px;font-family:monospace;line-height:1.8;margin:0">user → Django User<br>customer_type: b2c / b2b<br>b2b_status: pending/approved/rejected<br>company_name, tax_id<br>email_verified (bool)<br>shipping_name<br>addresses → CustomerAddress[]<br>  (label, street, city, country…)<br>wishlist → WishlistItem[]</p>
+      </div>
+      <div class="card" style="border-left:4px solid #9b59b6">
+        <h3>Cart + CartItem</h3>
+        <p style="font-size:11px;font-family:monospace;line-height:1.8;margin:0">session_key (anonymous) or<br>user → Customer<br>items → CartItem[]<br>  product → Product<br>  quantity<br>  unit_price (snapshot)<br>Panier persistant : survit<br>à la fermeture du navigateur</p>
+      </div>
+      <div class="card" style="border-left:4px solid #e67e22">
+        <h3>ShippingRate + SiteSettings</h3>
+        <p style="font-size:11px;font-family:monospace;line-height:1.8;margin:0">ShippingRate:<br>  country_code, country_name<br>  rate_tnd, free_threshold_tnd<br>  is_active<br><br>SiteSettings (singleton):<br>  tnd_to_eur_rate (ex: 0.295)<br>  shop_name, contact_email<br>  Modifiable via admin WP</p>
+      </div>
+      <div class="card" style="border-left:4px solid #e74c3c">
+        <h3>Coupon + ImpactEvent</h3>
+        <p style="font-size:11px;font-family:monospace;line-height:1.8;margin:0">Coupon:<br>  code, discount_type (pct/fixed)<br>  discount_value, min_order_amount<br>  max_uses, current_uses<br>  valid_from, valid_until<br>  is_active<br><br>ImpactEvent:<br>  order → Order<br>  description, quantity<br>  unit (repas, livres…)</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top:24px">💻 Lancer le projet en local</h2>
+    <div class="grid-2">
+      <div>
+        <h3>Backend Django</h3>
+        <div style="background:#1e1e2e;border-radius:8px;padding:14px;font-family:monospace;font-size:11px;color:#cdd6f4;line-height:2">
+          <div style="color:#6c7086"># 1. Cloner le dépôt</div>
+          <div>git clone &lt;repo-url&gt; &amp;&amp; cd wwc_web_new/backend</div>
+          <div style="color:#6c7086"># 2. Créer l'environnement virtuel</div>
+          <div>python -m venv venv</div>
+          <div>source venv/bin/activate  <span style="color:#6c7086"># Linux/Mac</span></div>
+          <div>venv\Scripts\activate     <span style="color:#6c7086"># Windows</span></div>
+          <div style="color:#6c7086"># 3. Installer les dépendances</div>
+          <div>pip install -r requirements.txt</div>
+          <div style="color:#6c7086"># 4. Configurer les variables</div>
+          <div>cp .env.example .env  <span style="color:#6c7086"># puis éditer .env</span></div>
+          <div style="color:#6c7086"># 5. Initialiser la base de données</div>
+          <div>python manage.py migrate</div>
+          <div>python manage.py createsuperuser</div>
+          <div style="color:#6c7086"># 6. Lancer le serveur</div>
+          <div>python manage.py runserver</div>
+          <div style="color:#a6e3a1"># → http://localhost:8000</div>
+        </div>
+      </div>
+      <div>
+        <h3>Frontend HTML (standalone)</h3>
+        <div style="background:#1e1e2e;border-radius:8px;padding:14px;font-family:monospace;font-size:11px;color:#cdd6f4;line-height:2;margin-bottom:12px">
+          <div style="color:#6c7086"># Ouvrir simplement dans le navigateur</div>
+          <div>cd wwc_web_new/frontend</div>
+          <div>open index.html  <span style="color:#6c7086"># Mac</span></div>
+          <div style="color:#6c7086"># Ou utiliser un serveur local :</div>
+          <div>python -m http.server 3000</div>
+          <div style="color:#a6e3a1"># → http://localhost:3000</div>
+          <div style="color:#6c7086"># L'URL de l'API est définie en haut</div>
+          <div style="color:#6c7086"># de chaque fichier HTML :</div>
+          <div>const API_URL = 'http://localhost:8000/api/v1';</div>
+        </div>
+        <div class="warning-box" style="margin:0">
+          <strong>CORS :</strong> En développement, Django accepte toutes les origines si <code>DEBUG=True</code>. En production, définir <code>CORS_ALLOWED_ORIGINS</code> avec le domaine WordPress exact.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 18 · ROADMAP ── -->
+<section class="section" id="s18">
+  <div class="section-header">
+    <div class="section-num">18</div>
+    <div>
+      <div class="section-title">Feuille de Route Technique</div>
+      <div class="section-subtitle">Les phases de développement — état actuel et prochaines étapes</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="timeline">
+      <!-- Phase 1 -->
+      <div class="timeline-item">
+        <div class="timeline-dot done">✓</div>
+        <div>
+          <div class="timeline-title" style="color:var(--green)">Phase 1 — MVP (Terminé ✓)</div>
+          <p style="font-size:13px;margin-bottom:8px">Boutique fonctionnelle de bout en bout. Un client peut acheter et payer.</p>
+          <div class="timeline-items-list">
+            <span class="timeline-tag done">Backend Django + API REST</span>
+            <span class="timeline-tag done">Modèles de données complets</span>
+            <span class="timeline-tag done">Paiements Stripe</span>
+            <span class="timeline-tag done">Tunnel d'achat complet</span>
+            <span class="timeline-tag done">Email de confirmation</span>
+            <span class="timeline-tag done">Gestion du stock</span>
+            <span class="timeline-tag done">Admin dashboard</span>
+            <span class="timeline-tag done">Plugin WordPress de base</span>
+          </div>
+        </div>
+      </div>
+      <!-- Phase 2 -->
+      <div class="timeline-item">
+        <div class="timeline-dot done">✓</div>
+        <div>
+          <div class="timeline-title" style="color:var(--green)">Phase 2 — Fonctionnalités Core (Terminé ✓)</div>
+          <p style="font-size:13px;margin-bottom:8px">Espace client complet, gestion des adresses, administration avancée, tracking commandes.</p>
+          <div class="timeline-items-list">
+            <span class="timeline-tag done">Authentification JWT</span>
+            <span class="timeline-tag done">Espace client (commandes, adresses, favoris)</span>
+            <span class="timeline-tag done">Tuiles adresses au checkout</span>
+            <span class="timeline-tag done">Réinitialisation mot de passe</span>
+            <span class="timeline-tag done">Admin gestion commandes</span>
+            <span class="timeline-tag done">Restauration stock annulation</span>
+            <span class="timeline-tag done">Recherche + pagination produits</span>
+            <span class="timeline-tag done">Page suivi commande (5 étapes)</span>
+            <span class="timeline-tag done">Taux de change admin WP</span>
+            <span class="timeline-tag done">Tarifs livraison admin WP</span>
+            <span class="timeline-tag done">Admin donations + coupons</span>
+            <span class="timeline-tag done">Profils producteurs</span>
+            <span class="timeline-tag done">Page donation + Stripe</span>
+            <span class="timeline-tag done">Multi-langue partiel (order-detail FR/EN/AR)</span>
+            <span class="timeline-tag current">Box builder (partiel)</span>
+            <span class="timeline-tag current">Vérification email (page OK, envoi à faire)</span>
+          </div>
+        </div>
+      </div>
+      <!-- Phase 3 -->
+      <div class="timeline-item">
+        <div class="timeline-dot current">3</div>
+        <div>
+          <div class="timeline-title" style="color:var(--orange)">Phase 3 — Finalisation &amp; Production (En cours)</div>
+          <p style="font-size:13px;margin-bottom:8px">Compléter les fonctionnalités restantes et mettre en production. Estimé : 3–6 semaines de travail.</p>
+          <div class="timeline-items-list">
+            <span class="timeline-tag current">Email vérification backend (1–2 jours)</span>
+            <span class="timeline-tag current">Email expédition avec tracking (2–3 jours)</span>
+            <span class="timeline-tag current">Validation coupons ApplyCouponView (2–3 jours)</span>
+            <span class="timeline-tag current">Box Builder UI interactive (5–8 jours)</span>
+            <span class="timeline-tag current">Déploiement serveur + SSL + PostgreSQL (3–5 jours)</span>
+            <span class="timeline-tag current">Stripe passer en mode LIVE</span>
+            <span class="timeline-tag current">Charger vrais produits + photos</span>
+            <span class="timeline-tag current">Tests utilisateurs réels</span>
+          </div>
+        </div>
+      </div>
+      <!-- Phase 4 -->
+      <div class="timeline-item">
+        <div class="timeline-dot next">4</div>
+        <div>
+          <div class="timeline-title">Phase 4 — Business Features (Après lancement)</div>
+          <p style="font-size:13px;margin-bottom:8px">Une fois la boutique en ligne et stable. Estimé : 3–4 mois de développement supplémentaire.</p>
+          <div class="timeline-items-list">
+            <span class="timeline-tag">Portail B2B complet (formulaire dédié)</span>
+            <span class="timeline-tag">Multi-langue UI complète (FR/EN/AR sélecteur)</span>
+            <span class="timeline-tag">Analytics GA4 + Meta Pixel</span>
+            <span class="timeline-tag">SEO meta tags WordPress</span>
+            <span class="timeline-tag">Alertes stock faible par email</span>
+            <span class="timeline-tag">Graphiques tendances admin</span>
+            <span class="timeline-tag">Programme de fidélité</span>
+          </div>
+        </div>
+      </div>
+      <!-- Phase 5 -->
+      <div class="timeline-item">
+        <div class="timeline-dot future">5</div>
+        <div>
+          <div class="timeline-title" style="color:#999">Phase 5 — Évolutions Long Terme (Futur)</div>
+          <p style="font-size:13px;margin-bottom:8px;color:var(--text-light)">Fonctionnalités avancées. Estimé : 6–12 mois.</p>
+          <div class="timeline-items-list">
+            <span class="timeline-tag">Application mobile (React Native)</span>
+            <span class="timeline-tag">Marketplace multi-vendeurs</span>
+            <span class="timeline-tag">Abonnements / box mensuelle</span>
+            <span class="timeline-tag">Intégration ERP comptabilité</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 19 · HANDOVER GUIDE ── -->
+<section class="section" id="s19">
+  <div class="section-header">
+    <div class="section-num">19</div>
+    <div>
+      <div class="section-title">Guide de Transmission — Trouver un Développeur</div>
+      <div class="section-subtitle">Tout ce qu'un développeur tiers doit savoir pour reprendre le projet</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="grid-2">
+      <div>
+        <h2>Stack technique résumée</h2>
+        <div class="card" style="margin-bottom:12px">
+          <h3>Backend (Python/Django)</h3>
+          <p style="font-size:13px;margin:0">Répertoire : <code>/backend/</code><br>
+          Framework : Django 5 + Django REST Framework<br>
+          Auth : JWT via SimpleJWT<br>
+          DB : SQLite en dev → PostgreSQL en prod<br>
+          Paiements : Stripe Python SDK<br>
+          Async : Celery + Redis (configuré)</p>
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <h3>Frontend (HTML/JS)</h3>
+          <p style="font-size:13px;margin:0">Répertoire : <code>/frontend/</code><br>
+          Pages HTML statiques avec appels API fetch()<br>
+          CSS custom avec variables CSS (couleurs marque)</p>
+        </div>
+        <div class="card">
+          <h3>Plugin WordPress (PHP)</h3>
+          <p style="font-size:13px;margin:0">Répertoire : <code>/wordpress-plugin/wwc-shop/</code><br>
+          PHP 8+ avec architecture orientée objet<br>
+          Shortcodes + AJAX handlers<br>
+          Client HTTP PHP vers l'API Django</p>
+        </div>
+      </div>
+      <div>
+        <h2>Fichiers clés à comprendre</h2>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <tr style="background:var(--gray-bg)"><th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">Fichier</th><th style="padding:7px 10px;text-align:left;border:1px solid var(--border)">Rôle</th></tr>
+          <tr><td style="padding:7px 10px;border:1px solid var(--border);font-family:monospace;font-size:11px">backend/api/models.py</td><td style="padding:7px 10px;border:1px solid var(--border)">Tous les modèles de données</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid var(--border);font-family:monospace;font-size:11px">backend/api/views.py</td><td style="padding:7px 10px;border:1px solid var(--border)">Logique API (checkout, panier…)</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid var(--border);font-family:monospace;font-size:11px">backend/api/payments.py</td><td style="padding:7px 10px;border:1px solid var(--border)">Stripe + webhooks</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid var(--border);font-family:monospace;font-size:11px">backend/wwc_shop/settings.py</td><td style="padding:7px 10px;border:1px solid var(--border)">Config Django (clés, DB, email)</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid var(--border);font-family:monospace;font-size:11px">frontend/checkout.html</td><td style="padding:7px 10px;border:1px solid var(--border)">Page paiement (plus complexe)</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid var(--border);font-family:monospace;font-size:11px">frontend/account.html</td><td style="padding:7px 10px;border:1px solid var(--border)">Espace client complet</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid var(--border);font-family:monospace;font-size:11px">wp-plugin/wwc-shop.php</td><td style="padding:7px 10px;border:1px solid var(--border)">Point d'entrée du plugin WP</td></tr>
+          <tr><td style="padding:7px 10px;border:1px solid var(--border);font-family:monospace;font-size:11px">wp-plugin/class-api-client.php</td><td style="padding:7px 10px;border:1px solid var(--border)">Client HTTP PHP ↔ API Django</td></tr>
+        </table>
+      </div>
+    </div>
+    <div style="margin-top:24px">
+      <h2>Effort estimé par fonctionnalité restante</h2>
+      <table class="gap-table">
+        <thead><tr><th>Fonctionnalité</th><th>Compétences requises</th><th>Estimation</th><th>Difficulté</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Emails transactionnels complets</strong></td>
+            <td>Python / Django / Celery</td>
+            <td>3–5 jours</td>
+            <td><span class="badge badge-green">Facile</span></td>
+          </tr>
+          <tr>
+            <td><strong>Vérification email inscription</strong></td>
+            <td>Python / Django</td>
+            <td>1–2 jours</td>
+            <td><span class="badge badge-green">Facile</span></td>
+          </tr>
+          <tr>
+            <td><strong>Box Builder UI</strong></td>
+            <td>JavaScript / HTML / API Django</td>
+            <td>5–8 jours</td>
+            <td><span class="badge badge-orange">Moyenne</span></td>
+          </tr>
+          <tr>
+            <td><strong>Portail B2B complet</strong></td>
+            <td>Python + JS + PHP (WP)</td>
+            <td>8–12 jours</td>
+            <td><span class="badge badge-orange">Moyenne</span></td>
+          </tr>
+          <tr>
+            <td><strong>Système de coupons</strong></td>
+            <td>Python / Django / JS</td>
+            <td>4–6 jours</td>
+            <td><span class="badge badge-orange">Moyenne</span></td>
+          </tr>
+          <tr>
+            <td><strong>Multi-langue FR/EN/AR</strong></td>
+            <td>Django + JS + PHP (WP)</td>
+            <td>6–10 jours</td>
+            <td><span class="badge badge-red">Complexe</span></td>
+          </tr>
+          <tr>
+            <td><strong>Analytics GA4 / Meta Pixel</strong></td>
+            <td>JS + Google Tag Manager</td>
+            <td>2–3 jours</td>
+            <td><span class="badge badge-green">Facile</span></td>
+          </tr>
+          <tr>
+            <td><strong>Mise en production (serveur + SSL)</strong></td>
+            <td>DevOps / Linux / Nginx</td>
+            <td>3–5 jours</td>
+            <td><span class="badge badge-orange">Moyenne</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:20px">
+      <h2>Profil de développeur recommandé</h2>
+      <div class="grid-3">
+        <div class="card card-orange">
+          <h3>Compétences indispensables</h3>
+          <ul style="font-size:13px;line-height:2;padding-left:16px;margin:0">
+            <li>Python / Django</li>
+            <li>JavaScript (Vanilla JS)</li>
+            <li>HTML / CSS</li>
+            <li>APIs REST</li>
+          </ul>
+        </div>
+        <div class="card card-navy">
+          <h3>Compétences utiles</h3>
+          <ul style="font-size:13px;line-height:2;padding-left:16px;margin:0">
+            <li>PHP (WordPress)</li>
+            <li>Stripe API</li>
+            <li>PostgreSQL</li>
+            <li>Celery / Redis</li>
+          </ul>
+        </div>
+        <div class="card card-green">
+          <h3>Expérience souhaitée</h3>
+          <ul style="font-size:13px;line-height:2;padding-left:16px;margin:0">
+            <li>E-commerce</li>
+            <li>Django REST Framework</li>
+            <li>Déploiement Linux</li>
+            <li>Git / GitHub</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 20 · NEXT STEPS ── -->
+<section class="section" id="s20">
+  <div class="section-header">
+    <div class="section-num">20</div>
+    <div>
+      <div class="section-title">Prochaines Étapes — Instructions Précises</div>
+      <div class="section-subtitle">Chaque tâche avec les fichiers exacts et les changements à faire</div>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="warning-box"><strong>⚠️ Rappel :</strong> La boutique est techniquement fonctionnelle mais ne doit PAS être ouverte au public sans : (1) SSL/HTTPS, (2) clés Stripe LIVE, (3) vrais produits chargés, (4) tests complets du tunnel d'achat.</div>
+
+    <h2 style="margin-top:20px">🔴 Critique — Avant lancement</h2>
+
+    <div class="card card-orange" style="margin-bottom:16px">
+      <h3>1. Déploiement serveur + SSL (3–5 jours · DevOps)</h3>
+      <div class="step-guide" style="margin-top:12px">
+        <div class="step-guide-item">
+          <div class="step-guide-num" style="font-size:11px;width:24px;height:24px">A</div>
+          <div class="step-guide-text">
+            <h4>Serveur Ubuntu 22.04</h4>
+            <p>Prendre un VPS chez OVH / Hetzner / DigitalOcean (minimum 2 Go RAM). Installer : <code>nginx</code>, <code>python3.12</code>, <code>postgresql</code>, <code>redis</code>, <code>certbot</code>.</p>
+          </div>
+        </div>
+        <div class="step-guide-item">
+          <div class="step-guide-num" style="font-size:11px;width:24px;height:24px">B</div>
+          <div class="step-guide-text">
+            <h4>Migrer vers PostgreSQL</h4>
+            <p>Créer la DB : <code>createdb wwc_shop</code>. Dans <code>backend/wwc_shop/settings.py</code>, remplacer la config SQLite par la config PostgreSQL. Exécuter <code>python manage.py migrate</code>.</p>
+          </div>
+        </div>
+        <div class="step-guide-item">
+          <div class="step-guide-num" style="font-size:11px;width:24px;height:24px">C</div>
+          <div class="step-guide-text">
+            <h4>Gunicorn + systemd</h4>
+            <p>Créer le service systemd : <code>/etc/systemd/system/wwc-backend.service</code> qui lance <code>gunicorn wwc_shop.wsgi --bind 127.0.0.1:8001</code>. Nginx proxy vers ce port.</p>
+          </div>
+        </div>
+        <div class="step-guide-item">
+          <div class="step-guide-num" style="font-size:11px;width:24px;height:24px">D</div>
+          <div class="step-guide-text">
+            <h4>SSL avec Let's Encrypt</h4>
+            <p>Une fois nginx configuré avec votre domaine : <code>certbot --nginx -d api.votredomaine.com</code>. Certbot renouvelle automatiquement le certificat.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-orange" style="margin-bottom:16px">
+      <h3>2. Stripe en mode LIVE (1 heure)</h3>
+      <p style="font-size:13px">Dans <code>backend/wwc_shop/settings.py</code> (ou variables d'env) :</p>
+      <div style="background:#1e1e2e;border-radius:6px;padding:12px;font-family:monospace;font-size:11px;color:#cdd6f4;line-height:1.8">
+        <div style="color:#6c7086"># Remplacer :</div>
+        <div style="color:#f38ba8">STRIPE_SECRET_KEY = "sk_test_..."</div>
+        <div style="color:#f38ba8">STRIPE_PUBLISHABLE_KEY = "pk_test_..."</div>
+        <div style="color:#6c7086"># Par :</div>
+        <div style="color:#a6e3a1">STRIPE_SECRET_KEY = "sk_live_..."  # depuis stripe.com/dashboard</div>
+        <div style="color:#a6e3a1">STRIPE_PUBLISHABLE_KEY = "pk_live_..."</div>
+        <div style="color:#6c7086"># Enregistrer le webhook dans Stripe Dashboard :</div>
+        <div style="color:#89b4fa"># URL : https://api.votredomaine.com/api/v1/payments/webhook/</div>
+        <div style="color:#89b4fa"># Événements : payment_intent.succeeded, payment_intent.payment_failed</div>
+        <div style="color:#a6e3a1">STRIPE_WEBHOOK_SECRET = "whsec_..."  # copié depuis le dashboard Stripe</div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:24px">🟠 Haute priorité — 1–4 semaines dev</h2>
+
+    <div class="card card-navy" style="margin-bottom:16px">
+      <h3>3. Email de vérification à l'inscription (1–2 jours)</h3>
+      <p style="font-size:13px;margin-bottom:8px"><strong>Fichier principal :</strong> <code>backend/api/views.py</code> — méthode <code>UserRegistrationView.post()</code></p>
+      <p style="font-size:13px;margin-bottom:8px">Après la création du compte, ajouter :</p>
+      <div style="background:#1e1e2e;border-radius:6px;padding:12px;font-family:monospace;font-size:11px;color:#cdd6f4;line-height:1.8">
+        <div style="color:#6c7086"># 1. Générer un token de vérification</div>
+        <div>from django.core.signing import TimestampSigner</div>
+        <div>token = TimestampSigner().sign(user.pk)</div>
+        <div style="color:#6c7086"># 2. Envoyer l'email</div>
+        <div>from django.core.mail import send_mail</div>
+        <div>verify_url = f"{settings.FRONTEND_URL}/verify-email.html?token={token}"</div>
+        <div>send_mail("Confirmez votre email", verify_url, settings.DEFAULT_FROM_EMAIL, [user.email])</div>
+        <div style="color:#6c7086"># 3. Dans EmailVerificationView.post() — valider le token</div>
+        <div>user_pk = TimestampSigner().unsign(token, max_age=86400)  <span style="color:#6c7086"># 24h</span></div>
+        <div>customer.email_verified = True; customer.save()</div>
+      </div>
+      <p style="font-size:13px;margin-top:8px">La page <code>frontend/verify-email.html</code> existe déjà. L'endpoint <code>auth/verify-email/</code> aussi. Il ne manque que le code d'envoi côté registration.</p>
+    </div>
+
+    <div class="card card-navy" style="margin-bottom:16px">
+      <h3>4. Email d'expédition avec tracking (2–3 jours)</h3>
+      <p style="font-size:13px;margin-bottom:8px"><strong>Fichier :</strong> <code>backend/api/admin_views.py</code> — dans <code>AdminOrderDetailView.patch()</code></p>
+      <p style="font-size:13px">Quand le statut passe à <code>"shipped"</code> et qu'un <code>tracking_number</code> est fourni, envoyer un email au client avec le numéro de suivi. Créer un fichier <code>backend/api/email_templates.py</code> avec les templates HTML des emails.</p>
+    </div>
+
+    <div class="card card-navy" style="margin-bottom:16px">
+      <h3>5. Validation des coupons (2–3 jours)</h3>
+      <p style="font-size:13px;margin-bottom:8px"><strong>Fichier :</strong> <code>backend/api/views.py</code> — classe <code>ApplyCouponView</code></p>
+      <p style="font-size:13px">Le modèle <code>Coupon</code> est déjà en base. L'interface admin est là. Il faut compléter la méthode <code>post()</code> qui est actuellement un stub :</p>
+      <div style="background:#1e1e2e;border-radius:6px;padding:12px;font-family:monospace;font-size:11px;color:#cdd6f4;line-height:1.8">
+        <div style="color:#6c7086"># Dans ApplyCouponView.post() :</div>
+        <div>coupon = Coupon.objects.get(code=code, is_active=True)</div>
+        <div style="color:#6c7086"># Vérifier : expiry, min_order, max_uses</div>
+        <div>if cart.total &lt; coupon.min_order_amount: return error</div>
+        <div>if coupon.current_uses &gt;= coupon.max_uses: return error</div>
+        <div style="color:#6c7086"># Calculer la réduction</div>
+        <div>if coupon.discount_type == 'percentage':</div>
+        <div>    discount = cart.total * coupon.discount_value / 100</div>
+        <div>else:</div>
+        <div>    discount = coupon.discount_value</div>
+        <div style="color:#6c7086"># Stocker le coupon dans la session</div>
+        <div>request.session['applied_coupon'] = coupon.code</div>
+      </div>
+      <p style="font-size:13px;margin-top:8px">Le champ de saisie dans <code>frontend/cart.html</code> existe déjà. La logique est dans <code>frontend/admin/coupons.html</code>.</p>
+    </div>
+
+    <h2 style="margin-top:24px">🟡 Moyenne priorité — après lancement</h2>
+
+    <div class="grid-2">
+      <div class="card" style="border-left:4px solid #f59e0b">
+        <h3>6. Box Builder UI (5–8 jours)</h3>
+        <p style="font-size:13px;margin-bottom:8px"><strong>Fichier :</strong> <code>frontend/box-builder.html</code></p>
+        <p style="font-size:13px">L'API <code>GET /api/v1/composable-boxes/</code> et <code>POST /api/v1/composable-boxes/</code> existent. Implémenter une interface JS interactive : sélection de produits dans une grille, aperçu en temps réel du total et de l'impact, bouton "Ajouter au panier".</p>
+      </div>
+      <div class="card" style="border-left:4px solid #f59e0b">
+        <h3>7. Analytics GA4 (1 jour)</h3>
+        <p style="font-size:13px;margin-bottom:8px"><strong>Fichiers :</strong> tous les fichiers <code>frontend/*.html</code></p>
+        <p style="font-size:13px">Ajouter dans le <code>&lt;head&gt;</code> de chaque page le script GA4. Puis tracker les événements clés :</p>
+        <ul style="font-size:12px;line-height:1.8;padding-left:16px">
+          <li><code>add_to_cart</code> — au clic sur "Ajouter au panier"</li>
+          <li><code>begin_checkout</code> — au clic sur "Procéder au paiement"</li>
+          <li><code>purchase</code> — dans <code>order-success.html</code> avec le montant</li>
+          <li><code>donate</code> — dans <code>donate.html</code> après confirmation</li>
+        </ul>
+      </div>
+      <div class="card" style="border-left:4px solid #f59e0b">
+        <h3>8. Multi-langue complète (6–10 jours)</h3>
+        <p style="font-size:13px;margin-bottom:8px"><strong>Fichiers :</strong> tous les templates HTML/PHP + <code>class-i18n.php</code></p>
+        <p style="font-size:13px">Les champs <code>name_fr/en/ar</code> et <code>description_fr/en/ar</code> existent sur tous les produits. Implémenter un sélecteur de langue persistant (localStorage) qui switche tous les textes dynamiques. <code>class-i18n.php</code> est déjà dans le plugin WP comme base.</p>
+      </div>
+      <div class="card" style="border-left:4px solid #f59e0b">
+        <h3>9. SEO meta tags WordPress (2 jours)</h3>
+        <p style="font-size:13px;margin-bottom:8px"><strong>Fichier :</strong> <code>wordpress-plugin/wwc-shop/templates/single-product.php</code></p>
+        <p style="font-size:13px">Les champs <code>meta_title</code> et <code>meta_description</code> existent dans la DB. Les injecter dans le <code>&lt;head&gt;</code> WordPress via le hook <code>wp_head</code>. Ajouter aussi le markup Schema.org <code>Product</code> pour le SEO e-commerce.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 21 · MANUEL NON-TECHNIQUE ── -->
+<section class="section" id="s21">
+  <div class="section-header">
+    <div class="section-num">21</div>
+    <div>
+      <div class="section-title">Manuel Utilisateur — Guide Complet pour l'Équipe WWC</div>
+      <div class="section-subtitle">Comment gérer la boutique au quotidien, sans connaissances techniques</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="info-box"><strong>Pour l'équipe WWC :</strong> Ce guide explique chaque action de gestion de la boutique en language simple. Pas besoin de savoir coder — tout se fait depuis l'interface d'administration.</div>
+
+    <h2>🔑 Accéder à l'administration</h2>
+    <div class="grid-2" style="margin-bottom:24px">
+      <div class="card card-orange">
+        <h3>Tableau de bord admin boutique</h3>
+        <p style="font-size:13px">Adresse : <strong>votresite.com/admin</strong> (ou le chemin configuré)<br>
+        Vous y trouverez : commandes, produits, clients, donations, stats.<br>
+        Connexion avec votre identifiant et mot de passe administrateur.</p>
+      </div>
+      <div class="card card-navy">
+        <h3>Administration WordPress</h3>
+        <p style="font-size:13px">Adresse : <strong>votresite.com/wp-admin</strong><br>
+        Dans le menu gauche : <strong>WWC Shop</strong> → vous trouverez les tarifs de livraison et le taux de change.<br>
+        Les produits et commandes se gèrent depuis le tableau de bord dédié, pas depuis WordPress.</p>
+      </div>
+    </div>
+
+    <h2>📦 Gérer les Commandes — Étape par Étape</h2>
+    <div class="step-guide" style="margin-bottom:24px">
+      <div class="step-guide-item">
+        <div class="step-guide-num">1</div>
+        <div class="step-guide-text">
+          <h4>Voir les nouvelles commandes</h4>
+          <p>Allez dans <strong>Admin → Commandes</strong>. Les nouvelles commandes apparaissent en haut avec le statut <span class="badge badge-orange">En attente</span> (paiement par virement) ou <span class="badge badge-green">Payé</span> (paiement Stripe confirmé automatiquement).</p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">2</div>
+        <div class="step-guide-text">
+          <h4>Comprendre les statuts de commande</h4>
+          <p>
+            <span class="badge badge-gray">En attente</span> → Commande reçue, paiement non confirmé (virement en attente)<br>
+            <span class="badge badge-green">Payé</span> → Stripe a confirmé le paiement automatiquement<br>
+            <span class="badge badge-blue">En traitement</span> → Vous avez commencé à préparer le colis<br>
+            <span class="badge badge-blue">Expédié</span> → Colis envoyé, numéro de tracking saisi<br>
+            <span class="badge badge-green">Livré</span> → Client a reçu sa commande<br>
+            <span class="badge badge-gray">Annulé</span> → Commande annulée, stock automatiquement restauré
+          </p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">3</div>
+        <div class="step-guide-text">
+          <h4>Changer le statut d'une commande</h4>
+          <p>Cliquez sur le numéro de commande → ouvrez le détail → cliquez sur le bouton <strong>Modifier le statut</strong> → choisissez le nouveau statut → <strong>Enregistrer</strong>. Le client reçoit une notification automatique.</p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">4</div>
+        <div class="step-guide-text">
+          <h4>Ajouter un numéro de suivi (tracking)</h4>
+          <p>Quand vous expédiez le colis, passez le statut à <span class="badge badge-blue">Expédié</span>. Un champ apparaît pour saisir le numéro de tracking de votre transporteur (La Poste, DHL, Chronopost…). Une fois saisi, le client peut suivre son colis.</p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">5</div>
+        <div class="step-guide-text">
+          <h4>Traiter un remboursement</h4>
+          <p>Les remboursements Stripe se font depuis <strong>dashboard.stripe.com</strong> → Paiements → trouver la transaction → bouton Rembourser. Ensuite, repassez la commande au statut <span class="badge badge-gray">Annulé</span> dans l'admin boutique pour que le stock soit restauré automatiquement.</p>
+        </div>
+      </div>
+    </div>
+
+    <h2>🛍️ Ajouter un Nouveau Produit — Champ par Champ</h2>
+    <div class="step-guide" style="margin-bottom:24px">
+      <div class="step-guide-item">
+        <div class="step-guide-num">1</div>
+        <div class="step-guide-text">
+          <h4>Ouvrir le formulaire</h4>
+          <p>Admin → Produits → bouton orange <strong>+ Nouveau produit</strong> en haut à droite.</p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">2</div>
+        <div class="step-guide-text">
+          <h4>Informations de base</h4>
+          <p>
+            <strong>Nom (FR)</strong> : Nom du produit en français — ex. "Huile d'Argan Bio 100ml"<br>
+            <strong>Nom (EN)</strong> : Traduction anglaise — ex. "Organic Argan Oil 100ml"<br>
+            <strong>Nom (AR)</strong> : Traduction arabe (si disponible)<br>
+            <strong>Slug</strong> : S'auto-remplit — l'identifiant URL du produit (ne pas modifier)<br>
+            <strong>Catégorie</strong> : Choisir parmi Soins, Nutrition, Bien-être, Maison, Coffrets<br>
+            <strong>Producteur</strong> : Choisir le producteur partenaire dans la liste
+          </p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">3</div>
+        <div class="step-guide-text">
+          <h4>Prix et stock</h4>
+          <p>
+            <strong>Prix EUR</strong> : Prix de vente en euros pour les clients internationaux (ex. 18.50)<br>
+            <strong>Prix TND</strong> : Prix en dinars tunisiens pour les clients locaux (ex. 55.00)<br>
+            <strong>Prix de gros (B2B)</strong> : Prix réduit pour les clients professionnels — laisser vide si idem B2C<br>
+            <strong>Stock</strong> : Quantité disponible. Le système décompte automatiquement à chaque vente.
+          </p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">4</div>
+        <div class="step-guide-text">
+          <h4>Description et impact</h4>
+          <p>
+            <strong>Description</strong> : Texte détaillé du produit (ingrédients, utilisation, origine)<br>
+            <strong>Message d'impact</strong> : Ce que finance cet achat — ex. "Finance 3 repas scolaires pour les élèves de Sidi Mechreg". Ce texte apparaît sur la fiche produit et dans le panier.
+          </p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">5</div>
+        <div class="step-guide-text">
+          <h4>Images et badges</h4>
+          <p>
+            <strong>Images</strong> : Téléchargez jusqu'à 5 photos. La première sera l'image principale dans la boutique. Préférez des photos carrées (1:1) de bonne qualité.<br>
+            <strong>Badges</strong> : Cochez les caractéristiques du produit : BIO, Vegan, Artisanal, Nouveau, Vedette — ils s'affichent sur la carte produit.
+          </p>
+        </div>
+      </div>
+      <div class="step-guide-item">
+        <div class="step-guide-num">6</div>
+        <div class="step-guide-text">
+          <h4>Activer le produit</h4>
+          <p>Cochez <strong>Actif</strong> pour le rendre visible dans la boutique. Vous pouvez préparer le produit sans le publier — il sera invisible pour les clients tant que "Actif" n'est pas coché. Cliquez <strong>Enregistrer</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:24px">
+      <div>
+        <h2>👨‍🌾 Ajouter un Producteur</h2>
+        <div class="step-guide">
+          <div class="step-guide-item">
+            <div class="step-guide-num">1</div>
+            <div class="step-guide-text">
+              <h4>Créer le profil</h4>
+              <p>Admin → Producteurs → <strong>+ Nouveau producteur</strong>. Remplir : nom, pays, région, photo, biographie, lien vers ses produits. Le profil apparaît sur la page Producteurs et sur les fiches produits.</p>
+            </div>
+          </div>
+        </div>
+
+        <h2 style="margin-top:20px">🏢 Approuver un Client B2B</h2>
+        <div class="step-guide">
+          <div class="step-guide-item">
+            <div class="step-guide-num">1</div>
+            <div class="step-guide-text">
+              <h4>Trouver la demande</h4>
+              <p>Admin → Clients → filtrez par type "B2B en attente". Les demandes d'entreprises y apparaissent avec le statut <span class="badge badge-orange">En attente d'approbation</span>.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">2</div>
+            <div class="step-guide-text">
+              <h4>Valider ou refuser</h4>
+              <p>Ouvrez le profil client → vérifiez les informations (société, SIRET/numéro TVA) → cliquez <strong>Approuver</strong> pour activer les tarifs professionnels, ou <strong>Refuser</strong> avec un message explicatif.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2>💚 Consulter et Gérer les Donations</h2>
+        <div class="step-guide">
+          <div class="step-guide-item">
+            <div class="step-guide-num">1</div>
+            <div class="step-guide-text">
+              <h4>Liste des dons</h4>
+              <p>Admin → Donations → liste de tous les dons avec : montant, donateur (ou "Anonyme"), pays bénéficiaire, date, statut paiement Stripe.</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">2</div>
+            <div class="step-guide-text">
+              <h4>Gérer les pays et projets</h4>
+              <p>Admin → Donations → Pays : vous pouvez ajouter/modifier les pays bénéficiaires avec leur image et description. Admin → Donations → Projets : les projets spécifiques auxquels les dons sont alloués.</p>
+            </div>
+          </div>
+        </div>
+
+        <h2 style="margin-top:20px">🚚 Modifier les Tarifs de Livraison</h2>
+        <div class="step-guide">
+          <div class="step-guide-item">
+            <div class="step-guide-num">1</div>
+            <div class="step-guide-text">
+              <h4>Via WordPress admin</h4>
+              <p>WordPress Admin → <strong>WWC Shop → Tarifs de livraison</strong>. Vous voyez la liste des pays. Cliquez <strong>Modifier</strong> sur un pays pour changer le tarif (en TND) et le seuil de livraison gratuite (montant à partir duquel la livraison est offerte).</p>
+            </div>
+          </div>
+          <div class="step-guide-item">
+            <div class="step-guide-num">2</div>
+            <div class="step-guide-text">
+              <h4>Ajouter un nouveau pays</h4>
+              <p>Cliquez <strong>+ Ajouter un tarif</strong> → saisir le code pays (ex. DE pour Allemagne), le nom, le tarif en TND, et le seuil. Le checkout se met à jour automatiquement.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>💱 Modifier le Taux de Change TND/EUR</h2>
+    <div class="card" style="margin-bottom:24px">
+      <p style="font-size:13px">Ce taux sert à convertir les prix TND en EUR pour les clients européens. Il doit être mis à jour régulièrement pour refléter le taux réel.</p>
+      <p style="font-size:13px"><strong>Où :</strong> WordPress Admin → <strong>WWC Shop → Paramètres du site</strong> → champ "Taux de change TND → EUR".</p>
+      <p style="font-size:13px;margin:0"><strong>Exemple :</strong> Si 1 EUR = 3.39 TND, entrer <code>0.295</code> (= 1/3.39). Vérifier le taux actuel sur Google ou XE.com.</p>
+    </div>
+
+    <h2>🏷️ Créer et Gérer des Codes Promo</h2>
+    <div class="card" style="margin-bottom:16px">
+      <p style="font-size:13px;margin-bottom:8px">Admin → <strong>Coupons</strong> → <strong>+ Nouveau coupon</strong></p>
+      <table style="width:100%;font-size:12px;border-collapse:collapse">
+        <tr style="background:var(--gray-bg)"><th style="padding:7px;border:1px solid var(--border)">Champ</th><th style="padding:7px;border:1px solid var(--border)">Explication</th><th style="padding:7px;border:1px solid var(--border)">Exemple</th></tr>
+        <tr><td style="padding:7px;border:1px solid var(--border)">Code promo</td><td style="padding:7px;border:1px solid var(--border)">Le code que le client saisit dans son panier</td><td style="padding:7px;border:1px solid var(--border)"><code>BIENVENUE10</code></td></tr>
+        <tr><td style="padding:7px;border:1px solid var(--border)">Type de réduction</td><td style="padding:7px;border:1px solid var(--border)">Pourcentage ou montant fixe</td><td style="padding:7px;border:1px solid var(--border)">10% ou 5€</td></tr>
+        <tr><td style="padding:7px;border:1px solid var(--border)">Valeur</td><td style="padding:7px;border:1px solid var(--border)">La valeur de la réduction</td><td style="padding:7px;border:1px solid var(--border)">10 (pour 10%)</td></tr>
+        <tr><td style="padding:7px;border:1px solid var(--border)">Commande minimum</td><td style="padding:7px;border:1px solid var(--border)">Montant minimum pour utiliser le coupon</td><td style="padding:7px;border:1px solid var(--border)">30€</td></tr>
+        <tr><td style="padding:7px;border:1px solid var(--border)">Utilisations max</td><td style="padding:7px;border:1px solid var(--border)">Nombre de fois que le code peut être utilisé</td><td style="padding:7px;border:1px solid var(--border)">100</td></tr>
+        <tr><td style="padding:7px;border:1px solid var(--border)">Date d'expiration</td><td style="padding:7px;border:1px solid var(--border)">Le code ne fonctionnera plus après cette date</td><td style="padding:7px;border:1px solid var(--border)">31/12/2026</td></tr>
+      </table>
+      <div class="warning-box" style="margin-top:12px;margin-bottom:0"><strong>Note :</strong> La validation des coupons dans le tunnel de paiement est en cours de développement (Phase 3). Une fois implémentée, ce guide sera mis à jour.</div>
+    </div>
+
+    <h2>📊 Comprendre les Statistiques Admin</h2>
+    <div class="grid-4" style="margin-bottom:16px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:24px;margin-bottom:6px">📦</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy)">Commandes du jour</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:4px">Nombre de nouvelles commandes reçues aujourd'hui</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:24px;margin-bottom:6px">💶</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy)">CA du mois</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:4px">Chiffre d'affaires total des commandes payées ce mois</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:24px;margin-bottom:6px">👥</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy)">Clients actifs</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:4px">Comptes clients enregistrés avec au moins une commande</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:24px;margin-bottom:6px">💚</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy)">Dons du mois</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:4px">Total des donations reçues via la page "Faire un Don"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 22 · CLOSING ── -->
+<section class="section" id="s22">
+  <div style="background:linear-gradient(135deg,var(--navy) 0%,#2a4a80 100%);padding:48px 40px;color:white;text-align:center;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:var(--orange);border-radius:50%;opacity:0.1"></div>
+    <div style="position:absolute;bottom:-60px;left:-30px;width:250px;height:250px;background:var(--orange);border-radius:50%;opacity:0.07"></div>
+    <div style="position:relative;z-index:1">
+      <div style="font-size:48px;margin-bottom:16px">🌍</div>
+      <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:32px;margin-bottom:12px">Merci</div>
+      <div style="font-size:16px;opacity:0.85;margin-bottom:32px">WWC Shop — Un projet au service de l'impact social</div>
+      <!-- Stats -->
+      <div style="display:flex;justify-content:center;gap:40px;margin-bottom:32px;flex-wrap:wrap">
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:36px;color:var(--orange)">22</div>
+          <div style="font-size:12px;opacity:0.7">Sections documentées</div>
+        </div>
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:36px;color:var(--orange)">50+</div>
+          <div style="font-size:12px;opacity:0.7">Endpoints API</div>
+        </div>
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:36px;color:var(--orange)">7</div>
+          <div style="font-size:12px;opacity:0.7">Maquettes UI</div>
+        </div>
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:36px;color:var(--orange)">5</div>
+          <div style="font-size:12px;opacity:0.7">Phases de roadmap</div>
+        </div>
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:36px;color:var(--orange)">3</div>
+          <div style="font-size:12px;opacity:0.7">Langues supportées</div>
+        </div>
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:36px;color:var(--orange)">2</div>
+          <div style="font-size:12px;opacity:0.7">Méthodes de paiement</div>
+        </div>
+      </div>
+      <!-- Summary box -->
+      <div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:20px 28px;display:inline-block;text-align:left;margin-bottom:24px;max-width:760px">
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;margin-bottom:12px">Résumé du projet — Mars 2026</div>
+        <div style="font-size:13px;line-height:1.8;opacity:0.9">
+          La boutique WWC Shop dispose d'un <strong style="color:white">backend Django complet</strong> (50+ endpoints API REST, paiements Stripe, gestion des commandes, impact social, B2B, donations). L'interface client couvre l'ensemble du parcours d'achat avec support trilingue FR/EN/AR. Le tableau de bord admin permet à l'équipe WWC de gérer produits, commandes, clients, donations, tarifs et taux de change. Le plugin WordPress est prêt à être connecté à un site existant.
+          <br><br>
+          Les étapes restantes avant le lancement public sont : <strong style="color:white">SSL + déploiement serveur, clés Stripe LIVE, email de vérification, email d'expédition</strong>, et le chargement des vrais produits avec photos. Estimé : 2–4 semaines de travail technique.
+        </div>
+      </div>
+      <div style="font-size:13px;opacity:0.6;margin-top:8px">
+        Document mis à jour en Mars 2026 · Wallah We Can — GreenSchool Initiative
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// Sidebar active link highlighting on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('#sidebar nav a');
+
+function updateActiveNav() {
+  let currentSection = '';
+  sections.forEach(section => {
+    const sectionTop = section.offsetTop - 80;
+    if (window.scrollY >= sectionTop) {
+      currentSection = section.getAttribute('id');
+    }
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + currentSection) {
+      link.classList.add('active');
+    }
+  });
+}
+
+// Attach to the main content scroll, not window (since layout uses flex)
+const mainEl = document.getElementById('main');
+mainEl.addEventListener('scroll', updateActiveNav);
+window.addEventListener('scroll', updateActiveNav);
+updateActiveNav();
+</script>
+
+</body>
+</html>
+

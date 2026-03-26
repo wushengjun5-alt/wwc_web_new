@@ -16,8 +16,29 @@ from customers.models import Customer, CustomerAddress, Wishlist
 # Product Serializers
 # ============================================
 
-class ProducerSerializer(serializers.ModelSerializer):
+def _resolve_lang_field(obj_data_or_obj, base_field, lang, is_dict=False):
+    """
+    Return the best available value for a multilingual field.
+    Tries <base_field>_<lang>, then falls back to <base_field>.
+    Works on both model instances and plain dicts.
+    """
+    if lang and lang != 'fr':
+        lang_field = f"{base_field}_{lang}"
+        value = obj_data_or_obj.get(lang_field) if is_dict else getattr(obj_data_or_obj, lang_field, None)
+        if value:
+            return value
+    return obj_data_or_obj.get(base_field) if is_dict else getattr(obj_data_or_obj, base_field, '')
+
+
+class LangMixin:
+    """Mixin that reads 'lang' from serializer context."""
+    def get_lang(self):
+        return self.context.get('lang', 'fr')
+
+
+class ProducerSerializer(LangMixin, serializers.ModelSerializer):
     """Serializer for product producers"""
+    bio = serializers.SerializerMethodField()
 
     class Meta:
         model = Producer
@@ -26,19 +47,30 @@ class ProducerSerializer(serializers.ModelSerializer):
             'total_products_sold', 'member_since', 'is_active'
         ]
 
+    def get_bio(self, obj):
+        return _resolve_lang_field(obj, 'bio', self.get_lang())
 
-class ProductCategorySerializer(serializers.ModelSerializer):
+
+class ProductCategorySerializer(LangMixin, serializers.ModelSerializer):
     """Serializer for product categories"""
     has_children = serializers.ReadOnlyField()
     parent_name = serializers.CharField(source='parent.name', read_only=True)
+    name = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductCategory
         fields = [
-            'id', 'name', 'name_en', 'name_ar', 'slug', 'description',
+            'id', 'name', 'slug', 'description',
             'icon', 'image', 'parent', 'parent_name', 'order',
             'is_active', 'show_in_menu', 'has_children'
         ]
+
+    def get_name(self, obj):
+        return _resolve_lang_field(obj, 'name', self.get_lang())
+
+    def get_description(self, obj):
+        return _resolve_lang_field(obj, 'description', self.get_lang())
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -60,12 +92,14 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return obj.image.url
 
 
-class ProductListSerializer(serializers.ModelSerializer):
+class ProductListSerializer(LangMixin, serializers.ModelSerializer):
     """Lightweight serializer for product listings"""
-    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_name = serializers.SerializerMethodField()
     primary_image = ProductImageSerializer(read_only=True)
     is_in_stock = serializers.ReadOnlyField()
     discount_percentage = serializers.ReadOnlyField()
+    name = serializers.SerializerMethodField()
+    impact_item = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -77,28 +111,44 @@ class ProductListSerializer(serializers.ModelSerializer):
             'impact_quantity', 'impact_item', 'impact_school'
         ]
 
+    def get_name(self, obj):
+        return _resolve_lang_field(obj, 'name', self.get_lang())
 
-class ProductDetailSerializer(serializers.ModelSerializer):
+    def get_category_name(self, obj):
+        if not obj.category:
+            return ''
+        return _resolve_lang_field(obj.category, 'name', self.get_lang())
+
+    def get_impact_item(self, obj):
+        return _resolve_lang_field(obj, 'impact_item', self.get_lang())
+
+
+class ProductDetailSerializer(LangMixin, serializers.ModelSerializer):
     """Full serializer for product detail page"""
-    category = ProductCategorySerializer(read_only=True)
-    producer = ProducerSerializer(read_only=True)
+    category = serializers.SerializerMethodField()
+    producer = serializers.SerializerMethodField()
     images = ProductImageSerializer(many=True, read_only=True)
     is_in_stock = serializers.ReadOnlyField()
     is_low_stock = serializers.ReadOnlyField()
     discount_percentage = serializers.ReadOnlyField()
+    name = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
+    ingredients = serializers.SerializerMethodField()
+    usage = serializers.SerializerMethodField()
+    impact_description = serializers.SerializerMethodField()
+    impact_item = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'name_en', 'name_ar', 'slug', 'sku',
-            'description', 'description_en', 'description_ar', 'short_description',
-            'ingredients', 'ingredients_en', 'usage', 'usage_en',
+            'id', 'name', 'slug', 'sku',
+            'description', 'short_description',
+            'ingredients', 'usage',
             'category', 'producer', 'unit_type',
             'price_tnd', 'price_eur', 'compare_at_price_tnd', 'discount_percentage',
             'b2b_min_quantity', 'b2b_price_tnd', 'b2b_price_eur',
             'is_natural', 'is_organic', 'is_handmade', 'is_vegan', 'is_cruelty_free',
-            'impact_description', 'impact_description_en', 'impact_description_ar',
-            'impact_school', 'impact_quantity', 'impact_item', 'impact_item_en',
+            'impact_description', 'impact_school', 'impact_quantity', 'impact_item',
             'stock_quantity', 'is_in_stock', 'is_low_stock',
             'weight', 'dimensions',
             'average_rating', 'review_count',
@@ -106,18 +156,57 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
 
+    def get_name(self, obj):
+        return _resolve_lang_field(obj, 'name', self.get_lang())
 
-class ComposableBoxSerializer(serializers.ModelSerializer):
+    def get_description(self, obj):
+        return _resolve_lang_field(obj, 'description', self.get_lang())
+
+    def get_ingredients(self, obj):
+        return _resolve_lang_field(obj, 'ingredients', self.get_lang())
+
+    def get_usage(self, obj):
+        return _resolve_lang_field(obj, 'usage', self.get_lang())
+
+    def get_impact_description(self, obj):
+        return _resolve_lang_field(obj, 'impact_description', self.get_lang())
+
+    def get_impact_item(self, obj):
+        return _resolve_lang_field(obj, 'impact_item', self.get_lang())
+
+    def get_category(self, obj):
+        if not obj.category:
+            return None
+        return ProductCategorySerializer(obj.category, context=self.context).data
+
+    def get_producer(self, obj):
+        if not obj.producer:
+            return None
+        return ProducerSerializer(obj.producer, context=self.context).data
+
+
+class ComposableBoxSerializer(LangMixin, serializers.ModelSerializer):
     """Serializer for composable boxes"""
-    eligible_products = ProductListSerializer(many=True, read_only=True)
+    eligible_products = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = ComposableBox
         fields = [
-            'id', 'name', 'name_en', 'slug', 'description', 'description_en',
+            'id', 'name', 'slug', 'description',
             'image', 'min_items', 'max_items', 'price_tnd', 'price_eur',
             'eligible_products', 'is_active'
         ]
+
+    def get_name(self, obj):
+        return _resolve_lang_field(obj, 'name', self.get_lang())
+
+    def get_description(self, obj):
+        return _resolve_lang_field(obj, 'description', self.get_lang())
+
+    def get_eligible_products(self, obj):
+        return ProductListSerializer(obj.eligible_products.all(), many=True, context=self.context).data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -324,6 +413,10 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'shipping_first_name', 'shipping_last_name', 'shipping_company',
             'shipping_address_1', 'shipping_address_2', 'shipping_city',
             'shipping_state', 'shipping_postal_code', 'shipping_country',
+            'billing_same_as_shipping',
+            'billing_first_name', 'billing_last_name', 'billing_company',
+            'billing_address_1', 'billing_address_2', 'billing_city',
+            'billing_postal_code', 'billing_country',
             'payment_method', 'paid_at',
             'shipping_method', 'tracking_number', 'shipped_at', 'delivered_at',
             'customer_notes', 'items', 'created_at', 'updated_at'
@@ -353,6 +446,17 @@ class CheckoutSerializer(serializers.Serializer):
         default='stripe'
     )
 
+    # Billing address
+    billing_same_as_shipping = serializers.BooleanField(required=False, default=True)
+    billing_first_name  = serializers.CharField(required=False, allow_blank=True)
+    billing_last_name   = serializers.CharField(required=False, allow_blank=True)
+    billing_company     = serializers.CharField(required=False, allow_blank=True)
+    billing_address_1   = serializers.CharField(required=False, allow_blank=True)
+    billing_address_2   = serializers.CharField(required=False, allow_blank=True)
+    billing_city        = serializers.CharField(required=False, allow_blank=True)
+    billing_postal_code = serializers.CharField(required=False, allow_blank=True)
+    billing_country     = serializers.CharField(max_length=2, required=False, allow_blank=True)
+
     # Optional
     customer_notes = serializers.CharField(required=False, allow_blank=True)
     coupon_code = serializers.CharField(required=False, allow_blank=True)
@@ -374,8 +478,12 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = [
             'id', 'email', 'first_name', 'last_name', 'full_name',
-            'customer_type', 'phone', 'date_of_birth',
+            'customer_type', 'b2b_status', 'phone', 'date_of_birth',
             'company_name', 'company_tax_id',
+            'default_shipping_first_name', 'default_shipping_last_name',
+            'default_shipping_address_1', 'default_shipping_address_2',
+            'default_shipping_city', 'default_shipping_state',
+            'default_shipping_postal_code', 'default_shipping_country',
             'total_purchases', 'total_orders', 'total_impact_items', 'impact_breakdown',
             'preferred_currency', 'preferred_language',
             'newsletter_subscribed', 'created_at'
@@ -384,6 +492,15 @@ class CustomerSerializer(serializers.ModelSerializer):
             'total_purchases', 'total_orders', 'total_impact_items',
             'impact_breakdown', 'created_at'
         ]
+
+    def update(self, instance, validated_data):
+        # Handle user fields (first_name, last_name)
+        user_data = validated_data.pop('user', {})
+        if user_data:
+            for attr, value in user_data.items():
+                setattr(instance.user, attr, value)
+            instance.user.save(update_fields=list(user_data.keys()))
+        return super().update(instance, validated_data)
 
 
 class CustomerAddressSerializer(serializers.ModelSerializer):
@@ -421,16 +538,24 @@ class CustomerDashboardSerializer(serializers.Serializer):
 # Impact Serializers
 # ============================================
 
-class ImpactEventSerializer(serializers.ModelSerializer):
+class ImpactEventSerializer(LangMixin, serializers.ModelSerializer):
     """Serializer for impact events"""
+    title = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = ImpactEvent
         fields = [
-            'id', 'title', 'title_en', 'description', 'description_en',
+            'id', 'title', 'description',
             'school', 'date', 'items_delivered', 'item_type',
             'photo', 'video_url', 'is_published', 'created_at'
         ]
+
+    def get_title(self, obj):
+        return _resolve_lang_field(obj, 'title', self.get_lang())
+
+    def get_description(self, obj):
+        return _resolve_lang_field(obj, 'description', self.get_lang())
 
 
 # ============================================
@@ -480,6 +605,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         # Update customer profile
         user.customer.customer_type = customer_type
+        if customer_type == 'company':
+            user.customer.b2b_status = 'pending_approval'
         if company_name:
             user.customer.company_name = company_name
         user.customer.save()

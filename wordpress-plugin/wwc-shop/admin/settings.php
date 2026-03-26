@@ -46,6 +46,19 @@ defined('ABSPATH') || exit;
 
             <tr>
                 <th scope="row">
+                    <label for="wwc_admin_api_key"><?php esc_html_e('Admin API Key', 'wwc-shop'); ?></label>
+                </th>
+                <td>
+                    <input type="password" id="wwc_admin_api_key" name="wwc_admin_api_key" class="regular-text"
+                           value="<?php echo esc_attr(get_option('wwc_admin_api_key', '')); ?>">
+                    <p class="description">
+                        <?php esc_html_e('Secret key for admin endpoints (products, shipping rates, settings). Must match ADMIN_API_KEY in Django settings.', 'wwc-shop'); ?>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <th scope="row">
                     <label for="wwc_default_currency"><?php esc_html_e('Default Currency', 'wwc-shop'); ?></label>
                 </th>
                 <td>

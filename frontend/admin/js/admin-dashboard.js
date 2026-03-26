@@ -37,6 +37,12 @@ async function loadStats() {
         document.getElementById('statTotalOrders').textContent = stats.total_orders || 0;
         document.getElementById('statPendingOrders').textContent = stats.pending_orders || 0;
         document.getElementById('statTotalCustomers').textContent = stats.total_customers || 0;
+        if (document.getElementById('statPendingB2B')) {
+            const pendingB2B = stats.pending_b2b || 0;
+            document.getElementById('statPendingB2B').textContent = pendingB2B;
+            const card = document.getElementById('statPendingB2BCard');
+            if (card) card.style.borderLeft = pendingB2B > 0 ? '4px solid #e04403' : '';
+        }
         document.getElementById('statRevenue').textContent = parseFloat(stats.total_revenue || 0).toFixed(0);
         if (document.getElementById('statActiveCoupons'))
             document.getElementById('statActiveCoupons').textContent = stats.active_coupons || 0;

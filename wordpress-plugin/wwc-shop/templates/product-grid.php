@@ -38,21 +38,21 @@ function wwc_filter_url($key, $val) {
 
             <!-- Search -->
             <div class="wwc-filter-section">
-                <h4><?php esc_html_e('Recherche', 'wwc-shop'); ?></h4>
+                <h4><?php WWC_I18n::e('Recherche'); ?></h4>
                 <input type="text" name="search" class="wwc-filter-search"
-                    placeholder="<?php esc_attr_e('Rechercher…', 'wwc-shop'); ?>"
+                    placeholder="<?php echo WWC_I18n::attr('Rechercher…'); ?>"
                     value="<?php echo esc_attr($_GET['search'] ?? ''); ?>">
             </div>
 
             <!-- Category -->
             <?php if (!empty($categories)): ?>
             <div class="wwc-filter-section">
-                <h4><?php esc_html_e('Catégorie', 'wwc-shop'); ?></h4>
+                <h4><?php WWC_I18n::e('Catégorie'); ?></h4>
                 <ul class="wwc-filter-list">
                     <li>
                         <a href="<?php echo esc_url(wwc_filter_url('category', '')); ?>"
                            class="<?php echo empty($_GET['category']) ? 'active' : ''; ?>">
-                            <?php esc_html_e('Toutes', 'wwc-shop'); ?>
+                            <?php WWC_I18n::e('Toutes'); ?>
                         </a>
                     </li>
                     <?php foreach ($categories as $cat): ?>
@@ -69,55 +69,55 @@ function wwc_filter_url($key, $val) {
 
             <!-- Price range -->
             <div class="wwc-filter-section">
-                <h4><?php esc_html_e('Prix (DT)', 'wwc-shop'); ?></h4>
+                <h4><?php WWC_I18n::e('Prix (DT)'); ?></h4>
                 <div class="wwc-price-range">
-                    <input type="number" name="min_price" placeholder="<?php esc_attr_e('Min', 'wwc-shop'); ?>"
+                    <input type="number" name="min_price" placeholder="<?php echo WWC_I18n::attr('Min'); ?>"
                         value="<?php echo esc_attr($_GET['min_price'] ?? ''); ?>" min="0" step="1">
                     <span>—</span>
-                    <input type="number" name="max_price" placeholder="<?php esc_attr_e('Max', 'wwc-shop'); ?>"
+                    <input type="number" name="max_price" placeholder="<?php echo WWC_I18n::attr('Max'); ?>"
                         value="<?php echo esc_attr($_GET['max_price'] ?? ''); ?>" min="0" step="1">
                 </div>
             </div>
 
             <!-- Badges -->
             <div class="wwc-filter-section">
-                <h4><?php esc_html_e('Filtres', 'wwc-shop'); ?></h4>
+                <h4><?php WWC_I18n::e('Filtres'); ?></h4>
                 <label class="wwc-filter-checkbox">
                     <input type="checkbox" name="is_natural" value="true"
                         <?php checked(!empty($_GET['is_natural'])); ?>>
-                    <?php esc_html_e('Naturel', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e('Naturel'); ?>
                 </label>
                 <label class="wwc-filter-checkbox">
                     <input type="checkbox" name="is_organic" value="true"
                         <?php checked(!empty($_GET['is_organic'])); ?>>
-                    <?php esc_html_e('Bio', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e('Bio'); ?>
                 </label>
                 <label class="wwc-filter-checkbox">
                     <input type="checkbox" name="in_stock" value="true"
                         <?php checked(!empty($_GET['in_stock'])); ?>>
-                    <?php esc_html_e('En stock seulement', 'wwc-shop'); ?>
+                    <?php WWC_I18n::e('En stock seulement'); ?>
                 </label>
             </div>
 
             <!-- Sort -->
             <div class="wwc-filter-section">
-                <h4><?php esc_html_e('Trier par', 'wwc-shop'); ?></h4>
+                <h4><?php WWC_I18n::e('Trier par'); ?></h4>
                 <select name="ordering" class="wwc-filter-sort" onchange="this.form.submit()">
-                    <option value="" <?php selected($_GET['ordering'] ?? '', ''); ?>><?php esc_html_e('Par défaut', 'wwc-shop'); ?></option>
-                    <option value="price_tnd" <?php selected($_GET['ordering'] ?? '', 'price_tnd'); ?>><?php esc_html_e('Prix croissant', 'wwc-shop'); ?></option>
-                    <option value="-price_tnd" <?php selected($_GET['ordering'] ?? '', '-price_tnd'); ?>><?php esc_html_e('Prix décroissant', 'wwc-shop'); ?></option>
-                    <option value="-average_rating" <?php selected($_GET['ordering'] ?? '', '-average_rating'); ?>><?php esc_html_e('Mieux notés', 'wwc-shop'); ?></option>
-                    <option value="-created_at" <?php selected($_GET['ordering'] ?? '', '-created_at'); ?>><?php esc_html_e('Nouveautés', 'wwc-shop'); ?></option>
+                    <option value="" <?php selected($_GET['ordering'] ?? '', ''); ?>><?php WWC_I18n::e('Par défaut'); ?></option>
+                    <option value="price_tnd" <?php selected($_GET['ordering'] ?? '', 'price_tnd'); ?>><?php WWC_I18n::e('Prix croissant'); ?></option>
+                    <option value="-price_tnd" <?php selected($_GET['ordering'] ?? '', '-price_tnd'); ?>><?php WWC_I18n::e('Prix décroissant'); ?></option>
+                    <option value="-average_rating" <?php selected($_GET['ordering'] ?? '', '-average_rating'); ?>><?php WWC_I18n::e('Mieux notés'); ?></option>
+                    <option value="-created_at" <?php selected($_GET['ordering'] ?? '', '-created_at'); ?>><?php WWC_I18n::e('Nouveautés'); ?></option>
                 </select>
             </div>
 
             <button type="submit" class="wwc-btn wwc-btn--primary wwc-filter-apply">
-                <?php esc_html_e('Appliquer', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Appliquer'); ?>
             </button>
 
             <?php if (!empty(array_filter($_GET))): ?>
             <a href="<?php echo esc_url(get_permalink()); ?>" class="wwc-filter-clear">
-                <?php esc_html_e('Effacer les filtres', 'wwc-shop'); ?>
+                <?php WWC_I18n::e('Effacer les filtres'); ?>
             </a>
             <?php endif; ?>
 
@@ -131,7 +131,7 @@ function wwc_filter_url($key, $val) {
         <?php if ($show_filters && !empty($_GET['search'])): ?>
         <p class="wwc-search-results-label">
             <?php printf(
-                esc_html__('%d résultat(s) pour « %s »', 'wwc-shop'),
+                WWC_I18n::t('%d résultat(s) pour « %s »'),
                 $total ?? count($products_list),
                 esc_html($_GET['search'])
             ); ?>
@@ -139,7 +139,7 @@ function wwc_filter_url($key, $val) {
         <?php endif; ?>
 
         <?php if (empty($products_list)): ?>
-            <p class="wwc-no-products"><?php esc_html_e('Aucun produit trouvé.', 'wwc-shop'); ?></p>
+            <p class="wwc-no-products"><?php WWC_I18n::e('Aucun produit trouvé.'); ?></p>
         <?php else: ?>
             <div class="wwc-product-grid wwc-grid-<?php echo esc_attr($columns); ?>">
                 <?php foreach ($products_list as $product): ?>
@@ -191,7 +191,7 @@ function wwc_filter_url($key, $val) {
                                     <div class="wwc-product-impact-preview">
                                         💝 <?php
                                         printf(
-                                            esc_html__('%d %s', 'wwc-shop'),
+                                            WWC_I18n::t('%d %s'),
                                             $product['impact_quantity'],
                                             $product['impact_item']
                                         );
@@ -207,9 +207,9 @@ function wwc_filter_url($key, $val) {
                             <?php echo empty($product['is_in_stock']) ? 'disabled' : ''; ?>
                         >
                             <?php if (empty($product['is_in_stock'])): ?>
-                                <?php esc_html_e('Rupture de stock', 'wwc-shop'); ?>
+                                <?php WWC_I18n::e('Rupture de stock'); ?>
                             <?php else: ?>
-                                <?php esc_html_e('Ajouter au panier', 'wwc-shop'); ?>
+                                <?php WWC_I18n::e('Ajouter au panier'); ?>
                             <?php endif; ?>
                         </button>
                     </div>
@@ -218,20 +218,20 @@ function wwc_filter_url($key, $val) {
 
             <!-- Pagination -->
             <?php if ($total_pages > 1): ?>
-            <nav class="wwc-pagination" aria-label="<?php esc_attr_e('Pagination', 'wwc-shop'); ?>">
+            <nav class="wwc-pagination" aria-label="<?php echo WWC_I18n::attr('Pagination'); ?>">
                 <?php if ($current_page > 1): ?>
                     <a href="<?php echo esc_url(add_query_arg('page', $current_page - 1)); ?>" class="wwc-page-btn">
-                        &larr; <?php esc_html_e('Précédent', 'wwc-shop'); ?>
+                        &larr; <?php WWC_I18n::e('Précédent'); ?>
                     </a>
                 <?php endif; ?>
 
                 <span class="wwc-page-info">
-                    <?php printf(esc_html__('Page %d sur %d', 'wwc-shop'), $current_page, $total_pages); ?>
+                    <?php printf(WWC_I18n::t('Page %d sur %d'), $current_page, $total_pages); ?>
                 </span>
 
                 <?php if ($current_page < $total_pages): ?>
                     <a href="<?php echo esc_url(add_query_arg('page', $current_page + 1)); ?>" class="wwc-page-btn">
-                        <?php esc_html_e('Suivant', 'wwc-shop'); ?> &rarr;
+                        <?php WWC_I18n::e('Suivant'); ?> &rarr;
                     </a>
                 <?php endif; ?>
             </nav>

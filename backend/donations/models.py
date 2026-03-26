@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Sum
@@ -9,6 +10,7 @@ class Country(models.Model):
     name_ar = models.CharField(_('Name (AR)'), max_length=100, blank=True)
     slug = models.SlugField(unique=True)
     flag_emoji = models.CharField(_('Flag Emoji'), max_length=10, default='🌍')
+    image = models.ImageField(_('Image'), upload_to='donation_countries/', blank=True, null=True)
     description = models.TextField(_('Description (FR)'), blank=True)
     is_active = models.BooleanField(_('Active'), default=True)
     order = models.IntegerField(_('Display Order'), default=0)
@@ -85,6 +87,7 @@ class Donation(models.Model):
     ]
 
     project = models.ForeignKey(DonationProject, on_delete=models.CASCADE, related_name='donations')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='donations')
     donor_name = models.CharField(_('Donor Name'), max_length=200, blank=True)
     donor_email = models.EmailField(_('Donor Email'), blank=True)
     amount = models.DecimalField(_('Amount'), max_digits=10, decimal_places=2)

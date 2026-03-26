@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détail de commande - Wallah We Can</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --wwc-primary: #e04403;
+            --wwc-secondary: #1c345e;
+            --wwc-text: #404040;
+            --wwc-text-light: #888888;
+            --wwc-bg: #ffffff;
+            --wwc-bg-light: #f5f5f5;
+            --wwc-border: #ececec;
+            --wwc-success: #28a745;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
+
+        .header { background: #1c345e; height: 70px; }
+        .header-container { max-width: 900px; margin: 0 auto; padding: 0 24px; height: 70px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .logo img { height: 44px; width: auto; }
+        .logo-text { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 800; color: white; text-transform: uppercase; line-height: 1.1; }
+
+        .hdr-dropdown { position: relative; }
+        .hdr-dropdown-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .hdr-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 120px; z-index: 300; overflow: hidden; }
+        .hdr-dropdown-menu.open { display: block; }
+        .hdr-dropdown-item { display: block; width: 100%; padding: 9px 16px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 600; color: #404040; cursor: pointer; }
+        .hdr-dropdown-item:hover { background: #f5f5f5; color: #e04403; }
+        .hdr-dropdown-item.active { color: #e04403; }
+        [dir=rtl] .hdr-dropdown-menu { right: auto; left: 0; }
+        [dir=rtl] .hdr-dropdown-item { text-align: right; }
+
+        .main { max-width: 900px; margin: 0 auto; padding: 40px 20px 60px; }
+
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: #e04403; font-weight: 600; font-size: 14px; text-decoration: none; margin-bottom: 24px; border: none; background: none; cursor: pointer; }
+        .back-link:hover { color: #1c345e; }
+
+        /* Loading */
+        .loading-page { text-align: center; padding: 80px 20px; }
+        .spinner { width: 44px; height: 44px; border: 4px solid var(--wwc-border); border-top-color: #e04403; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Sections */
+        .section { background: white; border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .section-title { font-family: 'Montserrat', sans-serif; font-size: 16px; color: var(--wwc-secondary); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Order header */
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 8px; }
+        .order-header h1 { font-family: 'Montserrat', sans-serif; font-size: 24px; color: var(--wwc-secondary); }
+        .order-meta { font-size: 13px; color: var(--wwc-text-light); margin-top: 4px; }
+
+        .status-badge { padding: 6px 16px; border-radius: 30px; font-size: 13px; font-weight: 600; }
+        .status-pending    { background: #fff3cd; color: #856404; }
+        .status-paid       { background: #d4edda; color: #155724; }
+        .status-processing { background: #cce5ff; color: #004085; }
+        .status-shipped    { background: #e2d4f0; color: #6f42c1; }
+        .status-delivered  { background: #d1ecf1; color: #0c5460; }
+        .status-cancelled  { background: #f8d7da; color: #721c24; }
+
+        /* Progress tracker */
+        .progress-steps { display: flex; align-items: center; margin: 24px 0 8px; }
+        .step { flex: 1; text-align: center; position: relative; }
+        .step:not(:last-child)::after { content: ''; position: absolute; top: 16px; left: 50%; width: 100%; height: 2px; background: var(--wwc-border); z-index: 0; }
+        .step.done:not(:last-child)::after { background: #e04403; }
+        .step-dot { width: 32px; height: 32px; border-radius: 50%; background: var(--wwc-border); color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; font-size: 14px; font-weight: 700; position: relative; z-index: 1; }
+        .step.done .step-dot { background: #e04403; }
+        .step.current .step-dot { background: #1c345e; box-shadow: 0 0 0 4px rgba(28,52,94,0.15); }
+        .step-label { font-size: 11px; color: var(--wwc-text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .step.done .step-label, .step.current .step-label { color: var(--wwc-text); }
+
+        /* Items table */
+        .items-table { width: 100%; border-collapse: collapse; }
+        .items-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--wwc-text-light); background: var(--wwc-bg-light); padding: 10px 12px; text-align: left; }
+        .items-table td { padding: 14px 12px; border-bottom: 1px solid var(--wwc-border); vertical-align: top; }
+        .items-table tr:last-child td { border-bottom: none; }
+        .item-name { font-weight: 600; font-size: 14px; }
+        .item-impact { font-size: 12px; color: #e04403; margin-top: 3px; }
+
+        /* Totals */
+        .totals { background: var(--wwc-bg-light); border-radius: 12px; padding: 20px 24px; }
+        .total-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--wwc-border); }
+        .total-row:last-child { border-bottom: none; font-size: 18px; font-weight: 700; color: var(--wwc-secondary); padding-top: 14px; }
+        .total-discount { color: var(--wwc-success); }
+
+        /* Addresses grid */
+        .addresses-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .addresses-grid { grid-template-columns: 1fr; } }
+        .address-box { background: var(--wwc-bg-light); border-radius: 12px; padding: 18px 20px; }
+        .address-box h4 { font-size: 13px; font-weight: 700; color: var(--wwc-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .address-box address { font-style: normal; font-size: 14px; line-height: 1.8; color: var(--wwc-text); }
+
+        /* Tracking */
+        .tracking-box { background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; }
+        .tracking-box .tracking-num { font-size: 18px; font-weight: 700; color: var(--wwc-secondary); }
+
+        /* Impact */
+        .impact-box { background: linear-gradient(135deg, #fff4f0 0%, #fff8f6 100%); border: 1px solid #f9cbb8; border-radius: 12px; padding: 20px 24px; }
+        .impact-box h4 { font-size: 14px; font-weight: 700; color: #e04403; margin-bottom: 12px; }
+        .impact-items { display: flex; flex-wrap: wrap; gap: 10px; }
+        .impact-item { background: white; border: 1px solid #f9cbb8; border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+        .impact-item .qty { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 700; color: #e04403; }
+        .impact-item .desc { font-size: 13px; color: var(--wwc-text); }
+
+        /* Payment info */
+        .info-row { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; }
+        .info-label { color: var(--wwc-text-light); min-width: 160px; }
+
+        /* Error state */
+        .error-state { text-align: center; padding: 60px 20px; }
+        .error-state h2 { font-family: 'Montserrat', sans-serif; font-size: 22px; color: var(--wwc-secondary); margin-bottom: 12px; }
+        .error-state p { color: var(--wwc-text-light); margin-bottom: 24px; }
+        .btn { display: inline-block; padding: 12px 28px; border-radius: 30px; font-size: 14px; font-weight: 700; text-transform: uppercase; text-decoration: none; cursor: pointer; border: none; }
+        .btn-primary { background: #e04403; color: white; }
+        .btn-primary:hover { background: #1c345e; }
+        .btn-outline { background: transparent; color: #e04403; border: 2px solid #e04403; }
+        .btn-outline:hover { background: #e04403; color: white; }
+
+        @media (max-width: 600px) {
+            .order-header { flex-direction: column; }
+            .progress-steps { overflow-x: auto; padding-bottom: 8px; }
+            .step-label { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <a href="/shop/" class="logo">
+                <img src="https://wallahwecan.org/wp-content/uploads/2022/05/LOGO-WWC-.png" alt="Wallah We Can">
+                <span class="logo-text">Wallah<br>We Can</span>
+            </a>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <a href="/shop/account/" style="color:rgba(255,255,255,0.85); font-size:13px; font-weight:600; text-decoration:none; text-transform:uppercase;" id="lnk-account">Mon compte</a>
+                <div class="hdr-dropdown" id="lang-dropdown">
+                    <button class="hdr-dropdown-btn" onclick="toggleDropdown('lang-dropdown')" id="lang-label">FR <svg viewBox="0 0 10 6" width="10" height="10" fill="currentColor" style="width:8px;"><path d="M0 0l5 6 5-6z"/></svg></button>
+                    <div class="hdr-dropdown-menu" id="lang-menu">
+                        <button class="hdr-dropdown-item" data-lang="fr" onclick="switchLang('fr')">🇫🇷 Français</button>
+                        <button class="hdr-dropdown-item" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                        <button class="hdr-dropdown-item" data-lang="ar" onclick="switchLang('ar')">🇹🇳 العربية</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main" id="main">
+        <div class="loading-page">
+            <div class="spinner"></div>
+            <p id="lbl-loading">Chargement de la commande…</p>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = '/api/v1';
+
+        // ── i18n ──────────────────────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        const T = {
+            fr: {
+                loading: 'Chargement de la commande…',
+                back: '← Mon compte',
+                order_title: 'Commande #',
+                placed_on: 'Passée le',
+                status_pending: 'En attente', status_paid: 'Payée',
+                status_processing: 'En traitement', status_shipped: 'Expédiée',
+                status_delivered: 'Livrée', status_cancelled: 'Annulée',
+                step_pending: 'Reçue', step_paid: 'Payée', step_processing: 'Préparation',
+                step_shipped: 'Expédiée', step_delivered: 'Livrée',
+                products: 'Produits commandés',
+                col_product: 'Produit', col_qty: 'Qté', col_unit: 'Prix unit.', col_subtotal: 'Sous-total',
+                subtotal: 'Sous-total', shipping: 'Livraison', discount: 'Remise', gift_wrap: 'Emballage cadeau', total: 'Total',
+                free: 'Offerte',
+                payment: 'Paiement', payment_stripe: 'Carte bancaire (Stripe)', payment_cod: 'Paiement à la livraison',
+                paid_on: 'Payée le',
+                addresses: 'Adresses',
+                shipping_addr: 'Adresse de livraison', billing_addr: 'Adresse de facturation',
+                billing_same: 'Identique à l\'adresse de livraison',
+                tracking: 'Suivi de livraison', tracking_num: 'Numéro de suivi',
+                tracking_shipped: 'Votre commande est en route !',
+                impact_title: '💝 Votre impact',
+                not_found: 'Commande introuvable',
+                not_found_desc: 'Cette commande n\'existe pas ou ne vous appartient pas.',
+                not_auth: 'Connexion requise',
+                not_auth_desc: 'Veuillez vous connecter pour accéder à vos commandes.',
+                login: 'Se connecter',
+                my_orders: 'Mes commandes',
+                my_account: 'Mon compte',
+            },
+            en: {
+                loading: 'Loading order…',
+                back: '← My account',
+                order_title: 'Order #',
+                placed_on: 'Placed on',
+                status_pending: 'Pending', status_paid: 'Paid',
+                status_processing: 'Processing', status_shipped: 'Shipped',
+                status_delivered: 'Delivered', status_cancelled: 'Cancelled',
+                step_pending: 'Received', step_paid: 'Paid', step_processing: 'Preparing',
+                step_shipped: 'Shipped', step_delivered: 'Delivered',
+                products: 'Ordered products',
+                col_product: 'Product', col_qty: 'Qty', col_unit: 'Unit price', col_subtotal: 'Subtotal',
+                subtotal: 'Subtotal', shipping: 'Shipping', discount: 'Discount', gift_wrap: 'Gift wrapping', total: 'Total',
+                free: 'Free',
+                payment: 'Payment', payment_stripe: 'Credit card (Stripe)', payment_cod: 'Cash on delivery',
+                paid_on: 'Paid on',
+                addresses: 'Addresses',
+                shipping_addr: 'Shipping address', billing_addr: 'Billing address',
+                billing_same: 'Same as shipping address',
+                tracking: 'Shipment tracking', tracking_num: 'Tracking number',
+                tracking_shipped: 'Your order is on its way!',
+                impact_title: '💝 Your impact',
+                not_found: 'Order not found',
+                not_found_desc: 'This order does not exist or does not belong to you.',
+                not_auth: 'Login required',
+                not_auth_desc: 'Please log in to access your orders.',
+                login: 'Log in',
+                my_orders: 'My orders',
+                my_account: 'My account',
+            },
+            ar: {
+                loading: 'جارٍ تحميل الطلب…',
+                back: 'حسابي →',
+                order_title: 'الطلب #',
+                placed_on: 'بتاريخ',
+                status_pending: 'في الانتظار', status_paid: 'مدفوع',
+                status_processing: 'قيد المعالجة', status_shipped: 'مشحون',
+                status_delivered: 'تم التوصيل', status_cancelled: 'ملغى',
+                step_pending: 'مستلم', step_paid: 'مدفوع', step_processing: 'تحضير',
+                step_shipped: 'مشحون', step_delivered: 'تم التوصيل',
+                products: 'المنتجات المطلوبة',
+                col_product: 'المنتج', col_qty: 'الكمية', col_unit: 'سعر الوحدة', col_subtotal: 'المجموع الجزئي',
+                subtotal: 'المجموع الجزئي', shipping: 'الشحن', discount: 'خصم', gift_wrap: 'تغليف الهدية', total: 'الإجمالي',
+                free: 'مجاني',
+                payment: 'الدفع', payment_stripe: 'بطاقة مصرفية (Stripe)', payment_cod: 'الدفع عند الاستلام',
+                paid_on: 'دُفع في',
+                addresses: 'العناوين',
+                shipping_addr: 'عنوان الشحن', billing_addr: 'عنوان الفاتورة',
+                billing_same: 'مطابق لعنوان الشحن',
+                tracking: 'تتبع الشحنة', tracking_num: 'رقم التتبع',
+                tracking_shipped: 'طلبك في الطريق!',
+                impact_title: '💝 تأثيرك',
+                not_found: 'الطلب غير موجود',
+                not_found_desc: 'هذا الطلب غير موجود أو لا ينتمي إليك.',
+                not_auth: 'يجب تسجيل الدخول',
+                not_auth_desc: 'يرجى تسجيل الدخول للوصول إلى طلباتك.',
+                login: 'تسجيل الدخول',
+                my_orders: 'طلباتي',
+                my_account: 'حسابي',
+            },
+        };
+        function t(key) { return (T[getLang()] || T.fr)[key] || T.fr[key] || key; }
+
+        function renderLangSwitcher() {
+            const lang = getLang();
+            const labels = { fr: 'FR', en: 'EN', ar: 'ع' };
+            document.getElementById('lang-label').innerHTML = `${labels[lang] || 'FR'} <svg viewBox="0 0 10 6" width="8" height="8" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg>`;
+            document.querySelectorAll('#lang-menu .hdr-dropdown-item').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            const acct = document.getElementById('lnk-account');
+            if (acct) acct.textContent = t('my_account');
+        }
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id).querySelector('.hdr-dropdown-menu');
+            const open = menu.classList.contains('open');
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            if (!open) menu.classList.add('open');
+        }
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.hdr-dropdown'))
+                document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+        });
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            renderLangSwitcher();
+            loadOrder();
+        }
+
+        // ── Auth ──────────────────────────────────────────────────────
+        function getToken() {
+            const token = localStorage.getItem('wwc_access_token');
+            if (!token) return null;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+                if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+                    localStorage.removeItem('wwc_access_token');
+                    localStorage.removeItem('wwc_refresh_token');
+                    return null;
+                }
+            } catch { return null; }
+            return token;
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────
+        function escHtml(str) {
+            return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+        function formatDate(iso) {
+            if (!iso) return '—';
+            const lang = getLang();
+            const locale = lang === 'ar' ? 'ar-TN' : lang === 'en' ? 'en-GB' : 'fr-FR';
+            return new Date(iso).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        // ── Progress steps ────────────────────────────────────────────
+        const STATUS_ORDER = ['pending', 'paid', 'processing', 'shipped', 'delivered'];
+
+        function renderProgressSteps(status) {
+            const statusIdx = STATUS_ORDER.indexOf(status);
+            if (status === 'cancelled' || statusIdx < 0) return '';
+
+            const steps = [
+                { key: 'pending',    label: t('step_pending'),    icon: '📋' },
+                { key: 'paid',       label: t('step_paid'),       icon: '💳' },
+                { key: 'processing', label: t('step_processing'), icon: '📦' },
+                { key: 'shipped',    label: t('step_shipped'),    icon: '🚚' },
+                { key: 'delivered',  label: t('step_delivered'),  icon: '✅' },
+            ];
+
+            return `
+            <div class="progress-steps" role="list">
+                ${steps.map((s, i) => {
+                    const isDone    = i < statusIdx;
+                    const isCurrent = i === statusIdx;
+                    const cls = isDone ? 'done' : isCurrent ? 'current' : '';
+                    return `<div class="step ${cls}" role="listitem">
+                        <div class="step-dot">${isDone ? '✓' : s.icon}</div>
+                        <div class="step-label">${escHtml(s.label)}</div>
+                    </div>`;
+                }).join('')}
+            </div>`;
+        }
+
+        // ── Main load ─────────────────────────────────────────────────
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderNumber = urlParams.get('order');
+
+        async function loadOrder() {
+            if (!orderNumber) {
+                showError(t('not_found'), t('not_found_desc'));
+                return;
+            }
+            if (!getToken()) {
+                showNotAuth();
+                return;
+            }
+
+            document.getElementById('main').innerHTML = `<div class="loading-page"><div class="spinner"></div><p>${t('loading')}</p></div>`;
+
+            try {
+                const res = await fetch(`${API_URL}/orders/${orderNumber}/`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }
+                });
+                if (res.status === 401) { showNotAuth(); return; }
+                if (res.status === 404) { showError(t('not_found'), t('not_found_desc')); return; }
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const order = await res.json();
+                renderOrder(order);
+            } catch (err) {
+                showError('Erreur', err.message);
+            }
+        }
+
+        function showError(title, desc) {
+            document.getElementById('main').innerHTML = `
+                <a href="/shop/account/" class="back-link">${t('back')}</a>
+                <div class="section error-state">
+                    <div style="font-size:56px;margin-bottom:16px;">📋</div>
+                    <h2>${escHtml(title)}</h2>
+                    <p>${escHtml(desc)}</p>
+                    <a href="/shop/account/" class="btn btn-outline" style="margin-top:16px;">${t('my_orders')}</a>
+                </div>`;
+        }
+
+        function showNotAuth() {
+            document.getElementById('main').innerHTML = `
+                <div class="section error-state">
+                    <div style="font-size:56px;margin-bottom:16px;">🔒</div>
+                    <h2>${t('not_auth')}</h2>
+                    <p>${t('not_auth_desc')}</p>
+                    <a href="/shop/login/?redirect=/shop/order-detail/?order=${encodeURIComponent(orderNumber || '')}" class="btn btn-primary" style="margin-top:16px;">${t('login')}</a>
+                </div>`;
+        }
+
+        function renderOrder(order) {
+            const lang     = getLang();
+            const symbol   = order.currency === 'EUR' ? '€' : 'DT';
+            const items    = order.items || [];
+            const statusLabels = {
+                pending: t('status_pending'), paid: t('status_paid'), processing: t('status_processing'),
+                shipped: t('status_shipped'), delivered: t('status_delivered'), cancelled: t('status_cancelled'),
+            };
+            const paymentLabels = {
+                stripe: t('payment_stripe'),
+                cash_on_delivery: t('payment_cod'),
+            };
+
+            // Impact summary
+            const impactSummary = order.impact_summary || {};
+            const impactEntries = Object.entries(impactSummary).filter(([,v]) => v > 0);
+
+            const impactHtml = impactEntries.length > 0 ? `
+            <div class="section">
+                <div class="section-title">${t('impact_title')}</div>
+                <div class="impact-box">
+                    <h4>💝 ${lang === 'ar' ? 'بفضل طلبك، ساهمت في:' : lang === 'en' ? 'Thanks to your order, you contributed to:' : 'Grâce à votre commande, vous avez contribué à :'}</h4>
+                    <div class="impact-items">
+                        ${impactEntries.map(([item, qty]) => `
+                            <div class="impact-item">
+                                <span class="qty">${qty}</span>
+                                <span class="desc">${escHtml(item)}</span>
+                            </div>`).join('')}
+                    </div>
+                </div>
+            </div>` : '';
+
+            // Tracking section
+            const trackingHtml = order.tracking_number ? `
+            <div class="section">
+                <div class="section-title">${t('tracking')}</div>
+                <div class="tracking-box">
+                    <span style="font-size:32px;">🚚</span>
+                    <div>
+                        <div style="font-size:14px;font-weight:600;color:var(--wwc-secondary);margin-bottom:4px;">${t('tracking_shipped')}</div>
+                        <div class="info-row">
+                            <span class="info-label">${t('tracking_num')}</span>
+                            <strong class="tracking-num">${escHtml(order.tracking_number)}</strong>
+                        </div>
+                        ${order.shipped_at ? `<div class="info-row"><span class="info-label">${lang==='ar'?'شحن في':lang==='en'?'Shipped on':'Expédiée le'}</span><span>${formatDate(order.shipped_at)}</span></div>` : ''}
+                        ${order.delivered_at ? `<div class="info-row"><span class="info-label">${lang==='ar'?'تسليم في':lang==='en'?'Delivered on':'Livrée le'}</span><span>${formatDate(order.delivered_at)}</span></div>` : ''}
+                    </div>
+                </div>
+            </div>` : '';
+
+            document.getElementById('main').innerHTML = `
+                <a href="/shop/account/" class="back-link">${t('back')}</a>
+
+                <!-- Order Header -->
+                <div class="section">
+                    <div class="order-header">
+                        <div>
+                            <h1>${t('order_title')}${escHtml(order.order_number)}</h1>
+                            <div class="order-meta">${t('placed_on')} ${formatDate(order.created_at)}</div>
+                        </div>
+                        <span class="status-badge status-${order.status}">${statusLabels[order.status] || order.status}</span>
+                    </div>
+                    ${renderProgressSteps(order.status)}
+                </div>
+
+                <!-- Products -->
+                <div class="section">
+                    <div class="section-title">${t('products')}</div>
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>${t('col_product')}</th>
+                                <th style="text-align:center;">${t('col_qty')}</th>
+                                <th style="text-align:right;">${t('col_unit')}</th>
+                                <th style="text-align:right;">${t('col_subtotal')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => `
+                            <tr>
+                                <td>
+                                    <div class="item-name">${escHtml(item.product_name || '—')}</div>
+                                    ${item.impact_quantity > 0 ? `<div class="item-impact">💝 ${item.impact_quantity} ${escHtml(item.impact_item || '')} ${lang==='ar'?'إلى':lang==='en'?'to':'→'} ${escHtml(item.impact_school || '')}</div>` : ''}
+                                </td>
+                                <td style="text-align:center;">${item.quantity}</td>
+                                <td style="text-align:right;">${item.unit_price} ${symbol}</td>
+                                <td style="text-align:right;font-weight:600;">${item.subtotal} ${symbol}</td>
+                            </tr>`).join('')}
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top:20px;">
+                    <div class="totals">
+                        <div class="total-row"><span>${t('subtotal')}</span><span>${order.subtotal} ${symbol}</span></div>
+                        <div class="total-row">
+                            <span>${t('shipping')}</span>
+                            <span>${parseFloat(order.shipping_cost) === 0 ? `<span style="color:var(--wwc-success);">${t('free')}</span>` : `${order.shipping_cost} ${symbol}`}</span>
+                        </div>
+                        ${parseFloat(order.discount_amount) > 0 ? `
+                        <div class="total-row total-discount">
+                            <span>${t('discount')}${order.coupon_code ? ` (${escHtml(order.coupon_code)})` : ''}</span>
+                            <span>-${order.discount_amount} ${symbol}</span>
+                        </div>` : ''}
+                        ${parseFloat(order.tax_amount) > 0 ? `
+                        <div class="total-row">
+                            <span>🎁 ${t('gift_wrap')}</span>
+                            <span>${order.tax_amount} ${symbol}</span>
+                        </div>` : ''}
+                        <div class="total-row">
+                            <span>${t('total')}</span>
+                            <span>${order.total} ${symbol}</span>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div style="margin-top:16px; padding:0 4px;">
+                        <div class="info-row">
+                            <span class="info-label">${t('payment')}</span>
+                            <strong>${paymentLabels[order.payment_method] || escHtml(order.payment_method)}</strong>
+                        </div>
+                        ${order.paid_at ? `<div class="info-row"><span class="info-label">${t('paid_on')}</span><span>${formatDate(order.paid_at)}</span></div>` : ''}
+                    </div>
+                </div>
+
+                ${impactHtml}
+
+                ${trackingHtml}
+
+                <!-- Addresses -->
+                ${order.shipping_address_1 ? `
+                <div class="section">
+                    <div class="section-title">${t('addresses')}</div>
+                    <div class="addresses-grid">
+                        <div class="address-box">
+                            <h4>📦 ${t('shipping_addr')}</h4>
+                            <address>
+                                ${escHtml(((order.shipping_first_name || '') + ' ' + (order.shipping_last_name || '')).trim())}<br>
+                                ${escHtml(order.shipping_address_1)}<br>
+                                ${order.shipping_address_2 ? escHtml(order.shipping_address_2) + '<br>' : ''}
+                                ${escHtml(((order.shipping_postal_code || '') + ' ' + (order.shipping_city || '')).trim())}<br>
+                                ${order.shipping_state ? escHtml(order.shipping_state) + '<br>' : ''}
+                                ${escHtml(order.shipping_country || '')}
+                            </address>
+                        </div>
+                        <div class="address-box">
+                            <h4>🧾 ${t('billing_addr')}</h4>
+                            ${order.billing_same_as_shipping
+                                ? `<p style="font-size:13px;color:var(--wwc-text-light);">${t('billing_same')}</p>`
+                                : `<address>
+                                    ${order.billing_company ? escHtml(order.billing_company) + '<br>' : ''}
+                                    ${escHtml(((order.billing_first_name || '') + ' ' + (order.billing_last_name || '')).trim())}<br>
+                                    ${escHtml(order.billing_address_1 || '')}<br>
+                                    ${order.billing_address_2 ? escHtml(order.billing_address_2) + '<br>' : ''}
+                                    ${escHtml(((order.billing_postal_code || '') + ' ' + (order.billing_city || '')).trim())}<br>
+                                    ${escHtml(order.billing_country || '')}
+                                   </address>`}
+                        </div>
+                    </div>
+                </div>` : ''}
+            `;
+        }
+
+        // ── Init ──────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLangSwitcher();
+            loadOrder();
+        });
+    </script>
+</body>
+</html>

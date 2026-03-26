@@ -20,9 +20,22 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Sans', sans-serif; color: var(--wwc-text); background: var(--wwc-bg-light); }
 
-        .header { background: #ffffff; border-bottom: 1px solid #ececec; padding: 0; height: 70px; }
-        .header-container { max-width: 700px; margin: 0 auto; padding: 0 20px; height: 70px; display: flex; align-items: center; }
-        .logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: #1c345e; text-decoration: none; }
+        .header { background: #1c345e; padding: 0; height: 80px; }
+        .header-container { max-width: 700px; margin: 0 auto; padding: 0 24px; height: 80px; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; }
+        .logo img { height: 48px; width: auto; display: block; }
+
+        /* Lang dropdown — dark header variant */
+        .hdr-dropdown { position: relative; }
+        .hdr-dropdown-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .hdr-dropdown-btn:hover { background: rgba(255,255,255,0.22); }
+        .hdr-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); overflow: hidden; min-width: 120px; z-index: 300; }
+        .hdr-dropdown-menu.open { display: block; }
+        .hdr-dropdown-item { display: block; width: 100%; padding: 9px 16px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 600; color: #404040; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+        .hdr-dropdown-item:hover { background: #f5f5f5; color: #e04403; }
+        .hdr-dropdown-item.active { color: #e04403; background: rgba(224,68,3,0.07); }
+        [dir=rtl] .hdr-dropdown-menu { right: auto; left: 0; }
+        [dir=rtl] .hdr-dropdown-item { text-align: right; }
 
         .main { max-width: 700px; margin: 48px auto; padding: 0 20px 60px; }
 
@@ -82,7 +95,17 @@
 <body>
     <header class="header">
         <div class="header-container">
-            <a href="/shop/" class="logo">WALLAH WE CAN</a>
+            <a href="/shop/" class="logo">
+                <img src="https://wallahwecan.org/wp-content/uploads/2022/05/LOGO-WWC-.png" alt="Wallah We Can">
+            </a>
+            <div class="hdr-dropdown" id="lang-dropdown">
+                <button class="hdr-dropdown-btn" onclick="toggleDropdown('lang-dropdown')" id="lang-label">FR <svg viewBox="0 0 10 6" style="width:8px;fill:white"><path d="M0 0l5 6 5-6z"/></svg></button>
+                <div class="hdr-dropdown-menu" id="lang-menu">
+                    <button class="hdr-dropdown-item" data-lang="fr" onclick="switchLang('fr')">🇫🇷 Français</button>
+                    <button class="hdr-dropdown-item" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                    <button class="hdr-dropdown-item" data-lang="ar" onclick="switchLang('ar')">🇹🇳 العربية</button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -91,6 +114,158 @@
     </main>
 
     <script>
+        // ── i18n ──────────────────────────────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+
+        const T = {
+            fr: {
+                order_confirmed:    'Commande confirmée !',
+                thank_you:          'Merci pour votre commande',
+                order_number:       'Numéro de commande',
+                payment_method:     'Méthode de paiement',
+                total:              'Total',
+                back_to_shop:       'Continuer mes achats',
+                view_order:         'Voir ma commande',
+                bank_transfer_info: 'Informations de virement',
+                what_next:          'Que se passe-t-il maintenant ?',
+                confirmation_email: 'Un email de confirmation a été envoyé',
+                subtotal:           'Sous-total',
+                shipping:           'Livraison',
+                order_summary:      'Récapitulatif',
+                your_impact:        'Votre impact',
+                impact_desc:        "Grâce à votre achat, vous contribuez directement à l'initiative GreenSchool :",
+                payment_confirming: 'Confirmation du paiement en cours…',
+                bank_beneficiary:   'Bénéficiaire',
+                bank_ref:           'Référence obligatoire',
+                bank_amount:        'Montant',
+                bank_note:          '⚠️ Mentionnez impérativement la référence de commande dans le libellé du virement. Notre équipe confirmera votre commande dès réception.',
+                bank_note_short:    '⚠️ Mentionnez impérativement la référence de commande dans le libellé du virement.',
+                bank_instructions:  'Effectuez le virement bancaire avec la référence ci-dessous pour confirmer votre commande.',
+                my_orders:          'Mes commandes',
+                sign_in:            'Se connecter',
+                gift_wrap:          '🎁 Emballage cadeau',
+                discount:           'Remise',
+                items_supplied:     'fourni(e)s à des étudiants',
+                back_to_store:      'Retour à la boutique',
+                thank_you_purchase: 'Merci pour votre achat. Vous recevrez bientôt un email de confirmation.',
+            },
+            en: {
+                order_confirmed:    'Order confirmed!',
+                thank_you:          'Thank you for your order',
+                order_number:       'Order number',
+                payment_method:     'Payment method',
+                total:              'Total',
+                back_to_shop:       'Continue shopping',
+                view_order:         'View my order',
+                bank_transfer_info: 'Bank transfer details',
+                what_next:          'What happens next?',
+                confirmation_email: 'A confirmation email has been sent',
+                subtotal:           'Subtotal',
+                shipping:           'Shipping',
+                order_summary:      'Order summary',
+                your_impact:        'Your impact',
+                impact_desc:        'Thanks to your purchase, you directly contribute to the GreenSchool initiative:',
+                payment_confirming: 'Confirming payment…',
+                bank_beneficiary:   'Beneficiary',
+                bank_ref:           'Mandatory reference',
+                bank_amount:        'Amount',
+                bank_note:          '⚠️ You must include the order reference in the payment description. Our team will confirm your order upon receipt.',
+                bank_note_short:    '⚠️ You must include the order reference in the payment description.',
+                bank_instructions:  'Complete the bank transfer using the reference below to confirm your order.',
+                my_orders:          'My orders',
+                sign_in:            'Sign in',
+                gift_wrap:          '🎁 Gift wrapping',
+                discount:           'Discount',
+                items_supplied:     'supplied to students',
+                back_to_store:      'Back to shop',
+                thank_you_purchase: 'Thank you for your purchase. You will receive a confirmation email shortly.',
+            },
+            ar: {
+                order_confirmed:    'تم تأكيد الطلب!',
+                thank_you:          'شكراً لطلبك',
+                order_number:       'رقم الطلب',
+                payment_method:     'طريقة الدفع',
+                total:              'الإجمالي',
+                back_to_shop:       'متابعة التسوق',
+                view_order:         'عرض طلبي',
+                bank_transfer_info: 'تفاصيل التحويل البنكي',
+                what_next:          'ماذا يحدث بعد ذلك؟',
+                confirmation_email: 'تم إرسال بريد إلكتروني تأكيدي',
+                subtotal:           'المجموع الجزئي',
+                shipping:           'الشحن',
+                order_summary:      'ملخص الطلب',
+                your_impact:        'تأثيرك',
+                impact_desc:        'بفضل مشترياتك، تساهم مباشرة في مبادرة GreenSchool:',
+                payment_confirming: 'جارٍ تأكيد الدفع…',
+                bank_beneficiary:   'المستفيد',
+                bank_ref:           'المرجع الإلزامي',
+                bank_amount:        'المبلغ',
+                bank_note:          '⚠️ يجب ذكر رقم الطلب في تفاصيل التحويل. سيؤكد فريقنا طلبك عند الاستلام.',
+                bank_note_short:    '⚠️ يجب ذكر رقم الطلب في تفاصيل التحويل.',
+                bank_instructions:  'أجرِ التحويل البنكي بالمرجع أدناه لتأكيد طلبك.',
+                my_orders:          'طلباتي',
+                sign_in:            'تسجيل الدخول',
+                gift_wrap:          '🎁 تغليف الهدايا',
+                discount:           'خصم',
+                items_supplied:     'مقدمة للطلاب',
+                back_to_store:      'العودة إلى المتجر',
+                thank_you_purchase: 'شكراً لشرائك. ستتلقى بريداً إلكترونياً للتأكيد قريباً.',
+            },
+        };
+
+        function t(key) { return (T[getLang()] || T.fr)[key] || T.fr[key] || key; }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                el.textContent = t(el.dataset.i18n);
+            });
+            document.documentElement.lang = getLang();
+            document.documentElement.dir = getLang() === 'ar' ? 'rtl' : 'ltr';
+        }
+
+        function renderLangSwitcher() {
+            const lang = getLang();
+            const labels = { fr: 'FR', en: 'EN', ar: 'ع' };
+            const lbl = document.getElementById('lang-label');
+            if (lbl) lbl.innerHTML = `${labels[lang]} <svg viewBox="0 0 10 6" style="width:8px;fill:white"><path d="M0 0l5 6 5-6z"/></svg>`;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                el.classList.toggle('active', el.dataset.lang === lang);
+            });
+            applyTranslations();
+        }
+
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            renderLangSwitcher();
+            // Re-render the page content with the new language
+            if (pendingId) {
+                // Already resolved; just re-render if order data is cached
+                if (_cachedOrder) renderSuccess(_cachedOrder, method);
+                else if (_cachedGenericNum) renderGenericSuccess(_cachedGenericNum, method);
+            } else if (_cachedOrder) {
+                renderSuccess(_cachedOrder, method);
+            } else if (_cachedGenericNum) {
+                renderGenericSuccess(_cachedGenericNum, method);
+            }
+        }
+
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id).querySelector('.hdr-dropdown-menu');
+            menu.classList.toggle('open');
+            document.addEventListener('click', function handler(e) {
+                if (!document.getElementById(id).contains(e.target)) {
+                    menu.classList.remove('open');
+                    document.removeEventListener('click', handler);
+                }
+            });
+        }
+        // ── end i18n ──────────────────────────────────────────────────────────
+
         const API_URL = '/api/v1';
 
         function getToken() { return localStorage.getItem('wwc_access_token'); }
@@ -98,53 +273,56 @@
             return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
-        const params      = new URLSearchParams(window.location.search);
-        const orderNumber = params.get('order');
-        const method      = params.get('method') || 'stripe';
+        // Cache rendered data so language switches can re-render without re-fetching
+        let _cachedOrder = null;
+        let _cachedGenericNum = null;
+
+        const params     = new URLSearchParams(window.location.search);
+        const pendingId  = params.get('pending');   // Stripe new flow
+        const orderNumber = params.get('order');    // COD / bank transfer
+        const method     = params.get('method') || 'stripe';
 
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!orderNumber) { renderNoOrder(); return; }
-
-            // For Stripe orders, poll until paid (webhook may take a few seconds)
-            if (method === 'stripe') {
-                await pollPaymentStatus(orderNumber);
-            } else {
+            renderLangSwitcher();
+            if (pendingId) {
+                // New Stripe flow: poll until webhook creates the order
+                await pollPendingCheckout(pendingId);
+            } else if (orderNumber) {
                 await loadAndRender(orderNumber);
+            } else {
+                renderNoOrder();
             }
         });
 
-        async function pollPaymentStatus(orderNumber) {
-            const MAX_ATTEMPTS = 8;
+        async function pollPendingCheckout(pendingId) {
+            const MAX_ATTEMPTS = 15;
             const INTERVAL_MS  = 2000;
+
+            document.getElementById('main').innerHTML = `
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p style="margin-top:16px; color:var(--wwc-text-light); font-size:14px;">${t('payment_confirming')}</p>
+                </div>`;
 
             for (let i = 0; i < MAX_ATTEMPTS; i++) {
                 try {
-                    const res = await fetch(`${API_URL}/payments/status/${orderNumber}/`);
+                    const res = await fetch(`${API_URL}/payments/pending/${pendingId}/`);
                     if (res.ok) {
                         const data = await res.json();
-                        if (data.paid) {
-                            // Payment confirmed — load full order detail
-                            await loadAndRender(orderNumber);
+                        if (data.ready && data.order_number) {
+                            await loadAndRender(data.order_number);
                             return;
                         }
                     }
                 } catch { /* ignore, keep polling */ }
 
                 if (i < MAX_ATTEMPTS - 1) {
-                    // Show a waiting message on first iteration
-                    if (i === 0) {
-                        document.getElementById('main').innerHTML = `
-                            <div class="loading-state">
-                                <div class="spinner"></div>
-                                <p style="margin-top:16px; color:var(--wwc-text-light); font-size:14px;">Confirmation du paiement en cours…</p>
-                            </div>`;
-                    }
                     await new Promise(r => setTimeout(r, INTERVAL_MS));
                 }
             }
 
-            // Timed out — still show success (webhook may arrive later)
-            await loadAndRender(orderNumber);
+            // Timed out — show generic success
+            renderGenericSuccess('—', 'stripe');
         }
 
         async function loadAndRender(orderNumber) {
@@ -155,6 +333,7 @@
                 const res = await fetch(`${API_URL}/orders/${orderNumber}/`, { headers });
                 if (!res.ok) throw new Error();
                 const order = await res.json();
+                _cachedOrder = order;
                 renderSuccess(order, method);
             } catch {
                 // Order not accessible (no auth or not found) — show generic success
@@ -182,44 +361,60 @@
                 if (!entries.length) return '';
                 return `
                 <div class="impact-card">
-                    <h2>💝 Votre impact</h2>
-                    <p>Grâce à votre achat, vous contribuez directement à l'initiative GreenSchool :</p>
+                    <h2>💝 ${t('your_impact')}</h2>
+                    <p>${t('impact_desc')}</p>
                     <ul class="impact-list">
                         ${entries.map(([type, qty]) => `
-                            <li><strong>${qty}</strong> ${escHtml(type)} fourni(e)s à des étudiants</li>`).join('')}
+                            <li><strong>${qty}</strong> ${escHtml(type)} ${t('items_supplied')}</li>`).join('')}
                     </ul>
                 </div>`;
             })();
+
+            const bankHtml = method === 'bank_transfer' ? `
+                <div class="bank-card">
+                    <h2>🏦 ${t('bank_transfer_info')}</h2>
+                    <p style="font-size:14px;color:#856404;margin-bottom:14px;">${t('bank_instructions')}</p>
+                    <table class="bank-table">
+                        <tr><td>${t('bank_beneficiary')}</td><td>Wallah We Can</td></tr>
+                        <tr><td>IBAN</td><td>TN59 1234 5678 9012 3456 7890</td></tr>
+                        <tr><td>BIC/SWIFT</td><td>BIATTNTT</td></tr>
+                        <tr class="highlight"><td>${t('bank_ref')}</td><td>${escHtml(order.order_number)}</td></tr>
+                        <tr><td>${t('bank_amount')}</td><td><strong>${order.total} ${symbol}</strong></td></tr>
+                    </table>
+                    <p class="bank-note">${t('bank_note')}</p>
+                </div>` : '';
 
             document.getElementById('main').innerHTML = `
                 <div class="card">
                     <div class="success-header">
                         <div class="success-icon">✓</div>
-                        <h1>Merci pour votre commande !</h1>
-                        <p class="order-num">Numéro de commande : <strong>#${escHtml(order.order_number)}</strong></p>
-                        <p style="font-size:14px; color:var(--wwc-text-light); margin-top:6px;">Un email de confirmation a été envoyé à votre adresse.</p>
+                        <h1>${t('thank_you')} !</h1>
+                        <p class="order-num">${t('order_number')} : <strong>#${escHtml(order.order_number)}</strong></p>
+                        <p style="font-size:14px; color:var(--wwc-text-light); margin-top:6px;">${t('confirmation_email')}.</p>
                     </div>
 
-                    <div class="section-title">Récapitulatif</div>
+                    ${bankHtml}
+
+                    <div class="section-title">${t('order_summary')}</div>
                     ${itemsHtml}
                     <div class="totals">
-                        <div class="total-row"><span>Sous-total</span><span>${order.subtotal} ${symbol}</span></div>
+                        <div class="total-row"><span>${t('subtotal')}</span><span>${order.subtotal} ${symbol}</span></div>
                         ${parseFloat(order.shipping_cost) > 0
-                            ? `<div class="total-row"><span>Livraison</span><span>${order.shipping_cost} ${symbol}</span></div>`
+                            ? `<div class="total-row"><span>${t('shipping')}</span><span>${order.shipping_cost} ${symbol}</span></div>`
                             : ''}
                         ${parseFloat(order.discount_amount) > 0
-                            ? `<div class="total-row" style="color:green;"><span>Remise${order.coupon_code ? ` (${escHtml(order.coupon_code)})` : ''}</span><span>-${order.discount_amount} ${symbol}</span></div>`
+                            ? `<div class="total-row" style="color:green;"><span>${t('discount')}${order.coupon_code ? ` (${escHtml(order.coupon_code)})` : ''}</span><span>-${order.discount_amount} ${symbol}</span></div>`
                             : ''}
                         ${parseFloat(order.tax_amount) > 0
-                            ? `<div class="total-row"><span>🎁 Emballage cadeau</span><span>${order.tax_amount} ${symbol}</span></div>`
+                            ? `<div class="total-row"><span>${t('gift_wrap')}</span><span>${order.tax_amount} ${symbol}</span></div>`
                             : ''}
-                        <div class="total-row grand"><span>Total</span><span>${order.total} ${symbol}</span></div>
+                        <div class="total-row grand"><span>${t('total')}</span><span>${order.total} ${symbol}</span></div>
                     </div>
 
                     <div class="actions" style="margin-top:24px;">
-                        <a href="/shop/" class="btn btn-primary">Continuer mes achats</a>
+                        <a href="/shop/" class="btn btn-primary">${t('back_to_shop')}</a>
                         ${getToken()
-                            ? `<a href="/shop/account/?order=${escHtml(order.order_number)}" class="btn btn-outline">Voir ma commande</a>`
+                            ? `<a href="/shop/order-detail/?order=${encodeURIComponent(order.order_number)}" class="btn btn-outline">${t('view_order')}</a>`
                             : ''}
                     </div>
                 </div>
@@ -228,21 +423,35 @@
             `;
         }
 
-        function renderGenericSuccess(orderNumber, method) {
+        function renderGenericSuccess(orderNum, method) {
+            _cachedGenericNum = orderNum;
+            const bankHtml = method === 'bank_transfer' ? `
+                <div class="bank-card" style="margin-top:20px;">
+                    <h2>🏦 ${t('bank_transfer_info')}</h2>
+                    <p style="font-size:14px;color:#856404;margin-bottom:14px;">${t('bank_instructions')}</p>
+                    <table class="bank-table">
+                        <tr><td>${t('bank_beneficiary')}</td><td>Wallah We Can</td></tr>
+                        <tr><td>IBAN</td><td>TN59 1234 5678 9012 3456 7890</td></tr>
+                        <tr><td>BIC/SWIFT</td><td>BIATTNTT</td></tr>
+                        <tr class="highlight"><td>${t('bank_ref')}</td><td>${escHtml(orderNum)}</td></tr>
+                    </table>
+                    <p class="bank-note">${t('bank_note_short')}</p>
+                </div>` : '';
 
             document.getElementById('main').innerHTML = `
                 <div class="card">
                     <div class="success-header">
                         <div class="success-icon">✓</div>
-                        <h1>Commande confirmée !</h1>
-                        <p class="order-num">Numéro de commande : <strong>#${escHtml(orderNumber)}</strong></p>
-                        <p style="font-size:14px; color:var(--wwc-text-light); margin-top:6px;">Merci pour votre achat. Vous recevrez bientôt un email de confirmation.</p>
+                        <h1>${t('order_confirmed')}</h1>
+                        <p class="order-num">${t('order_number')} : <strong>#${escHtml(orderNum)}</strong></p>
+                        <p style="font-size:14px; color:var(--wwc-text-light); margin-top:6px;">${t('thank_you_purchase')}</p>
                     </div>
-                    <div class="actions">
-                        <a href="/shop/" class="btn btn-primary">Continuer mes achats</a>
+                    ${bankHtml}
+                    <div class="actions" style="margin-top:20px;">
+                        <a href="/shop/" class="btn btn-primary">${t('back_to_shop')}</a>
                         ${getToken()
-                            ? `<a href="/shop/account/" class="btn btn-outline">Mes commandes</a>`
-                            : '<a href="/shop/login/" class="btn btn-outline">Se connecter</a>'}
+                            ? `<a href="/shop/account/" class="btn btn-outline">${t('my_orders')}</a>`
+                            : `<a href="/shop/login/" class="btn btn-outline">${t('sign_in')}</a>`}
                     </div>
                 </div>
             `;
@@ -252,9 +461,9 @@
             document.getElementById('main').innerHTML = `
                 <div class="card" style="text-align:center; padding:60px 20px;">
                     <div class="success-icon" style="background:#d4edda;">✓</div>
-                    <h1 style="margin-top:16px; color:var(--wwc-primary);">Commande confirmée !</h1>
-                    <p style="color:var(--wwc-text-light); margin:12px 0 24px;">Merci pour votre achat. Vous recevrez bientôt un email de confirmation.</p>
-                    <a href="/shop/" class="btn btn-primary" style="display:inline-flex;">Retour à la boutique</a>
+                    <h1 style="margin-top:16px; color:var(--wwc-primary);">${t('order_confirmed')}</h1>
+                    <p style="color:var(--wwc-text-light); margin:12px 0 24px;">${t('thank_you_purchase')}</p>
+                    <a href="/shop/" class="btn btn-primary" style="display:inline-flex;">${t('back_to_store')}</a>
                 </div>`;
         }
     </script>

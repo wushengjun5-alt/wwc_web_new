@@ -144,7 +144,7 @@ class CartItem(models.Model):
         is_b2b = (
             self.cart.user and
             hasattr(self.cart.user, 'customer') and
-            self.cart.user.customer.customer_type == 'company'
+            self.cart.user.customer.is_b2b  # requires customer_type=='company' AND b2b_status=='approved'
         )
         price = self.product.get_price(currency, is_b2b, self.quantity)
         return price * self.quantity
@@ -331,6 +331,8 @@ class OrderItem(models.Model):
     product = models.ForeignKey(
         Product,
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         verbose_name=_('Product')
     )
     producer = models.ForeignKey(
@@ -363,9 +365,9 @@ class OrderItem(models.Model):
         return f"{self.quantity}x {self.product_name}"
 
     def save(self, *args, **kwargs):
-        if not self.product_name:
+        if not self.product_name and self.product:
             self.product_name = self.product.name
-        if not self.product_sku:
+        if not self.product_sku and self.product:
             self.product_sku = self.product.sku
         if not self.subtotal:
             self.subtotal = self.unit_price * self.quantity
@@ -419,6 +421,54 @@ class Coupon(models.Model):
         return min(self.discount_value, subtotal)
 
 
+class ShippingRate(models.Model):
+    """Configurable shipping rates per country"""
+    country_code = models.CharField(_('Country Code'), max_length=2, unique=True, db_index=True)
+    country_name = models.CharField(_('Country Name'), max_length=100)
+    rate_tnd = models.DecimalField(_('Rate (TND)'), max_digits=8, decimal_places=2, default=0)
+    free_threshold_tnd = models.DecimalField(_('Free Shipping Threshold (TND)'), max_digits=10, decimal_places=2, default=0)
+    is_active = models.BooleanField(_('Active'), default=True)
+    updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Shipping Rate')
+        verbose_name_plural = _('Shipping Rates')
+        ordering = ['country_code']
+
+    def __str__(self):
+        return f"{self.country_code} — {self.rate_tnd} TND (free ≥ {self.free_threshold_tnd})"
+
+
+class SiteSettings(models.Model):
+    """Singleton model for site-wide settings like exchange rate"""
+    tnd_to_eur_rate = models.DecimalField(
+        _('TND → EUR Rate'),
+        max_digits=10, decimal_places=6,
+        default='0.300000',
+        help_text='Multiply TND price by this to get EUR price'
+    )
+    updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Site Settings')
+        verbose_name_plural = _('Site Settings')
+
+    def __str__(self):
+        return f"Site Settings (TND→EUR: {self.tnd_to_eur_rate})"
+
+    @classmethod
+    def get_tnd_to_eur(cls):
+        """Return the TND→EUR rate from DB, fallback to settings.py value."""
+        try:
+            obj = cls.objects.first()
+            if obj:
+                return float(obj.tnd_to_eur_rate)
+        except Exception:
+            pass
+        from django.conf import settings as django_settings
+        return float(getattr(django_settings, 'TND_TO_EUR_RATE', 0.30))
+
+
 class ImpactEvent(models.Model):
     """
     Track real impact events funded by purchases.
@@ -451,3 +501,28 @@ class ImpactEvent(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.date}"
+
+
+class PendingCheckout(models.Model):
+    """
+    Stores checkout form data temporarily while the customer completes
+    Stripe payment. The actual Order is only created after the webhook
+    confirms payment. Expires after 2 hours.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    cart_snapshot = models.JSONField(help_text='Serialised cart items at checkout time')
+    form_data = models.JSONField(help_text='Validated checkout form data')
+    stripe_session_id = models.CharField(max_length=200, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('Pending Checkout')
+        verbose_name_plural = _('Pending Checkouts')
+
+    def __str__(self):
+        return f"PendingCheckout {self.id}"
+
+    @property
+    def is_expired(self):
+        return (timezone.now() - self.created_at).total_seconds() > 7200  # 2 hours

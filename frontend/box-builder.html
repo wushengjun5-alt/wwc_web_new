@@ -24,64 +24,83 @@
 
         body {
             font-family: 'Noto Sans', sans-serif;
+            font-size: 15px;
             color: var(--wwc-text);
             background: var(--wwc-bg-light);
-            line-height: 1.6;
+            line-height: 1.7em;
         }
 
         /* Header */
         .header {
-            background: #ffffff;
-            border-bottom: 1px solid #ececec;
+            background: #1c345e;
             height: 70px;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 200;
         }
         .header-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
             height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 24px;
         }
         .logo {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: #1c345e;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             text-decoration: none;
+            flex-shrink: 0;
         }
-        .nav { display: flex; gap: 30px; }
+        .logo img { max-width: 120px; height: auto; display: block; }
+        .logo-text { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 800; color: white; letter-spacing: 0.5px; line-height: 1.1; text-transform: uppercase; }
+        .nav { display: flex; gap: 28px; align-items: center; }
         .nav a {
-            color: #191919;
+            color: #ffffff;
             text-decoration: none;
+            font-family: 'Noto Sans', sans-serif;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
+            letter-spacing: 0.3px;
             transition: color 0.2s;
+            white-space: nowrap;
         }
         .nav a:hover, .nav a.active { color: #e04403; }
-        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .hdr-dropdown { position: relative; }
+        .hdr-dropdown-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .hdr-dropdown-btn:hover { background: rgba(255,255,255,0.22); }
+        .hdr-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); overflow: hidden; min-width: 100%; z-index: 300; }
+        .hdr-dropdown-menu.open { display: block; }
+        .hdr-dropdown-item { display: block; width: 100%; padding: 9px 16px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 600; color: #404040; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+        .hdr-dropdown-item:hover { background: #f5f5f5; color: #e04403; }
+        .hdr-dropdown-item.active { color: #e04403; background: rgba(224,68,3,0.07); }
 
         .cart-icon {
             background: none;
             border: none;
-            color: #e04403;
-            font-size: 20px;
+            color: rgba(255,255,255,0.85);
+            font-size: 22px;
             cursor: pointer;
             position: relative;
+            padding: 6px;
+            transition: color 0.2s;
         }
+        .cart-icon:hover { color: #e04403; }
         .cart-count {
             position: absolute;
-            top: -8px; right: -8px;
+            top: -2px; right: -4px;
             background: #e04403;
             color: white;
-            font-size: 12px;
-            width: 20px; height: 20px;
-            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px; height: 18px;
+            padding: 0 4px;
+            border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -635,9 +654,12 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
+    <header class="header" dir="ltr">
         <div class="header-container">
-            <a href="/shop/" class="logo">WALLAH WE CAN</a>
+            <a href="/shop/" class="logo">
+                <img src="https://wallahwecan.org/wp-content/uploads/2022/05/LOGO-WWC-.png" alt="Wallah We Can">
+                <span class="logo-text">Wallah<br>We Can</span>
+            </a>
             <nav class="nav">
                 <a href="/shop/">Boutique</a>
                 <a href="/shop/impact/">Notre Impact</a>
@@ -645,7 +667,15 @@
                 <a href="/shop/box-builder/" class="active">Composer ma box</a>
             </nav>
             <div class="header-actions">
-                <button class="cart-icon" onclick="toggleCart()" title="Voir le panier">
+                <div class="hdr-dropdown" id="lang-dropdown">
+                    <button class="hdr-dropdown-btn" onclick="toggleDropdown('lang-dropdown')" id="lang-label">FR <svg viewBox="0 0 10 6" width="10" height="10" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg></button>
+                    <div class="hdr-dropdown-menu" id="lang-menu">
+                        <button class="hdr-dropdown-item" data-lang="fr" onclick="switchLang('fr')">🇫🇷 Français</button>
+                        <button class="hdr-dropdown-item" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                        <button class="hdr-dropdown-item" data-lang="ar" onclick="switchLang('ar')">🇹🇳 العربية</button>
+                    </div>
+                </div>
+                <button class="cart-icon" onclick="window.location.href='/shop/cart/'" title="Voir le panier">
                     🛒
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
@@ -780,6 +810,48 @@
         let selectedProducts = []; // list of product objects
         let eligibleProducts = []; // all eligible products for current box
 
+        // ── Language / i18n ───────────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        function tObj(obj, field) {
+            if (!obj) return '';
+            const lang = getLang();
+            if (lang === 'fr') return obj[field] || '';
+            const loc = obj[`${field}_${lang}`];
+            return (loc && loc.trim()) ? loc : (obj[field] || '');
+        }
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id).querySelector('.hdr-dropdown-menu');
+            const isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            if (!isOpen) menu.classList.add('open');
+        }
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.hdr-dropdown')) {
+                document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            }
+        });
+        function renderLangSwitcher() {
+            const lang = getLang();
+            const labels = { fr: 'FR', en: 'EN', ar: 'ع' };
+            const lbl = document.getElementById('lang-label');
+            if (lbl) lbl.innerHTML = `${labels[lang] || 'FR'} <svg viewBox="0 0 10 6" width="10" height="10" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg>`;
+            document.querySelectorAll('#lang-menu .hdr-dropdown-item').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        }
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            renderLangSwitcher();
+            loadBoxes();
+        }
+
         // ── Notification ──────────────────────────────────────────────
         function notify(msg, type = 'info') {
             const el = document.getElementById('notification');
@@ -790,12 +862,16 @@
 
         // ── Auth nav ──────────────────────────────────────────────────
         function renderAuthNav() {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('wwc_access_token');
             const nav = document.getElementById('auth-nav');
             if (token) {
-                nav.innerHTML = `<a href="/shop/account/" style="text-decoration:none; font-size:13px; font-weight:600; color:var(--wwc-secondary);">Mon compte</a>`;
+                nav.innerHTML = `
+                    <a href="/shop/account/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.3px;" onmouseover="this.style.color='#e04403'" onmouseout="this.style.color='rgba(255,255,255,0.85)'">Mon compte</a>
+                    <button onclick="localStorage.removeItem('wwc_access_token');localStorage.removeItem('wwc_refresh_token');renderAuthNav();" style="background:transparent;border:2px solid #e04403;color:#e04403;padding:8px 16px;border-radius:30px;cursor:pointer;font-size:13px;font-weight:700;text-transform:uppercase;" onmouseover="this.style.background='#e04403';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#e04403'">Déconnexion</button>`;
             } else {
-                nav.innerHTML = `<a href="/shop/login/" style="text-decoration:none; font-size:13px; font-weight:600; color:var(--wwc-primary);">Connexion</a>`;
+                nav.innerHTML = `
+                    <a href="/shop/login/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.3px;" onmouseover="this.style.color='#e04403'" onmouseout="this.style.color='rgba(255,255,255,0.85)'">Connexion</a>
+                    <a href="/shop/login/?tab=register" style="background:#e04403;color:white;text-decoration:none;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;text-transform:uppercase;" onmouseover="this.style.background='white';this.style.color='#e04403'" onmouseout="this.style.background='#e04403';this.style.color='white'">Inscription</a>`;
             }
         }
 
@@ -924,11 +1000,11 @@
                 list.innerHTML = boxes.map(box => `
                     <div class="box-card" onclick="selectBox(${box.id}, '${box.slug}')">
                         <div class="box-card-image">
-                            ${box.image ? `<img src="${box.image}" alt="${box.name}">` : '📦'}
+                            ${box.image ? `<img src="${box.image}" alt="${tObj(box,'name')}">` : '📦'}
                         </div>
                         <div class="box-card-body">
-                            <div class="box-card-name">${box.name}</div>
-                            <div class="box-card-desc">${box.description}</div>
+                            <div class="box-card-name">${tObj(box,'name')}</div>
+                            <div class="box-card-desc">${tObj(box,'description')}</div>
                             <div class="box-card-meta">
                                 <span class="box-meta-pill">🎁 ${box.min_items}–${box.max_items} produits</span>
                                 <span class="box-meta-pill">✅ ${box.eligible_products ? box.eligible_products.length : '?'} choix</span>
@@ -978,11 +1054,11 @@
                 return `
                 <div class="pick-card ${isPicked ? 'picked' : ''}" id="pick-${p.id}" onclick="toggleProduct(${p.id})">
                     <div class="pick-card-img">
-                        ${imgSrc ? `<img src="${imgSrc}" alt="${p.name}">` : '🧴'}
+                        ${imgSrc ? `<img src="${imgSrc}" alt="${tObj(p,'name')}">` : '🧴'}
                         <div class="pick-check">✓</div>
                     </div>
                     <div class="pick-card-body">
-                        <div class="pick-card-name">${p.name}</div>
+                        <div class="pick-card-name">${tObj(p,'name')}</div>
                         <div class="pick-card-impact">🌱 ${p.impact_quantity} ${p.impact_item}</div>
                     </div>
                 </div>`;
@@ -1020,7 +1096,7 @@
             const min = selectedBox.min_items;
             const max = selectedBox.max_items;
 
-            document.getElementById('summary-box-name').textContent = selectedBox.name;
+            document.getElementById('summary-box-name').textContent = tObj(selectedBox,'name');
             document.getElementById('summary-count').textContent = `${n} produit${n > 1 ? 's' : ''}`;
             document.getElementById('summary-range').textContent = `${min}–${max} requis`;
 
@@ -1034,18 +1110,33 @@
             } else {
                 tagsList.innerHTML = selectedProducts.map(p => `
                     <span class="selected-item-tag">
-                        ${p.name.substring(0, 20)}${p.name.length > 20 ? '…' : ''}
+                        ${tObj(p,'name').substring(0, 20)}${tObj(p,'name').length > 20 ? '…' : ''}
                         <button onclick="toggleProduct(${p.id})" title="Retirer">✕</button>
                     </span>`
                 ).join('');
             }
 
-            // Impact
+            // Impact — aggregate by item type
             const impactEl = document.getElementById('impact-preview');
             if (n > 0) {
                 impactEl.style.display = 'block';
-                document.getElementById('impact-text').textContent =
-                    `Cette box soutient ${n * 6}+ enfants des écoles GreenSchool`;
+                const impactMap = {};
+                selectedProducts.forEach(p => {
+                    if (p.impact_item && p.impact_quantity) {
+                        const key = p.impact_item;
+                        impactMap[key] = (impactMap[key] || 0) + parseInt(p.impact_quantity, 10);
+                    }
+                });
+                const impactEntries = Object.entries(impactMap);
+                if (impactEntries.length) {
+                    document.getElementById('impact-text').innerHTML =
+                        '💝 Cette box fournit : ' +
+                        impactEntries.map(([type, qty]) => `<strong>${qty} ${type}</strong>`).join(' + ') +
+                        ' à des étudiants GreenSchool';
+                } else {
+                    document.getElementById('impact-text').textContent =
+                        `Cette box soutient ${n * 6}+ enfants des écoles GreenSchool`;
+                }
             } else {
                 impactEl.style.display = 'none';
             }
@@ -1110,6 +1201,7 @@
 
         // ── Init ──────────────────────────────────────────────────────
         renderAuthNav();
+        renderLangSwitcher();
         loadCart();
         loadBoxes();
         setStep(1);

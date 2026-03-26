@@ -28,52 +28,72 @@
 
         body {
             font-family: 'Noto Sans', sans-serif;
+            font-size: 15px;
             color: var(--wwc-text);
             background: var(--wwc-bg);
-            line-height: 1.6;
+            line-height: 1.7em;
         }
 
         /* Header */
         .header {
-            background: #ffffff;
-            border-bottom: 1px solid #ececec;
-            padding: 0;
+            background: #1c345e;
             height: 70px;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 200;
         }
 
         .header-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
             height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 24px;
         }
 
         .logo {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 22px;
-            font-weight: 700;
-            color: #1c345e;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            max-width: 120px;
+            height: auto;
+            display: block;
+        }
+
+        .logo-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 0.5px;
+            line-height: 1.1;
+            text-transform: uppercase;
         }
 
         .nav {
             display: flex;
-            gap: 30px;
+            gap: 28px;
+            align-items: center;
         }
 
         .nav a {
-            color: #191919;
+            color: #ffffff;
             text-decoration: none;
+            font-family: 'Noto Sans', sans-serif;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
+            letter-spacing: 0.3px;
             transition: color 0.2s;
+            white-space: nowrap;
         }
 
         .nav a:hover,
@@ -83,9 +103,19 @@
 
         .header-actions {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
         }
+
+        /* Dropdown switcher */
+        .hdr-dropdown { position: relative; }
+        .hdr-dropdown-btn { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .hdr-dropdown-btn:hover { background: rgba(255,255,255,0.22); }
+        .hdr-dropdown-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; background: white; border: 1px solid #ececec; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); overflow: hidden; min-width: 100%; z-index: 300; }
+        .hdr-dropdown-menu.open { display: block; }
+        .hdr-dropdown-item { display: block; width: 100%; padding: 9px 16px; background: none; border: none; text-align: left; font-size: 13px; font-weight: 600; color: #404040; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+        .hdr-dropdown-item:hover { background: #f5f5f5; color: #e04403; }
+        .hdr-dropdown-item.active { color: #e04403; background: rgba(224,68,3,0.07); }
 
         .btn {
             display: inline-block;
@@ -715,21 +745,32 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
+    <header class="header" dir="ltr">
         <div class="header-container">
-            <a href="/shop/" class="logo">WALLAH WE CAN</a>
+            <a href="/shop/" class="logo">
+                <img src="https://wallahwecan.org/wp-content/uploads/2022/05/LOGO-WWC-.png" alt="Wallah We Can">
+                <span class="logo-text">Wallah<br>We Can</span>
+            </a>
             <nav class="nav">
-                <a href="#">Accueil</a>
-                <a href="#">Bibliothèque</a>
-                <a href="#">Agir</a>
-                <a href="#">Événements</a>
+                <a href="/shop/">Boutique</a>
+                <a href="/shop/impact/">Notre Impact</a>
+                <a href="/shop/donate/">Faire un don</a>
+                <a href="/shop/box-builder/">Composer ma box</a>
             </nav>
             <div class="header-actions">
-                <button class="cart-icon" onclick="window.location.href='/shop/cart/'">
+                <div class="hdr-dropdown" id="lang-dropdown">
+                    <button class="hdr-dropdown-btn" onclick="toggleDropdown('lang-dropdown')" id="lang-label">FR <svg viewBox="0 0 10 6" width="10" height="10" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg></button>
+                    <div class="hdr-dropdown-menu" id="lang-menu">
+                        <button class="hdr-dropdown-item" data-lang="fr" onclick="switchLang('fr')">🇫🇷 Français</button>
+                        <button class="hdr-dropdown-item" data-lang="en" onclick="switchLang('en')">🇬🇧 English</button>
+                        <button class="hdr-dropdown-item" data-lang="ar" onclick="switchLang('ar')">🇹🇳 العربية</button>
+                    </div>
+                </div>
+                <button class="cart-icon" onclick="window.location.href='/shop/cart/'" style="background:none;border:none;font-size:22px;cursor:pointer;position:relative;padding:6px;color:rgba(255,255,255,0.85);transition:color 0.2s;" onmouseover="this.style.color='#e04403'" onmouseout="this.style.color='rgba(255,255,255,0.85)'">
                     🛒
-                    <span class="cart-count" id="cart-count">0</span>
+                    <span id="cart-count" style="position:absolute;top:-2px;right:-4px;background:#e04403;color:white;font-size:10px;font-weight:700;min-width:18px;height:18px;padding:0 4px;border-radius:9px;display:flex;align-items:center;justify-content:center;">0</span>
                 </button>
-                <div id="auth-nav" style="display:flex; align-items:center; gap:10px;"></div>
+                <div id="auth-nav" style="display:flex;align-items:center;gap:10px;"></div>
             </div>
         </div>
     </header>
@@ -794,15 +835,115 @@
         // API Configuration
         const API_URL = '/api/v1';
 
+        // ── Language / i18n ───────────────────────────────────────
+        const LANGS = ['fr', 'en', 'ar'];
+        function getLang() {
+            const v = localStorage.getItem('wwc_lang');
+            return LANGS.includes(v) ? v : 'fr';
+        }
+        function tObj(obj, field) {
+            if (!obj) return '';
+            const lang = getLang();
+            if (lang === 'fr') return obj[field] || '';
+            const loc = obj[`${field}_${lang}`];
+            return (loc && loc.trim()) ? loc : (obj[field] || '');
+        }
+        const UI_STRINGS = {
+            add_to_cart:        { fr: 'Ajouter au panier', en: 'Add to cart',      ar: 'أضف إلى السلة' },
+            out_of_stock:       { fr: 'Rupture de stock',  en: 'Out of stock',     ar: 'نفد المخزون' },
+            add_to_fav:         { fr: 'Ajouter aux favoris', en: 'Add to favourites', ar: 'أضف إلى المفضلة' },
+            supplied_to:        { fr: 'fournis à',         en: 'supplied to',      ar: 'مُقدَّمة إلى' },
+            product_by:         { fr: 'Produit par',       en: 'Made by',          ar: 'من صنع' },
+            reviews_label:      { fr: 'avis',              en: 'reviews',          ar: 'تقييم' },
+            no_rating:          { fr: 'Aucun avis',        en: 'No reviews',       ar: 'لا تقييمات' },
+            ingredients:        { fr: '🧪 Ce qu\'il y a dans mon produit', en: '🧪 Ingredients', ar: '🧪 المكونات' },
+            engagements:        { fr: '🤝 Nos engagements', en: '🤝 Our commitments', ar: '🤝 التزاماتنا' },
+            engagements_body:   { fr: '✅ 100% naturel - Ingrédients d\'origine naturelle<br>✅ Production locale - Fabriqué en Tunisie<br>✅ Commerce équitable - Rémunération juste des producteurs<br>✅ Impact social - Chaque achat soutient l\'éducation des enfants',
+                                  en: '✅ 100% natural ingredients<br>✅ Local production - Made in Tunisia<br>✅ Fair trade - Fair pay for producers<br>✅ Social impact - Each purchase supports children\'s education',
+                                  ar: '✅ مكونات طبيعية 100%<br>✅ إنتاج محلي - صُنع في تونس<br>✅ تجارة عادلة - أجر عادل للمنتجين<br>✅ أثر اجتماعي - كل شراء يدعم تعليم الأطفال' },
+            usage:              { fr: '📋 Utilisation',    en: '📋 Usage',         ar: '📋 طريقة الاستخدام' },
+            customer_reviews:   { fr: '💬 Avis clients',   en: '💬 Customer reviews', ar: '💬 آراء العملاء' },
+            no_reviews:         { fr: 'Aucun avis pour le moment. Soyez le premier à donner votre avis!', en: 'No reviews yet. Be the first!', ar: 'لا تقييمات بعد. كن أول من يشارك رأيه!' },
+            verified_purchase:  { fr: '✓ Achat vérifié',  en: '✓ Verified purchase', ar: '✓ شراء موثق' },
+            leave_review:       { fr: 'Laisser un avis',   en: 'Leave a review',   ar: 'اترك تقييمًا' },
+            your_rating:        { fr: 'Votre note:',       en: 'Your rating:',     ar: 'تقييمك:' },
+            publish_review:     { fr: 'Publier mon avis',  en: 'Publish my review', ar: 'نشر تقييمي' },
+            select_rating:      { fr: 'Veuillez sélectionner une note', en: 'Please select a rating', ar: 'يرجى اختيار تقييم' },
+            write_comment:      { fr: 'Veuillez écrire un commentaire', en: 'Please write a comment', ar: 'يرجى كتابة تعليق' },
+            review_thanks:      { fr: 'Merci pour votre avis!',        en: 'Thank you for your review!', ar: 'شكرًا على تقييمك!' },
+            login_to_review:    { fr: 'Connectez-vous pour laisser un avis', en: 'Login to leave a review', ar: 'يجب تسجيل الدخول لترك تقييم' },
+            product_added:      { fr: 'Produit ajouté au panier', en: 'Product added to cart', ar: 'تمت إضافة المنتج' },
+            product_removed:    { fr: 'Produit retiré du panier', en: 'Product removed from cart', ar: 'تمت إزالة المنتج' },
+            add_error:          { fr: 'Erreur lors de l\'ajout', en: 'Error adding to cart', ar: 'خطأ في الإضافة' },
+            link_copied:        { fr: 'Lien copié!',        en: 'Link copied!',    ar: 'تم نسخ الرابط!' },
+            home:               { fr: 'Accueil',            en: 'Home',            ar: 'الرئيسية' },
+            read_more:          { fr: 'Lire plus',          en: 'Read more',       ar: 'اقرأ المزيد' },
+            read_less:          { fr: 'Lire moins',         en: 'Read less',       ar: 'اقرأ أقل' },
+            b2b_pro_rate:       { fr: 'Tarif professionnel — commande minimum :', en: 'Professional rate — minimum order:', ar: 'سعر مهني — الحد الأدنى للطلب:' },
+            b2b_units:          { fr: 'unités',             en: 'units',           ar: 'وحدات' },
+            added_to_fav:       { fr: 'Ajouté aux favoris!', en: 'Added to favourites!', ar: 'تمت الإضافة إلى المفضلة!' },
+            wishlist_error:     { fr: 'Erreur wishlist',    en: 'Wishlist error',  ar: 'خطأ في المفضلة' },
+        };
+        function t(key) {
+            const lang = getLang();
+            return (UI_STRINGS[key] && UI_STRINGS[key][lang]) || (UI_STRINGS[key] && UI_STRINGS[key]['fr']) || key;
+        }
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id).querySelector('.hdr-dropdown-menu');
+            const isOpen = menu.classList.contains('open');
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            if (!isOpen) menu.classList.add('open');
+        }
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.hdr-dropdown')) {
+                document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            }
+        });
+        function renderLangSwitcher() {
+            const lang = getLang();
+            const labels = { fr: 'FR', en: 'EN', ar: 'ع' };
+            const lbl = document.getElementById('lang-label');
+            if (lbl) lbl.innerHTML = `${labels[lang] || 'FR'} <svg viewBox="0 0 10 6" width="10" height="10" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg>`;
+            document.querySelectorAll('#lang-menu .hdr-dropdown-item').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        }
+        function switchLang(lang) {
+            localStorage.setItem('wwc_lang', lang);
+            document.querySelectorAll('.hdr-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            renderLangSwitcher();
+            const slug = getProductSlug();
+            if (slug) loadProduct(slug);
+        }
+
         function getSessionKey() {
             let key = localStorage.getItem('wwc_session_key');
             if (!key) { key = crypto.randomUUID(); localStorage.setItem('wwc_session_key', key); }
             return key;
         }
         function getCurrentCurrency() { return localStorage.getItem('wwc_currency') || 'TND'; }
+        function isB2B() {
+            return localStorage.getItem('wwc_customer_type') === 'company'
+                && localStorage.getItem('wwc_b2b_status') === 'approved';
+        }
+        function getValidToken() {
+            const token = localStorage.getItem('wwc_access_token');
+            if (!token) return null;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+                if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+                    localStorage.removeItem('wwc_access_token');
+                    localStorage.removeItem('wwc_refresh_token');
+                    return null;
+                }
+            } catch { return null; }
+            return token;
+        }
         function apiHeaders(extra) {
             const h = { 'Content-Type': 'application/json', 'X-Session-Key': getSessionKey() };
-            const token = localStorage.getItem('wwc_access_token');
+            const token = getValidToken();
             if (token) h['Authorization'] = `Bearer ${token}`;
             return Object.assign(h, extra);
         }
@@ -819,10 +960,12 @@
             const nav = document.getElementById('auth-nav');
             if (getToken()) {
                 nav.innerHTML = `
-                    <a href="/shop/account/" style="color:white; text-decoration:none; font-weight:600; opacity:0.9;">👤 Mon compte</a>
-                    <button onclick="logout()" style="background:transparent; border:2px solid rgba(255,255,255,0.6); color:white; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;">Déconnexion</button>`;
+                    <a href="/shop/account/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.3px;" onmouseover="this.style.color='#e04403'" onmouseout="this.style.color='rgba(255,255,255,0.85)'">Mon compte</a>
+                    <button onclick="logout()" style="background:transparent;border:2px solid #e04403;color:#e04403;padding:8px 16px;border-radius:30px;cursor:pointer;font-size:13px;font-weight:700;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.background='#e04403';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#e04403'">Déconnexion</button>`;
             } else {
-                nav.innerHTML = `<a href="/shop/login/" style="color:white; text-decoration:none; font-weight:600; opacity:0.9;">Connexion</a>`;
+                nav.innerHTML = `
+                    <a href="/shop/login/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.3px;" onmouseover="this.style.color='#e04403'" onmouseout="this.style.color='rgba(255,255,255,0.85)'">Connexion</a>
+                    <a href="/shop/login/?tab=register" style="background:#e04403;color:white;text-decoration:none;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;text-transform:uppercase;transition:background 0.2s;" onmouseover="this.style.background='white';this.style.color='#e04403'" onmouseout="this.style.background='#e04403';this.style.color='white'">Inscription</a>`;
             }
         }
 
@@ -839,13 +982,14 @@
                 const cats = (data.results || data).filter(c => c.is_active && !c.parent);
                 const container = document.getElementById('categories');
                 container.innerHTML = `<a href="/shop/" class="category-link">Tous les produits</a>`
-                    + cats.map(c => `<a href="/shop/?category=${c.slug}" class="category-link">${c.name.toUpperCase()}</a>`).join('');
+                    + cats.map(c => `<a href="/shop/?category=${c.slug}" class="category-link">${tObj(c,'name').toUpperCase()}</a>`).join('');
             } catch { /* keep default */ }
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             renderAuthNav();
+            renderLangSwitcher();
             loadCategories();
             const slug = getProductSlug();
             if (slug) {
@@ -862,7 +1006,7 @@
         // Load product
         async function loadProduct(slug) {
             try {
-                const response = await fetch(`${API_URL}/products/${slug}/`);
+                const response = await fetch(`${API_URL}/products/${slug}/?lang=${getLang()}`);
                 if (!response.ok) throw new Error('Produit non trouvé');
 
                 currentProduct = await response.json();
@@ -881,7 +1025,9 @@
 
         // Render product
         function renderProduct(product) {
-            document.title = `${product.name} - Wallah We Can`;
+            const pName = tObj(product, 'name');
+            const pDesc = tObj(product, 'description');
+            document.title = `${pName} - Wallah We Can`;
 
             // Build badges HTML
             let badgesHtml = '';
@@ -893,8 +1039,8 @@
             // Build rating HTML
             const ratingHtml = product.review_count > 0
                 ? `<span class="stars">${'★'.repeat(Math.floor(product.average_rating))}${'☆'.repeat(5 - Math.floor(product.average_rating))}</span>
-                   <span class="rating-text">${product.average_rating}/5 - ${product.review_count} avis</span>`
-                : '<span class="rating-text">Aucun avis</span>';
+                   <span class="rating-text">${product.average_rating}/5 - ${product.review_count} ${t('reviews_label')}</span>`
+                : `<span class="rating-text">${t('no_rating')}</span>`;
 
             // Build thumbnails
             let thumbnailsHtml = '<div class="thumbnail active">🧴</div>';
@@ -902,10 +1048,10 @@
 
             if (product.images && product.images.length > 0) {
                 const primaryImg = product.images.find(img => img.is_primary) || product.images[0];
-                mainImageHtml = `<img src="${primaryImg.image}" alt="${product.name}">`;
+                mainImageHtml = `<img src="${primaryImg.image}" alt="${pName}">`;
                 thumbnailsHtml = product.images.map((img, i) => `
                     <div class="thumbnail ${i === 0 ? 'active' : ''}" onclick="selectImage('${img.image}', this)">
-                        <img src="${img.image}" alt="${img.alt_text || product.name}">
+                        <img src="${img.image}" alt="${img.alt_text || pName}">
                     </div>
                 `).join('');
             }
@@ -913,9 +1059,9 @@
             document.getElementById('main-content').innerHTML = `
                 <!-- Breadcrumb -->
                 <div class="breadcrumb">
-                    <a href="/shop/">Accueil</a> /
-                    <a href="/shop/?category=${product.category?.slug || ''}">${product.category?.name || 'Produits'}</a> /
-                    ${product.name}
+                    <a href="/shop/">${t('home')}</a> /
+                    <a href="/shop/?category=${product.category?.slug || ''}">${escHtml(tObj(product.category,'name') || '')}</a> /
+                    ${escHtml(pName)}
                 </div>
 
                 <!-- Product Layout -->
@@ -932,7 +1078,7 @@
 
                     <!-- Product Info -->
                     <div class="product-info">
-                        <h1 class="product-title">${product.name}</h1>
+                        <h1 class="product-title">${pName}</h1>
 
                         <div class="product-rating">
                             ${ratingHtml}
@@ -943,16 +1089,33 @@
                         </div>
 
                         <div class="product-description" id="product-description">
-                            <p>${product.description || 'Aucune description disponible.'}</p>
-                            ${product.description && product.description.length > 200 ? '<a class="read-more" onclick="toggleDescription()">Lire plus</a>' : ''}
+                            <p>${pDesc || ''}</p>
+                            ${pDesc && pDesc.length > 200 ? `<a class="read-more" onclick="toggleDescription()">${t('read_more')}</a>` : ''}
                         </div>
 
                         <div class="product-actions">
                             <div class="quantity-selector">
                                 <button type="button" onclick="changeQuantity(-1)">−</button>
-                                <input type="number" id="product-quantity" value="1" min="1" max="99">
+                                <input type="number" id="product-quantity"
+                                    value="${isB2B() && product.b2b_min_quantity ? product.b2b_min_quantity : 1}"
+                                    min="${isB2B() && product.b2b_min_quantity ? product.b2b_min_quantity : 1}"
+                                    max="99">
                                 <button type="button" onclick="changeQuantity(1)">+</button>
                             </div>
+                            ${isB2B() && product.b2b_price_tnd ? `
+                            <div style="display:flex; flex-direction:column; gap:4px;">
+                                <div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:8px;">
+                                    <span class="price-was">${product.price_tnd} DT</span>
+                                    <div class="product-price" style="color:var(--wwc-primary);">${product.b2b_price_tnd} <small>DT</small></div>
+                                    <span style="background:#e04403;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:30px;">
+                                        B2B -${Math.round((1 - parseFloat(product.b2b_price_tnd)/parseFloat(product.price_tnd))*100)}%
+                                    </span>
+                                </div>
+                                <div style="font-size:13px;color:var(--wwc-text-light);display:flex;align-items:center;gap:6px;">
+                                    🏢 <span>${t('b2b_pro_rate')} <strong>${product.b2b_min_quantity || 1} ${t('b2b_units')}</strong></span>
+                                </div>
+                            </div>
+                            ` : `
                             <div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:8px;">
                                 ${product.discount_percentage && product.compare_at_price_tnd
                                     ? `<span class="price-was">${getCurrentCurrency() === 'EUR' && product.price_eur
@@ -962,14 +1125,27 @@
                                 <div class="product-price">${getCurrentCurrency() === 'EUR' && product.price_eur ? product.price_eur + ' <small>€</small>' : product.price_tnd + ' <small>DT</small>'}</div>
                                 ${product.discount_percentage ? `<span class="badge-sale">-${product.discount_percentage}%</span>` : ''}
                             </div>
+                            `}
                         </div>
 
                         <div class="product-impact">
-                            💝 Grâce à cet achat, ${product.impact_quantity} ${product.impact_item} peuvent être fournis à des enfants de ${product.impact_school}.
+                            💝 ${product.impact_quantity} ${escHtml(product.impact_item)} ${t('supplied_to')} ${escHtml(product.impact_school)}
                         </div>
 
-                        <button class="btn-add-cart" onclick="addToCart()">
-                            Ajouter au panier
+                        ${product.producer ? `
+                        <div style="margin:16px 0;padding:14px 18px;background:var(--wwc-bg-light);border-radius:10px;border:1px solid var(--wwc-border);display:flex;align-items:center;gap:12px;">
+                            ${product.producer.photo ? `<img src="${product.producer.photo}" alt="${product.producer.name}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : '<span style="font-size:28px;">👩‍🌾</span>'}
+                            <div>
+                                <div style="font-size:12px;color:var(--wwc-text-light);text-transform:uppercase;letter-spacing:0.5px;">${t('product_by')}</div>
+                                <a href="/shop/producers/${product.producer.slug}/" style="font-weight:700;font-size:15px;color:var(--wwc-secondary);text-decoration:none;">
+                                    ${product.producer.name}
+                                </a>
+                                ${product.producer.location ? `<div style="font-size:12px;color:var(--wwc-text-light);">📍 ${product.producer.location}</div>` : ''}
+                            </div>
+                        </div>` : ''}
+
+                        <button class="btn-add-cart" onclick="addToCart()" ${product.is_in_stock === false ? 'disabled' : ''}>
+                            ${product.is_in_stock === false ? t('out_of_stock') : t('add_to_cart')}
                         </button>
 
                         <div class="product-share">
@@ -983,32 +1159,29 @@
                 <div class="product-accordions">
                     <div class="accordion">
                         <button class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>🧪 Ce qu'il y a dans mon produit</span>
+                            <span>${t('ingredients')}</span>
                             <span class="accordion-icon">▼</span>
                         </button>
                         <div class="accordion-content">
-                            <p>${product.ingredients || 'Ingrédients: Information non disponible.'}</p>
+                            <p>${product.ingredients || ''}</p>
                         </div>
                     </div>
                     <div class="accordion">
                         <button class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>🤝 Nos engagements</span>
+                            <span>${t('engagements')}</span>
                             <span class="accordion-icon">▼</span>
                         </button>
                         <div class="accordion-content">
-                            <p>✅ 100% naturel - Ingrédients d'origine naturelle<br>
-                            ✅ Production locale - Fabriqué en Tunisie<br>
-                            ✅ Commerce équitable - Rémunération juste des producteurs<br>
-                            ✅ Impact social - Chaque achat soutient l'éducation des enfants</p>
+                            <p>${t('engagements_body')}</p>
                         </div>
                     </div>
                     <div class="accordion">
                         <button class="accordion-header" onclick="toggleAccordion(this)">
-                            <span>📋 Utilisation</span>
+                            <span>${t('usage')}</span>
                             <span class="accordion-icon">▼</span>
                         </button>
                         <div class="accordion-content">
-                            <p>${product.usage || 'Instructions d\'utilisation: Consultez l\'emballage du produit.'}</p>
+                            <p>${product.usage || ''}</p>
                         </div>
                     </div>
                 </div>
@@ -1016,12 +1189,12 @@
                 <!-- Reviews Section -->
                 <div class="reviews-section">
                     <div class="reviews-header">
-                        <h2>💬 Avis clients</h2>
+                        <h2>${t('customer_reviews')}</h2>
                         <div class="reviews-summary" id="reviews-summary">
                             <div class="reviews-average">
                                 <div class="big-rating">${product.average_rating || '0'}</div>
                                 <div class="stars">${'★'.repeat(Math.floor(product.average_rating || 0))}${'☆'.repeat(5 - Math.floor(product.average_rating || 0))}</div>
-                                <div class="rating-text">${product.review_count || 0} avis</div>
+                                <div class="rating-text">${product.review_count || 0} ${t('reviews_label')}</div>
                             </div>
                         </div>
                     </div>
@@ -1034,7 +1207,7 @@
         }
 
         // Auth helpers
-        function getToken() { return localStorage.getItem('wwc_access_token'); }
+        function getToken() { return getValidToken(); }
 
         // Load reviews
         async function loadReviews(slug) {
@@ -1045,16 +1218,17 @@
                 const reviewsList = document.getElementById('reviews-list');
 
                 if (reviews.length === 0) {
-                    reviewsList.innerHTML = '<p class="no-reviews">Aucun avis pour le moment.</p>';
+                    reviewsList.innerHTML = `<p class="no-reviews">${t('no_reviews')}</p>`;
                 } else {
+                    const locale = getLang() === 'ar' ? 'ar-TN' : (getLang() === 'en' ? 'en-GB' : 'fr-FR');
                     reviewsList.innerHTML = reviews.map(review => `
                         <div class="review-item">
                             <div class="review-header">
                                 <div>
-                                    <span class="review-author">${escHtml(review.user_name || 'Anonyme')}</span>
-                                    ${review.is_verified_purchase ? '<span class="verified-badge">✓ Achat vérifié</span>' : ''}
+                                    <span class="review-author">${escHtml(review.user_name || '')}</span>
+                                    ${review.is_verified_purchase ? `<span class="verified-badge">${t('verified_purchase')}</span>` : ''}
                                 </div>
-                                <span class="review-date">${new Date(review.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                <span class="review-date">${new Date(review.created_at).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                             </div>
                             <div class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
                             ${review.title ? `<div class="review-title">${escHtml(review.title)}</div>` : ''}
@@ -1090,27 +1264,21 @@
 
             container.innerHTML = `
                 <div style="border:1px solid var(--wwc-border); border-radius:12px; padding:24px;">
-                    <h3 style="font-size:18px; color:var(--wwc-primary); margin-bottom:16px;">Laisser un avis</h3>
+                    <h3 style="font-size:18px; color:var(--wwc-primary); margin-bottom:16px;">${t('leave_review')}</h3>
                     <div id="review-msg" style="display:none; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:14px;"></div>
                     <form id="review-form" onsubmit="submitReview(event, '${slug}')">
                         <div style="margin-bottom:14px;">
-                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Note *</label>
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">${t('your_rating')} *</label>
                             <div id="star-picker" style="font-size:28px; cursor:pointer; letter-spacing:4px; display:inline-block;">
                                 ${[1,2,3,4,5].map(n => `<span onclick="setReviewRating(${n})" onmouseover="hoverStars(${n})" onmouseout="resetStars()" style="color:#ccc;" data-star="${n}">★</span>`).join('')}
                             </div>
                         </div>
-                        <div style="margin-bottom:14px;">
-                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Titre</label>
-                            <input id="review-title" type="text" placeholder="Résumé de votre avis" maxlength="200"
-                                style="width:100%; padding:10px 12px; border:1px solid var(--wwc-border); border-radius:8px; font-size:14px; font-family:inherit;">
-                        </div>
                         <div style="margin-bottom:16px;">
-                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:6px;">Commentaire *</label>
-                            <textarea id="review-comment" rows="4" required placeholder="Partagez votre expérience…"
+                            <textarea id="review-comment" rows="4" required placeholder="${t('write_comment')}"
                                 style="width:100%; padding:10px 12px; border:1px solid var(--wwc-border); border-radius:8px; font-size:14px; font-family:inherit; resize:vertical;"></textarea>
                         </div>
                         <button type="submit" id="review-submit" style="padding:12px 24px; background:var(--wwc-secondary); color:white; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer;">
-                            Publier mon avis
+                            ${t('publish_review')}
                         </button>
                     </form>
                 </div>`;
@@ -1139,7 +1307,7 @@
             const btn = document.getElementById('review-submit');
 
             if (!selectedRatingForm) {
-                msg.textContent = 'Veuillez sélectionner une note.';
+                msg.textContent = t('select_rating');
                 msg.style.background = '#f8d7da'; msg.style.color = '#721c24'; msg.style.display = 'block';
                 return;
             }
@@ -1163,7 +1331,7 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.detail || data.error || JSON.stringify(data));
 
-                msg.textContent = 'Merci pour votre avis !';
+                msg.textContent = t('review_thanks');
                 msg.style.background = '#d4edda'; msg.style.color = '#155724'; msg.style.display = 'block';
                 document.getElementById('review-form').style.display = 'none';
                 // Reload reviews
@@ -1171,7 +1339,7 @@
             } catch (err) {
                 msg.textContent = err.message;
                 msg.style.background = '#f8d7da'; msg.style.color = '#721c24'; msg.style.display = 'block';
-                btn.disabled = false; btn.textContent = 'Publier mon avis';
+                btn.disabled = false; btn.textContent = t('publish_review');
             }
         }
 
@@ -1206,7 +1374,13 @@
         async function addToCart() {
             if (!currentProduct) return;
 
-            const quantity = parseInt(document.getElementById('product-quantity').value) || 1;
+            let quantity = parseInt(document.getElementById('product-quantity').value) || 1;
+
+            if (isB2B() && currentProduct.b2b_min_quantity && quantity < currentProduct.b2b_min_quantity) {
+                showNotification(`B2B: ${t('b2b_pro_rate')} ${currentProduct.b2b_min_quantity} ${t('b2b_units')}`, 'error');
+                document.getElementById('product-quantity').value = currentProduct.b2b_min_quantity;
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_URL}/cart/add/`, {
@@ -1215,16 +1389,17 @@
                     body: JSON.stringify({ product_id: currentProduct.id, quantity: quantity })
                 });
 
+                const data = await response.json();
                 if (response.ok) {
-                    const data = await response.json();
                     updateCartCount(data.cart.item_count || data.cart.items?.length || 0);
-                    showNotification(`${quantity} article(s) ajouté(s) au panier`, 'success');
+                    showNotification(t('product_added'), 'success');
                 } else {
-                    throw new Error('Erreur');
+                    const msg = data.product_id?.[0] || data.detail || data.error || t('add_error');
+                    showNotification(msg, 'error');
                 }
             } catch (error) {
                 console.error('Error adding to cart:', error);
-                showNotification('Erreur lors de l\'ajout au panier', 'error');
+                showNotification(t('add_error'), 'error');
             }
         }
 
@@ -1254,7 +1429,7 @@
                 });
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                showNotification('Lien copié!', 'success');
+                showNotification(t('link_copied'), 'success');
             }
         }
 
@@ -1272,14 +1447,14 @@
                     body: JSON.stringify({ product_id: currentProduct.id })
                 });
                 if (res.status === 201) {
-                    showNotification('Ajouté aux favoris !', 'success');
+                    showNotification(t('added_to_fav'), 'success');
                 } else if (res.status === 200) {
-                    showNotification('Déjà dans vos favoris.', 'info');
+                    showNotification(t('added_to_fav'), 'info');
                 } else {
                     throw new Error();
                 }
             } catch {
-                showNotification('Erreur lors de l\'ajout aux favoris.', 'error');
+                showNotification(t('wishlist_error'), 'error');
             }
         }
 
